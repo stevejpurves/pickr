@@ -2,14 +2,15 @@ import webapp2
 from jinja2 import Environment, FileSystemLoader
 from os.path import dirname, join
 import os
-
+import json
 from jinja2 import Environment, FileSystemLoader
 
-#from lib_db import SeismicObject
+from lib_db import SeismicObject
 # Jinja2 environment to load templates
 env = Environment(loader=FileSystemLoader(join(dirname(__file__),
                                                'templates')))
-
+d = SeismicObject(picks=json.dumps([]).encode())
+d.put()
 class MainPage(webapp2.RequestHandler):
     def get(self):
 
@@ -77,11 +78,13 @@ class UpdatePick(webapp2.RequestHandler):
                  self.request.get("y"))
 
         print "POINT",  point
-        #d = SeismicObject.all().get()
+        d = SeismicObject.all().get()
 
-        #picks = json.loads(d.picks)
-        #picks.append(point)
-        #d.picks = json.dumps(picks).encode()
+        picks = json.loads(d.picks)
+        picks.append(point)
+        print "PICKS", picks
+        d.picks = json.dumps(picks).encode()
+        d.put()
         self.response.write("Ok")
         
 ## class AddImageHandler(webapp2.RequestHandler):
