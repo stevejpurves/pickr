@@ -11,6 +11,7 @@ class SeismicObject(db.Model):
     image = blobstore.BlobReferenceProperty()
     description = blobstore.StringProperty()
     picks = db.BlobProperty()
+    name = db.StringProperty()
     votes = db.IntProperty()
 
 
