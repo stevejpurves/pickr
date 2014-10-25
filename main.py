@@ -28,13 +28,27 @@ class MainPage(webapp2.RequestHandler):
             self.redirect('/static/html/pickpoint.html')
             
 
+class ResultsHandler(webapp2.RequestHandler):
 
+    def get(self):
+
+        data = SeismicObject().all().fetch(1000)
+
+        # Make composite image
 class AboutHandler(webapp2.RequestHandler):
 
     def get(self):
 
         # Load the main page welcome page
         template = env.get_template('about.html')
+        self.response.write(template.render())
+
+class PickerHandler(webapp2.RequestHandler):
+
+    def get(self):
+
+        template = env.get_template('pickpoint.html')
+
         self.response.write(template.render())
 
 
@@ -80,7 +94,22 @@ class AboutHandler(webapp2.RequestHandler):
         
         
 
-class UpdatePick(webapp2.RequestHandler):
+class PickHandler(webapp2.RequestHandler):
+
+    def get(self):
+
+        user = users.get_current_user()
+        if self.request.get("user_picks"):
+            data = SeismicObject.all().filter("user =", user).get()
+
+            self.response.write(data.picks)
+            return
+        if self.request.get("all"):
+            data = SeismicObject.all().fetch(1000)
+
+            picks = [i.picks for i in data]
+            self.response.write(data)
+            return
 
     def post(self):
 
@@ -102,11 +131,25 @@ class UpdatePick(webapp2.RequestHandler):
 
             picks = json.loads(d.picks)
             picks.append(point)
-            print "PICKS", picks
             d.picks = json.dumps(picks).encode()
             d.put()
         self.response.write("Ok")
-        
+
+
+    def delete(self):
+
+        user = users.get_current_user()
+
+        data = SeismicObject.all().filter("user =", user).get()
+
+        points = json.loads(data.picks)
+        points.pop()
+
+        data.points = json.dumps(points).encode()
+
+        self.response.write("Ok")
+
+
 ## class AddImageHandler(webapp2.RequestHandler):
 
 ##     def get(self):
@@ -123,5 +166,6 @@ app = webapp2.WSGIApplication([
     #('/upload', UploadModel),
     ('/about', AboutHandler),
     #('/new_image', AddImageHandler),
-    ('/update_pick', UpdatePick)],
+    ('/update_pick', PickHandler),
+    ('/pickr', PickerHandler)],
     debug=True)
