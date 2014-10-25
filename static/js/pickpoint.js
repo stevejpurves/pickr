@@ -26,7 +26,7 @@ $(function() {
     var connectTheDots = function() // Lalalalala
     {
         context.beginPath();
-        context.moveTo(points[0].x, points[1].x);
+        context.moveTo(points[0].x, points[0].y);
         points.forEach(function(p){
             context.lineTo(p.x, p.y);
         });
