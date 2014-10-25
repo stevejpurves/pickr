@@ -6,6 +6,9 @@ import json
 from jinja2 import Environment, FileSystemLoader
 
 import numpy as np
+import PIL
+import matplotlib.pyplot as plt
+import Image
 from lib_db import SeismicObject
 
 from google.appengine.api import users
@@ -37,9 +40,25 @@ class ResultsHandler(webapp2.RequestHandler):
 
         picks = [json.loads(i.picks) for i in data]
 
-        pick_array = np.array(picks)
-
-        print pick_array
+        
+        fig = plt.figure(figsize=(15,8))
+        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        
+        # Load the image to a variable
+        im = Image.open('/static/data/brazil_ang_unc.png')
+        
+        # plot the seismic image first
+        im = plt.imshow( im )
+       
+        for i in picks:
+            ax.plot(i[:,1], i[:,2],'g-+', alpha=0.5, lw=3.0)
+        
+        ax.set_xlim(0,1000)
+        ax.set_ylim(0,600)
+        ax.invert_yaxis()
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_frame_on(False)
 
         # Make composite image
 class AboutHandler(webapp2.RequestHandler):
