@@ -74,6 +74,7 @@ class UpdatePick(webapp2.RequestHandler):
     def post(self):
 
         point = self.request.get("point")
+        print "Hello"
 
 class AddImageHandler(webapp2.RequestHandler):
 
