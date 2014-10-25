@@ -28,17 +28,30 @@ $(function() {
         linestrip = paper.path(path);
         linestrip.attr("stroke", "#f00");
     }
+    
+    var addPoint = function(point){
+        points.push(point);
+        drawCircle(point.x, point.y);
+        connectTheDots();
+    }
 
     $('#seismic-div').click(function(e) {
         var imageX = e.pageX - this.offsetLeft;
         var imageY = e.pageY - this.offsetTop - 2;
         var point = { x: imageX, y: imageY };
         $.post('/update_pick', point, 
-            function(response){
-                points.push(point);
-                drawCircle(imageX, imageY);
-                connectTheDots();
-            });
+            function(){addPoint(point)});
     });
+    
+    var reloadPoints = function()
+    {
+        $.get('/update_pick?user_picks=1', {}, function(data)
+        {
+           data.forEach(function(item){
+               addPoint({x:item[0], y:item[1]});
+           });
+        }, "json");
+    }
+    reloadPoints();
 
 });
