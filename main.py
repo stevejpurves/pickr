@@ -5,6 +5,7 @@ import os
 import json
 from jinja2 import Environment, FileSystemLoader
 
+import numpy as np
 from lib_db import SeismicObject
 
 from google.appengine.api import users
@@ -33,6 +34,12 @@ class ResultsHandler(webapp2.RequestHandler):
     def get(self):
 
         data = SeismicObject().all().fetch(1000)
+
+        picks = [json.loads(i.picks) for i in data]
+
+        pick_array = np.array(picks)
+
+        print pick_array
 
         # Make composite image
 class AboutHandler(webapp2.RequestHandler):
@@ -167,5 +174,6 @@ app = webapp2.WSGIApplication([
     ('/about', AboutHandler),
     #('/new_image', AddImageHandler),
     ('/update_pick', PickHandler),
-    ('/pickr', PickerHandler)],
+    ('/pickr', PickerHandler),
+    ('/results', ResultsHandler)],
     debug=True)
