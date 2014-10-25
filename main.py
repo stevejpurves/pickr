@@ -6,17 +6,27 @@ import json
 from jinja2 import Environment, FileSystemLoader
 
 from lib_db import SeismicObject
+
+from google.appengine.api import users
+
 # Jinja2 environment to load templates
 env = Environment(loader=FileSystemLoader(join(dirname(__file__),
                                                'templates')))
-d = SeismicObject(picks=json.dumps([]).encode())
-d.put()
+
 class MainPage(webapp2.RequestHandler):
     def get(self):
+        user = users.get_current_user()
 
-        # Load the main page welcome page
-        template = env.get_template('main.html')
-        self.response.write(template.render())
+        if not user:
+            greeting = ('<a href="%s">Sign in or register</a>.' %
+                        users.create_login_url('/'))
+
+            self.response.out.write('<html><body>%s</body></html>' % greeting)
+
+        else:
+            # Load the main page welcome page
+            self.redirect('/static/html/pickpoint.html')
+            
 
 
 class AboutHandler(webapp2.RequestHandler):
@@ -74,17 +84,27 @@ class UpdatePick(webapp2.RequestHandler):
 
     def post(self):
 
-        point = (self.request.get("x"),
-                 self.request.get("y"))
+        point = (int(self.request.get("x")),
+                 int(self.request.get("y")))
 
-        print "POINT",  point
-        d = SeismicObject.all().get()
+        user = users.get_current_user()
 
-        picks = json.loads(d.picks)
-        picks.append(point)
-        print "PICKS", picks
-        d.picks = json.dumps(picks).encode()
-        d.put()
+        if not user:
+            self.redirect('/')
+
+        d = SeismicObject.all().filter("user =", user).get()
+
+        if not d:
+            d = SeismicObject(picks=json.dumps([point]).encode(),
+                              user=user)
+            d.put()
+        else:
+
+            picks = json.loads(d.picks)
+            picks.append(point)
+            print "PICKS", picks
+            d.picks = json.dumps(picks).encode()
+            d.put()
         self.response.write("Ok")
         
 ## class AddImageHandler(webapp2.RequestHandler):
