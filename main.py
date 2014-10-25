@@ -19,10 +19,12 @@ class MainPage(webapp2.RequestHandler):
         user = users.get_current_user()
 
         if not user:
-            greeting = ('<a href="%s">Sign in or register</a>.' %
-                        users.create_login_url('/'))
 
-            self.response.out.write('<html><body>%s</body></html>' % greeting)
+            url = users.create_login_url('/')
+            template = env.get_template("main.html")
+
+            html = template.render(login_url=url)
+            self.response.out.write(html)
 
         else:
             # Load the main page welcome page
