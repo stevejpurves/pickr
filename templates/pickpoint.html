@@ -1,14 +1,52 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
+
+{% block content %}
+
 <head>
     <title>Pick a Point</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="/static/js/pickpoint.js"></script>
 </head>
-<body>
 
-    <p>We are going to pick on this:</p>
-    <canvas id="seismic-canvas" height="600" width="600">
+<script>
+
+  function undo(){
+
+    $.ajax("/update_picks", {type: "DELETE",
+			     success: function(data){
+			       //remove point from screen
+			     }})
+  };
+
+</script>
+
+  <div class="container">
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+	<h3 class="panel-title"> <b>Pick this!</b> </h3>
+      </div>
+      <p>
+	Click points on the image and create your picks for the horizon. Click submit when finished and browse the results
+    
+      </p>
+      <div class="col-med-6">
+      <canvas id="seismic-canvas" height="600" width="600">
     </canvas>
-</body>
-</html>
+      </div>
+      <div class="col-med-4">
+	<button type="button" class="alert alert-warning" 
+		onclick='$.ajax("update_pick", {type: "DELETE"})'>
+	  Undo!
+	</button>
+	  <button class="btn btn-default" type="button" 
+		  onclick="document.location.href='/results';">
+	    Submit
+	  </button>
+      </div>
+
+
+    </div>
+  </div>
+
+{% endblock %}
