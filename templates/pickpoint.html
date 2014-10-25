@@ -5,6 +5,7 @@
 <head>
     <title>Pick a Point</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="/static/js/raphael-min.js"></script>
     <script src="/static/js/pickpoint.js"></script>
 </head>
 
@@ -31,8 +32,8 @@
     
       </p>
       <div class="col-med-6">
-      <canvas id="seismic-canvas" height="600" width="600">
-    </canvas>
+        <div id="seismic-div" width=1080 height=720> 
+        </div>
       </div>
       <div class="col-med-4">
 	<button type="button" class="alert alert-warning" 

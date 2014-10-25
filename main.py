@@ -6,9 +6,9 @@ import json
 from jinja2 import Environment, FileSystemLoader
 
 import numpy as np
-import PIL
-import matplotlib.pyplot as plt
-import Image
+#import PIL
+#import matplotlib.pyplot as plt
+#import Image
 from lib_db import SeismicObject
 
 from google.appengine.api import users
