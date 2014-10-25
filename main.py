@@ -25,7 +25,7 @@ class MainPage(webapp2.RequestHandler):
 
         else:
             # Load the main page welcome page
-            self.redirect('/static/html/pickpoint.html')
+            self.redirect('/pickr')
             
 
 class ResultsHandler(webapp2.RequestHandler):
