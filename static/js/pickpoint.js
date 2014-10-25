@@ -21,15 +21,12 @@ $(function() {
             return parseInt(a.x) - parseInt(b.x); 
             });
         var path = '';
-        path += 'M' + points[0].x + ',' + points[0].y;
-        //context.moveTo(points[0].x, points[0].y);
+        path += 'M' + points[0].x + ',' + points[0].y; // moveTo
         points.forEach(function(p){
-            path += 'L' + p.x + ',' + p.y;    
-            //context.lineTo(p.x, p.y);
+            path += 'L' + p.x + ',' + p.y; // lineTo
         });
         linestrip = paper.path(path);
         linestrip.attr("stroke", "#f00");
-        //context.stroke();
     }
 
     $('#seismic-div').click(function(e) {
