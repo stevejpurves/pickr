@@ -189,7 +189,6 @@ class PickHandler(webapp2.RequestHandler):
                                                          user).get()
 
         points = json.loads(data.picks)
-        points.pop()
 
         if self.request.get("clear"):
             points = []
@@ -199,7 +198,7 @@ class PickHandler(webapp2.RequestHandler):
             
             value = points.pop()
             
-        data.points = json.dumps(points).encode()
+        data.picks = json.dumps(points).encode()
 
         data.put()
         self.response.write(json.dumps(value))
