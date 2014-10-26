@@ -2,6 +2,8 @@ $(function() {
     var interpretationCount = count;
     var current = 0;
     pickDrawing.setup('seismic-div');
+    var base64 = 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
+    pickDrawing.addOverlay('data:image/gif;base64,' + base64);
     
     var updateVoteCount = function(voteCount)
     {

@@ -10,6 +10,12 @@ pickDrawingSetup = function(){
         paper = Raphael(elementId, 1080, 720);
         paper.image('/static/data/brazil_ang_unc.png', 0, 0, 1080, 720);
     }
+    
+    var addOverlay = function(url)
+    {
+        var overlay = paper.image(url, 0, 0, 1080, 720);
+        overlay.attr({opacity: 0.5});
+    }
 
     var addCircle = function(x, y)
     {
@@ -90,6 +96,7 @@ pickDrawingSetup = function(){
     
     return {
         setup: setup,
+        addOverlay: addOverlay,
         addPoint: addPoint,
         removePoint: removePoint,
         clear: clearPoints,
