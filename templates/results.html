@@ -16,9 +16,12 @@ var count = {{count}}
   
  
 
-
-      <img height="720" width="1080" src="/static/data/brazil_ang_unc.png">
-      
+  {% if image %}
+  <img height="720" width="1080" src="data:image/png;base64, {{image}}">
+  
+  {% else %}
+  <img height="720" width="1080" src="/static/data/brazil_ang_unc.png">
+  {% endif %}
     
       <div class="row">
 	<button type="button" id="previous-button" 

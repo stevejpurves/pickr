@@ -31,6 +31,7 @@ if not db_parent:
     db_parent.put()
 
 
+
 class CommentHandler(webapp2.RequestHandler):
 
     def get(self):
@@ -66,7 +67,7 @@ class VoteHandler(webapp2.RequestHandler):
         
         index = int(self.request.get("index"))
 
-        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = SeismicObject.all().ancestor(db_parent).order("-date")
         data = data.fetch(1000)[index]
 
         self.response.write(data.votes)
@@ -77,7 +78,7 @@ class VoteHandler(webapp2.RequestHandler):
         index = int(self.request.get("index"))
         vote = int(self.request.get("vote"))
 
-        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = SeismicObject.all().ancestor(db_parent).order("-date")
         data = data.fetch(1000)[index]
 
 
@@ -143,10 +144,17 @@ class ResultsHandler(webapp2.RequestHandler):
 
             output = StringIO.StringIO()
             plt.savefig(output)
+            image = base64.b64encode(output.getvalue())
+            template = env.get_template("results.html")
+            html = template.render(count=count, image=image,
+                                   logout=users.create_logout_url('/'))
+            self.response.write(html)
+            
 
         else:
             template = env.get_template("results.html")
-            html = template.render(count=count)
+            html = template.render(count=count,
+                                   logout=users.create_logout_url('/'))
             self.response.write(html)
 
         # Make composite image
@@ -157,7 +165,7 @@ class AboutHandler(webapp2.RequestHandler):
 
         # Load the main page welcome page
         template = env.get_template('about.html')
-        self.response.write(template.render())
+        self.response.write(template.render(logout=users.create_logout_url('/')))
 
 class PickerHandler(webapp2.RequestHandler):
 
@@ -165,7 +173,7 @@ class PickerHandler(webapp2.RequestHandler):
 
         template = env.get_template('pickpoint.html')
 
-        self.response.write(template.render())
+        self.response.write(template.render(logout=users.create_logout_url('/')))
 
 
 ## class UploadHandler(blobstore_handlers.BlobstoreUploadHandler,
