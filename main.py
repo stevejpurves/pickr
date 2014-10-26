@@ -80,6 +80,12 @@ class VoteHandler(webapp2.RequestHandler):
         data = SeismicObject.all().ancestor(db_parent).sort("-date")
         data = data.fetch(1000)[index]
 
+
+        if vote:
+            vote = 1
+        else:
+            vote =-1
+        
         data.votes += vote
 
         data.put()
