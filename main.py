@@ -31,6 +31,7 @@ if not db_parent:
     db_parent.put()
 
 class MainPage(webapp2.RequestHandler):
+    
     def get(self):
         user = users.get_current_user()
 
@@ -55,6 +56,7 @@ class ResultsHandler(webapp2.RequestHandler):
 
         data = SeismicObject().all().fetch(1000)
 
+        count = len(data)
 
         if not local:
             fig = plt.figure(figsize=(15,8))
@@ -82,10 +84,11 @@ class ResultsHandler(webapp2.RequestHandler):
 
         else:
             template = env.get_template("results.html")
-            html = template.render()
+            html = template.render(count=count)
             self.response.write(html)
 
         # Make composite image
+
 class AboutHandler(webapp2.RequestHandler):
 
     def get(self):
@@ -151,7 +154,9 @@ class PickHandler(webapp2.RequestHandler):
 
         user = users.get_current_user()
         if self.request.get("user_picks"):
-            data = SeismicObject.all().filter("user =", user).get()
+            data = \
+              SeismicObject.all().ancestor(db_parent).filter("user =",
+                                                             user).get()
 
             if data:
                 picks = data.picks
@@ -159,11 +164,22 @@ class PickHandler(webapp2.RequestHandler):
                 picks = json.dumps([])
             self.response.write(picks)
             return
+        
         if self.request.get("all"):
             data = SeismicObject.all().fetch(1000)
 
             picks = [i.picks for i in data]
             self.response.write(data)
+            return
+
+        if self.request.get("pick_index"):
+
+            data = SeismicObject.all().ancestor(db_parent)
+            data = data.order("-date").fetch(1000)
+
+            index = self.request.get("pick_index")
+
+            self.response.write(data[index].picks)
             return
 
     def post(self):
