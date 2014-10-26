@@ -12,6 +12,9 @@ if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
     import matplotlib.cm as cm
     from scipy.ndimage.morphology import grey_dilation
     import Image
+    local = False
+else:
+    local = True
 
 from lib_db import SeismicObject, PickrParent
 
@@ -29,7 +32,70 @@ if not db_parent:
     db_parent = PickrParent()
     db_parent.put()
 
+
+class CommentHandler(webapp2.RequestHandler):
+
+    def get(self):
+
+        index = int(self.request.get("index"))
+
+        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = data.fetch(1000)[index]
+
+        self.response.write(json.dumps(data.comments))
+
+    def post(self):
+
+        index = int(self.request.get("index"))
+        comment = int(self.request.get("comment"))
+
+        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = data.fetch(1000)[index]
+        comments = data.comments
+        comments.append(comment)
+
+        data.comments = comments
+        data.put()
+
+        self.response.write(comment)
+
+        
+
+        
+class VoteHandler(webapp2.RequestHandler):
+
+    def get(self):
+        
+        index = int(self.request.get("index"))
+
+        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = data.fetch(1000)[index]
+
+        self.response.write(data.votes)
+        
+        
+    def post(self):
+
+        index = int(self.request.get("index"))
+        vote = int(self.request.get("vote"))
+
+        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = data.fetch(1000)[index]
+
+
+        if vote > 0:
+            vote = 1
+        else:
+            vote =-1
+        
+        data.votes += vote
+
+        data.put()
+        
+        self.response.write(data.votes)
+        
 class MainPage(webapp2.RequestHandler):
+    
     def get(self):
         user = users.get_current_user()
 
@@ -61,55 +127,66 @@ class ResultsHandler(webapp2.RequestHandler):
             hory = np.interp(horx, xarr, yarr)
             return horx, hory
         
-        # Make a modified version of rainbow colormap with some transparency
-        # in the bottom of the colormap.
-        hot = cm.hot
-        hot.set_under(alpha = 0.0)  #anything that has value less than 0.5 goes transparent
-                            
-        # Load the image to a variable
-        im = Image.open('brazil_ang_unc.png')
-        px, py = im.size
-        
         # append all horizons into one big file
         all_picks_x = np.array([])
         all_picks_y = np.array([])
         
         data = SeismicObject().all().fetch(1000)
         
-        for user in data:
-            picks = np.array(json.loads(user.picks))
-            hx, hy = regularize(picks[:,0], picks[:,1], px, py)
-            all_picks_x = np.concatenate((all_picks_x,hx))
-            all_picks_y = np.concatenate((all_picks_y,hy))
-        
-        # do 2d histogram to display heatmap
-        binsizex = 20
-        binsizey = 20
-        heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x, bins=(py/binsizex,px/binsizey))
-        extent = [xedges[0], xedges, yedges[-1], yedges[0] ]
-        
-        # do dilation of picks in heatmap
-        heatmap_dil = grey_dilation(heatmap,size=(10,5))
-        
-        fig = plt.figure(figsize=(15,8))
-        ax = fig.add_axes([0.1,0.1,0.8,0.8])
-        heatim = ax.imshow(heatmap, heatmap_dil, cmap=cm.hot, extent=extent, alpha=0.75)
-        heatim.set_clim(0.5, np.amax(heatmap))
-        ax.set_ylim(bottom = py, top = 0)
-        ax.set_xlim(0,px)
-        ax.invert_yaxis()
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_frame_on(False)
+        count = len(data)
 
-        output = StringIO.StringIO()
-        plt.savefig(output)
+        if not local:
+            
+            fig = plt.figure(figsize=(15,8))
+            ax = fig.add_axes([0.1,0.1,0.8,0.8])
+        
+            # Load the image to a variable
+            im = Image.open('brazil_ang_unc.png')
+            px, py = im.size
+        
+            # plot the seismic image first
+            # im = plt.imshow(im)
+            # Make a modified version of rainbow colormap with some transparency
+            # in the bottom of the colormap.
+            hot = cm.hot
+            hot.set_under(alpha = 0.0)  #anything that has value less than 0.5 goes transparent
+            
+            for user in data:
+                picks = np.array(json.loads(user.picks))
+                hx, hy = regularize(picks[:,0], picks[:,1], px, py)
+                all_picks_x = np.concatenate((all_picks_x,hx))
+                all_picks_y = np.concatenate((all_picks_y,hy))
+            
+                # do 2d histogram to display heatmap
+                binsizex = 2
+                binsizey = 2
+                heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x, bins=(py/binsizex,px/binsizey))
+                extent = [xedges[0], xedges, yedges[-1], yedges[0] ]
+                
+                # do dilation of picks in heatmap
+                heatmap_dil = grey_dilation(heatmap,size=(5,5))
+                
+                fig = plt.figure(figsize=(15,8))
+                ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+                heatim = ax.imshow(heatmap, heatmap_dil, cmap=cm.hot, extent=extent, alpha=0.75)
+                heatim.set_clim(0.5, np.amax(heatmap))
+                ax.set_ylim(bottom = py, top = 0)
+                ax.set_xlim(0,px)
+                ax.invert_yaxis()
+                ax.set_xticks([])
+                ax.set_yticks([])
+                ax.set_frame_on(False)
+                
+            output = StringIO.StringIO()
+            plt.savefig(output)
 
-        template = env.get_template("results.html")
-        html = template.render(image=base64.b64encode(output.getvalue()))
-        self.response.write(html)
+        else:
+            template = env.get_template("results.html")
+            html = template.render(count=count)
+            self.response.write(html)
 
         # Make composite image
+
 class AboutHandler(webapp2.RequestHandler):
 
     def get(self):
@@ -175,7 +252,9 @@ class PickHandler(webapp2.RequestHandler):
 
         user = users.get_current_user()
         if self.request.get("user_picks"):
-            data = SeismicObject.all().filter("user =", user).get()
+            data = \
+              SeismicObject.all().ancestor(db_parent).filter("user =",
+                                                             user).get()
 
             if data:
                 picks = data.picks
@@ -183,11 +262,22 @@ class PickHandler(webapp2.RequestHandler):
                 picks = json.dumps([])
             self.response.write(picks)
             return
+        
         if self.request.get("all"):
             data = SeismicObject.all().fetch(1000)
 
             picks = [i.picks for i in data]
             self.response.write(data)
+            return
+
+        if self.request.get("pick_index"):
+
+            data = SeismicObject.all().ancestor(db_parent)
+            data = data.order("-date").fetch(1000)
+
+            index = int(self.request.get("pick_index"))
+
+            self.response.write(data[index].picks)
             return
 
     def post(self):
@@ -260,5 +350,7 @@ app = webapp2.WSGIApplication([
     #('/new_image', AddImageHandler),
     ('/update_pick', PickHandler),
     ('/pickr', PickerHandler),
-    ('/results', ResultsHandler)],
+    ('/results', ResultsHandler),
+    ('/comment', CommentHandler),
+    ('/vote', VoteHandler)],
     debug=True)

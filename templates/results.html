@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<script src="/static/js/raphael-min.js"></script>
+<script src="/static/js/underscore-min.js"></script>
+<script src="/static/js/pick-drawing.js"></script>
+<script src="/static/js/results.js"></script>
+
+<script>
+var count = {{count}}
+</script>
+
+<div class="container">
+
+  
+ 
+
+
+    <div id="seismic-div" width=1080 height=720> 
+    </div>
+      
+    
+      <div class="row">
+	<button type="button" id="previous-button" 
+		class="btn btn-default btn-sm">
+	  <span class="glyphicon glyphicon-chevron-left"></span> 
+	  Previous
+	</button>
+	<div class="col">
+	  <button type="button" id="up-vote-button" 
+		  class="btn btn-default btn-sm">
+	    <span class="glyphicon glyphicon-chevron-up"></span> 
+	    Up vote
+	  </button>
+	  10
+	  <button type="button" id="down-vote-button" 
+		  class="btn btn-default btn-sm">
+	    <span class="glyphicon glyphicon-chevron-down"></span> 
+	    Down vote
+	  </button>
+	</div>
+      <button type="button" id="next-button" 
+	      class="btn btn-default btn-sm">
+	<span class="glyphicon glyphicon-chevron-right"></span> 
+	Next
+      </button>
+ 
+</div>
+
+{% endblock %}
