@@ -1,5 +1,5 @@
 $(function() {
-    var paper = Raphael('seismic-div');
+    var paper = Raphael('seismic-div', 1080, 720);
     paper.image('/static/data/Alaska.png', 0, 0, 1080, 720);
     
     var drawCircle = function(x, y)
@@ -55,3 +55,11 @@ $(function() {
     reloadPoints();
 
 });
+
+function undo(){
+    $.ajax("/update_picks", {type: "DELETE",
+    		     success: function(data){
+    		       //remove point from screen
+    		     }})
+};
+
