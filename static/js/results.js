@@ -11,7 +11,6 @@ $(function() {
     }
     loadPicks();
 
-
     $('#previous-button').click(function(){
         if (current <= 0)
             return;
@@ -26,7 +25,8 @@ $(function() {
         loadPicks();
     });
     
-    // get /update_pick?pick_index=1
+    $('#vote-count').text('99');
+    
     // get /vote?index=1
     // post /vote?index=1&vote=1 
 });
