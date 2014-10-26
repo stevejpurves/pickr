@@ -73,8 +73,17 @@ $(function() {
     }
     reloadPoints();
     
+
+    $('#clear-button').click(function(){
+	$.ajax("/update_pick?clear=1",
+	       {type: "DELETE",
+		success: function(data){
+		    document.location.reload(true)}
+	       })
+    });
+
     $('#undo-button').click(function(){
-        $.ajax("/update_pick", {
+        $.ajax("/update_pick?undo=1", {
             type: "DELETE",
             dataType: "json",
             success: function(p){
