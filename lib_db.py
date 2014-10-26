@@ -13,8 +13,9 @@ class SeismicObject(db.Model):
     picks = db.BlobProperty()
     user = db.UserProperty()
     #name = db.StringProperty()
-    votes = db.IntProperty()
+    votes = db.IntegerProperty()
     date = db.DateTimeProperty(auto_now_add=True)
+    comments = db.StringListProperty()
 
 
 
