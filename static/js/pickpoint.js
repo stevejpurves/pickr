@@ -25,10 +25,18 @@ $(function() {
         circles.splice(index, 1);
     }
     
+    var clearCircles = function()
+    {
+        circles.forEach(function(c){c.remove();});
+        circles = [];   
+    }
+    
     var connectTheDots = function() // Lalalalala
     {
         if (!!linestrip)
             linestrip.remove();
+        if (points.length === 0)
+            return;
         points.sort(function(a,b){ 
             return parseInt(a.x) - parseInt(b.x); 
             });
@@ -42,15 +50,22 @@ $(function() {
     }
     
     var addPoint = function(point){
-        points.push(point);
         addCircle(point.x, point.y);
+        points.push(point);
         connectTheDots();
     }
 
     var removePoint = function(point){
+        removeCircle(point.x, point.y);
         points = _.reject(points, function(p){
             return p.x === point.x && p.y === point.y;
         });
+        connectTheDots();
+    }
+    
+    var clearPoints = function(point){
+        clearCircles();
+        points = [];
         connectTheDots();
     }
 
@@ -75,11 +90,12 @@ $(function() {
     
 
     $('#clear-button').click(function(){
-	$.ajax("/update_pick?clear=1",
-	       {type: "DELETE",
-		success: function(data){
-		    document.location.reload(true)}
-	       })
+	$.ajax("/update_pick?clear=1",{
+	        type: "DELETE",
+            success: function(){
+		        clearPoints();
+            }
+	   });
     });
 
     $('#undo-button').click(function(){
@@ -88,7 +104,6 @@ $(function() {
             dataType: "json",
             success: function(p){
 		        removePoint({x: p[0], y: p[1]});
-		        removeCircle(p[0], p[1]);
 		     }
         });
     });
