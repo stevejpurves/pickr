@@ -77,11 +77,23 @@ pickDrawingSetup = function(){
         connectTheDots();
     }
     
+    var loadPoints = function(parameters)
+    {
+        clearPoints();
+        $.get('/update_pick?', parameters, function(data)
+        {
+           data.forEach(function(item){
+               addPoint({x:item[0], y:item[1]});
+           });
+        }, "json");
+    }
+    
     return {
         setup: setup,
         addPoint: addPoint,
         removePoint: removePoint,
-        clear: clearPoints
+        clear: clearPoints,
+        load: loadPoints
     }
 };
 

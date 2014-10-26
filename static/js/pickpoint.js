@@ -1,16 +1,6 @@
 $(function() {
     pickDrawing.setup('seismic-div');
-
-    var reloadPoints = function()
-    {
-        $.get('/update_pick?user_picks=1', {}, function(data)
-        {
-           data.forEach(function(item){
-               pickDrawing.addPoint({x:item[0], y:item[1]});
-           });
-        }, "json");
-    }
-    reloadPoints();
+    pickDrawing.load({ user_picks: 1});
 
     $('#seismic-div').click(function(e) {
         var imageX = e.pageX - this.offsetLeft;
