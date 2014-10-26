@@ -147,7 +147,11 @@ class PickHandler(webapp2.RequestHandler):
         if self.request.get("user_picks"):
             data = SeismicObject.all().filter("user =", user).get()
 
-            self.response.write(data.picks)
+            if data:
+                picks = data.picks
+            else:
+                picks = json.dumps([])
+            self.response.write(picks)
             return
         if self.request.get("all"):
             data = SeismicObject.all().fetch(1000)
@@ -199,10 +203,12 @@ class PickHandler(webapp2.RequestHandler):
         elif self.request.get("undo"):
             
             value = points.pop()
+            data.picks = json.dumps(points).encode()
+            data.put()
             
-        data.picks = json.dumps(points).encode()
+        
 
-        data.put()
+      
         self.response.write(json.dumps(value))
 
 
