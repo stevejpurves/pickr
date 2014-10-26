@@ -6,9 +6,11 @@ import json
 from jinja2 import Environment, FileSystemLoader
 
 import numpy as np
-import PIL
-import matplotlib.pyplot as plt
-import Image
+if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
+    import PIL
+    import matplotlib.pyplot as plt
+    import Image
+
 from lib_db import SeismicObject, PickrParent
 
 import base64
@@ -191,8 +193,8 @@ class PickHandler(webapp2.RequestHandler):
         points = json.loads(data.picks)
 
         if self.request.get("clear"):
-            points = []
-            value = points
+            data.delete()
+            value = []
             
         elif self.request.get("undo"):
             
