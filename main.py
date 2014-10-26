@@ -169,11 +169,12 @@ class PickHandler(webapp2.RequestHandler):
         data = SeismicObject.all().filter("user =", user).get()
 
         points = json.loads(data.picks)
-        points.pop()
+        p = points.pop()
 
         data.points = json.dumps(points).encode()
+        data.put()
 
-        self.response.write("Ok")
+        self.response.write(json.dumps(p))
 
 
 ## class AddImageHandler(webapp2.RequestHandler):

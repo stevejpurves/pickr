@@ -35,6 +35,13 @@ $(function() {
         connectTheDots();
     }
 
+    var removePoint = function(point){
+        points = _.reject(points, function(p){
+            return p.x === point.x && p.y === point.y;
+        });
+        connectTheDots();
+    }
+
     $('#seismic-div').click(function(e) {
         var imageX = e.pageX - this.offsetLeft;
         var imageY = e.pageY - this.offsetTop - 2;
@@ -53,13 +60,18 @@ $(function() {
         }, "json");
     }
     reloadPoints();
+    
+    $('#undo-button').click(function(){
+        $.ajax("/update_pick", {
+            type: "DELETE",
+            dataType: "json",
+            success: function(p){
+		        console.log(p);
+		        removePoint({x: p[0], y: p[1]});
+		       //remove point from screen
+		     }
+        });
+    });
 
 });
-
-function undo(){
-    $.ajax("/update_picks", {type: "DELETE",
-    		     success: function(data){
-    		       //remove point from screen
-    		     }})
-};
 
