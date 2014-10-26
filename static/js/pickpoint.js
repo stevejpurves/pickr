@@ -1,47 +1,115 @@
 $(function() {
-    var seismicCanvas = $('#seismic-canvas');
-    var context = seismicCanvas[0].getContext('2d');
-
-    // Load image into canvas
-    var base_image = new Image();
-    base_image.src = '/static/data/Alaska.png';
-    base_image.onload = function(){
-        context.drawImage(base_image, 0, 0);
-    };
-    
-    var drawCircle = function(x, y)
-    {
-        context.beginPath();
-        var radius = 10;
-        context.arc(x, y, radius, 0, 2 * Math.PI, false);
-        context.fillStyle = 'green';
-        context.fill();
-        context.lineWidth = 2;
-        context.strokeStyle = '#003300';
-        context.stroke();
-    }
+    var paper = Raphael('seismic-div', 1080, 720);
+    paper.image('/static/data/Alaska.png', 0, 0, 1080, 720);
     
     var points = [];
+    var circles = [];
+    var linestrip;    
+
+    var addCircle = function(x, y)
+    {
+        var radius = 4;
+        var circle = paper.circle(x, y, radius);
+        circle.attr({
+            fill: '#f00',
+            stroke: '#fff',
+            opacity: 0.5
+        });
+        circles.push(circle);
+    }
+    
+    var removeCircle = function(x, y)
+    {
+        var circle = _.find(circles, function(c){
+            return c.attrs.cx === x && c.attrs.cy === y
+            });
+        circle.remove();
+        var index = circles.indexOf(circle);
+        circles.splice(index, 1);
+    }
+    
+    var clearCircles = function()
+    {
+        circles.forEach(function(c){c.remove();});
+        circles = [];   
+    }
     
     var connectTheDots = function() // Lalalalala
     {
-        context.beginPath();
-        context.moveTo(points[0].x, points[0].y);
+        if (!!linestrip)
+            linestrip.remove();
+        if (points.length === 0)
+            return;
+        points.sort(function(a,b){ 
+            return parseInt(a.x) - parseInt(b.x); 
+            });
+        var path = '';
+        path += 'M' + points[0].x + ',' + points[0].y; // moveTo
         points.forEach(function(p){
-            context.lineTo(p.x, p.y);
+            path += 'L' + p.x + ',' + p.y; // lineTo
         });
-        context.stroke();
+        linestrip = paper.path(path);
+        linestrip.attr({stroke: '#f00'});
+    }
+    
+    var addPoint = function(point){
+        addCircle(point.x, point.y);
+        points.push(point);
+        connectTheDots();
     }
 
-    seismicCanvas.click(function(e) {
+    var removePoint = function(point){
+        removeCircle(point.x, point.y);
+        points = _.reject(points, function(p){
+            return p.x === point.x && p.y === point.y;
+        });
+        connectTheDots();
+    }
+    
+    var clearPoints = function(point){
+        clearCircles();
+        points = [];
+        connectTheDots();
+    }
+
+    $('#seismic-div').click(function(e) {
         var imageX = e.pageX - this.offsetLeft;
-        var imageY = e.pageY - this.offsetTop;
+        var imageY = e.pageY - this.offsetTop - 2;
         var point = { x: imageX, y: imageY };
         $.post('/update_pick', point, 
-            function(response){
-                points.push(point);
-                drawCircle(imageX, imageY);
-                connectTheDots();
-            });
+            function(){addPoint(point)});
     });
+    
+    var reloadPoints = function()
+    {
+        $.get('/update_pick?user_picks=1', {}, function(data)
+        {
+           data.forEach(function(item){
+               addPoint({x:item[0], y:item[1]});
+           });
+        }, "json");
+    }
+    reloadPoints();
+    
+
+    $('#clear-button').click(function(){
+	$.ajax("/update_pick?clear=1",{
+	        type: "DELETE",
+            success: function(){
+		        clearPoints();
+            }
+	   });
+    });
+
+    $('#undo-button').click(function(){
+        $.ajax("/update_pick?undo=1", {
+            type: "DELETE",
+            dataType: "json",
+            success: function(p){
+		        removePoint({x: p[0], y: p[1]});
+		     }
+        });
+    });
+
 });
+

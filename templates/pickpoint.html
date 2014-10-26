@@ -4,21 +4,11 @@
 
 <head>
     <title>Pick a Point</title>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="/static/js/raphael-min.js"></script>
+    <script src="/static/js/underscore-min.js"></script>
     <script src="/static/js/pickpoint.js"></script>
 </head>
 
-<script>
-
-  function undo(){
-
-    $.ajax("/update_picks", {type: "DELETE",
-			     success: function(data){
-			       //remove point from screen
-			     }})
-  };
-
-</script>
 
   <div class="container">
 
@@ -31,17 +21,19 @@
     
       </p>
       <div class="col-med-6">
-      <canvas id="seismic-canvas" height="600" width="600">
-    </canvas>
+        <div id="seismic-div" width=1080 height=720> 
+        </div>
       </div>
       <div class="col-med-4">
-	<button type="button" class="alert alert-warning" 
-		onclick='$.ajax("update_pick", {type: "DELETE"})'>
-	  Undo!
-	</button>
+      <button id="undo-button" type="button" class="alert alert-warning">
+        Undo
+      </button>
+      <button id="clear-button" type="button" class="alert alert-warning">
+        Clear
+      </button>
 	  <button class="btn btn-default" type="button" 
 		  onclick="document.location.href='/results';">
-	    Submit
+		  <img src="images/Skull_Sticker_Green_pickthis.jpg"/>
 	  </button>
       </div>
 

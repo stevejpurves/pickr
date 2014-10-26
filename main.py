@@ -6,26 +6,40 @@ import json
 from jinja2 import Environment, FileSystemLoader
 
 import numpy as np
-import PIL
-import matplotlib.pyplot as plt
-import Image
-from lib_db import SeismicObject
+if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
+    import PIL
+    import matplotlib.pyplot as plt
+    import Image
 
+from lib_db import SeismicObject, PickrParent
+
+import base64
+
+import StringIO
 from google.appengine.api import users
 
 # Jinja2 environment to load templates
 env = Environment(loader=FileSystemLoader(join(dirname(__file__),
                                                'templates')))
 
+db_parent = PickrParent.all().get()
+if not db_parent:
+    db_parent = PickrParent()
+    db_parent.put()
+
 class MainPage(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
 
         if not user:
-            greeting = ('<a href="%s">Sign in or register</a>.' %
-                        users.create_login_url('/'))
+      
 
-            self.response.out.write('<html><body>%s</body></html>' % greeting)
+
+            url = users.create_login_url('/')
+            template = env.get_template("main.html")
+
+            html = template.render(login_url=url)
+            self.response.out.write(html)
 
         else:
             # Load the main page welcome page
@@ -37,21 +51,19 @@ class ResultsHandler(webapp2.RequestHandler):
     def get(self):
 
         data = SeismicObject().all().fetch(1000)
-
-        picks = [json.loads(i.picks) for i in data]
-
         
         fig = plt.figure(figsize=(15,8))
         ax = fig.add_axes([0.1,0.1,0.8,0.8])
         
         # Load the image to a variable
-        im = Image.open('/static/data/brazil_ang_unc.png')
+        im = Image.open('Alaska.png')
         
         # plot the seismic image first
-        im = plt.imshow( im )
+        im = plt.imshow(im)
        
-        for i in picks:
-            ax.plot(i[:,1], i[:,2],'g-+', alpha=0.5, lw=3.0)
+        for user in data:
+            picks = np.array(json.loads(user.picks))
+            ax.plot(picks[:,0], picks[:,1],'g-+', alpha=0.5, lw=3.0)
         
         ax.set_xlim(0,1000)
         ax.set_ylim(0,600)
@@ -59,6 +71,13 @@ class ResultsHandler(webapp2.RequestHandler):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_frame_on(False)
+
+        output = StringIO.StringIO()
+        plt.savefig(output)
+
+        template = env.get_template("results.html")
+        html = template.render(image=base64.b64encode(output.getvalue()))
+        self.response.write(html)
 
         # Make composite image
 class AboutHandler(webapp2.RequestHandler):
@@ -128,7 +147,11 @@ class PickHandler(webapp2.RequestHandler):
         if self.request.get("user_picks"):
             data = SeismicObject.all().filter("user =", user).get()
 
-            self.response.write(data.picks)
+            if data:
+                picks = data.picks
+            else:
+                picks = json.dumps([])
+            self.response.write(picks)
             return
         if self.request.get("all"):
             data = SeismicObject.all().fetch(1000)
@@ -147,11 +170,12 @@ class PickHandler(webapp2.RequestHandler):
         if not user:
             self.redirect('/')
 
-        d = SeismicObject.all().filter("user =", user).get()
+        d = SeismicObject.all().ancestor(db_parent).filter("user =",
+                                                           user).get()
 
         if not d:
             d = SeismicObject(picks=json.dumps([point]).encode(),
-                              user=user)
+                              user=user, parent=db_parent)
             d.put()
         else:
 
@@ -166,14 +190,26 @@ class PickHandler(webapp2.RequestHandler):
 
         user = users.get_current_user()
 
-        data = SeismicObject.all().filter("user =", user).get()
+        data = \
+          SeismicObject.all().ancestor(db_parent).filter("user =",
+                                                         user).get()
 
         points = json.loads(data.picks)
-        points.pop()
 
-        data.points = json.dumps(points).encode()
+        if self.request.get("clear"):
+            data.delete()
+            value = []
+            
+        elif self.request.get("undo"):
+            
+            value = points.pop()
+            data.picks = json.dumps(points).encode()
+            data.put()
+            
+        
 
-        self.response.write("Ok")
+      
+        self.response.write(json.dumps(value))
 
 
 ## class AddImageHandler(webapp2.RequestHandler):
