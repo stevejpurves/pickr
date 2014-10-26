@@ -81,7 +81,7 @@ class VoteHandler(webapp2.RequestHandler):
         data = data.fetch(1000)[index]
 
 
-        if vote:
+        if vote > 0:
             vote = 1
         else:
             vote =-1
