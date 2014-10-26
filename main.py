@@ -314,5 +314,7 @@ app = webapp2.WSGIApplication([
     #('/new_image', AddImageHandler),
     ('/update_pick', PickHandler),
     ('/pickr', PickerHandler),
-    ('/results', ResultsHandler)],
+    ('/results', ResultsHandler),
+    ('/comment', CommentHandler),
+    ('/vote', VoteHandler)],
     debug=True)
