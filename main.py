@@ -5,12 +5,16 @@ import os
 import json
 from jinja2 import Environment, FileSystemLoader
 
+import urllib
+
 import numpy as np
-import PIL
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 import Image
 from lib_db import SeismicObject
 
+import base64
+
+import StringIO
 from google.appengine.api import users
 
 # Jinja2 environment to load templates
@@ -47,13 +51,13 @@ class ResultsHandler(webapp2.RequestHandler):
         ax = fig.add_axes([0.1,0.1,0.8,0.8])
         
         # Load the image to a variable
-        im = Image.open('/static/data/brazil_ang_unc.png')
+        im = Image.open('Alaska.png')
         
         # plot the seismic image first
-        im = plt.imshow( im )
+        im = plt.imshow(im)
        
         for i in picks:
-            ax.plot(i[:,1], i[:,2],'g-+', alpha=0.5, lw=3.0)
+            ax.plot(i[1], i[2],'g-+', alpha=0.5, lw=3.0)
         
         ax.set_xlim(0,1000)
         ax.set_ylim(0,600)
@@ -61,6 +65,13 @@ class ResultsHandler(webapp2.RequestHandler):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_frame_on(False)
+
+        output = StringIO.StringIO()
+        plt.savefig(output)
+
+        template = env.get_template("results.html")
+        html = template.render(image=base64.b64encode(output.getvalue()))
+        self.response.write(html)
 
         # Make composite image
 class AboutHandler(webapp2.RequestHandler):
