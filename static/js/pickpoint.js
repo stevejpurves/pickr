@@ -1,6 +1,6 @@
 $(function() {
     var paper = Raphael('seismic-div', 1080, 720);
-    paper.image('/static/data/Alaska.png', 0, 0, 1080, 720);
+    paper.image('/static/data/brazil_ang_unc.png', 0, 0, 1080, 720);
     
     var points = [];
     var circles = [];
