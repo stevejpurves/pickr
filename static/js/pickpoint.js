@@ -10,8 +10,11 @@ $(function() {
     {
         var radius = 4;
         var circle = paper.circle(x, y, radius);
-        circle.attr("fill", "#f00");
-        circle.attr("stroke", "#fff");
+        circle.attr({
+            fill: '#f00',
+            stroke: '#fff',
+            opacity: 0.5
+        });
         circles.push(circle);
     }
     
@@ -46,7 +49,7 @@ $(function() {
             path += 'L' + p.x + ',' + p.y; // lineTo
         });
         linestrip = paper.path(path);
-        linestrip.attr("stroke", "#f00");
+        linestrip.attr({stroke: '#f00'});
     }
     
     var addPoint = function(point){
