@@ -48,7 +48,9 @@
           <a href="/about">about</a>
         </li>
         <li>
+	  {% if logout %}
           <a href="{{logout}}">sign out</a>
+	  {% endif %}
         </li>
       </ul>
     </div>

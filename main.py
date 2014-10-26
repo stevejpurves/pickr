@@ -303,7 +303,7 @@ class PickHandler(webapp2.RequestHandler):
 
         if not d:
             d = SeismicObject(picks=json.dumps([point]).encode(),
-                              user=user, parent=db_parent)
+                              user=user, parent=db_parent,votes=0)
             d.put()
         else:
 
