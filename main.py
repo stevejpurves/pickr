@@ -158,14 +158,16 @@ class ResultsHandler(webapp2.RequestHandler):
                 all_picks_x = np.concatenate((all_picks_x,hx))
                 all_picks_y = np.concatenate((all_picks_y,hy))
 
-                m = 10
+                m = 1
                 # do 2d histogram to display heatmap
                 binsizex = m
                 binsizey = m
-                heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x, bins=(py/binsizex,px/binsizey))
-                extent = [xedges[0], xedges[-1],
-                          yedges[-1], yedges[0] ]
-                
+                heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
+                                                         bins=(720/binsizex,1080/binsizey),
+                                                         range=np.array([[0, 720], [0,1080]]))
+                extent = [0, 1080,
+                          720, 0 ]
+
                 # do dilation of picks in heatmap
                 heatmap_dil = heatmap#grey_dilation(heatmap,size=(5,5))
                 
