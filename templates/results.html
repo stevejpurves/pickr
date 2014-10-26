@@ -16,12 +16,10 @@ var count = {{count}}
   
  
 
-  {% if image %}
-  <img height="720" width="1080" src="data:image/png;base64, {{image}}">
-  
-  {% else %}
-  <img height="720" width="1080" src="/static/data/brazil_ang_unc.png">
-  {% endif %}
+
+    <div id="seismic-div" width=1080 height=720> 
+    </div>
+      
     
       <div class="row">
 	<button type="button" id="previous-button" 
@@ -35,7 +33,7 @@ var count = {{count}}
 	    <span class="glyphicon glyphicon-chevron-up"></span> 
 	    Up vote
 	  </button>
-	  10
+	  <div id="vote-count">0</div>
 	  <button type="button" id="down-vote-button" 
 		  class="btn btn-default btn-sm">
 	    <span class="glyphicon glyphicon-chevron-down"></span> 
