@@ -10,6 +10,9 @@ if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
     import PIL
     import matplotlib.pyplot as plt
     import Image
+    local = False
+else:
+    local = True
 
 from lib_db import SeismicObject, PickrParent
 
@@ -51,33 +54,36 @@ class ResultsHandler(webapp2.RequestHandler):
     def get(self):
 
         data = SeismicObject().all().fetch(1000)
+
+
+        if not local:
+            fig = plt.figure(figsize=(15,8))
+            ax = fig.add_axes([0.1,0.1,0.8,0.8])
         
-        fig = plt.figure(figsize=(15,8))
-        ax = fig.add_axes([0.1,0.1,0.8,0.8])
+            # Load the image to a variable
+            im = Image.open('Alaska.png')
         
-        # Load the image to a variable
-        im = Image.open('Alaska.png')
-        
-        # plot the seismic image first
-        im = plt.imshow(im)
+            # plot the seismic image first
+            im = plt.imshow(im)
        
-        for user in data:
-            picks = np.array(json.loads(user.picks))
-            ax.plot(picks[:,0], picks[:,1],'g-+', alpha=0.5, lw=3.0)
+            for user in data:
+                picks = np.array(json.loads(user.picks))
+                ax.plot(picks[:,0], picks[:,1],'g-+', alpha=0.5, lw=3.0)
         
-        ax.set_xlim(0,1000)
-        ax.set_ylim(0,600)
-        ax.invert_yaxis()
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_frame_on(False)
+                ax.set_xlim(0,1000)
+                ax.set_ylim(0,600)
+                ax.invert_yaxis()
+                ax.set_xticks([])
+                ax.set_yticks([])
+                ax.set_frame_on(False)
 
-        output = StringIO.StringIO()
-        plt.savefig(output)
+            output = StringIO.StringIO()
+            plt.savefig(output)
 
-        template = env.get_template("results.html")
-        html = template.render(image=base64.b64encode(output.getvalue()))
-        self.response.write(html)
+        else:
+            template = env.get_template("results.html")
+            html = template.render()
+            self.response.write(html)
 
         # Make composite image
 class AboutHandler(webapp2.RequestHandler):
