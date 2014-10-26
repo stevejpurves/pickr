@@ -5,10 +5,9 @@ import os
 import json
 from jinja2 import Environment, FileSystemLoader
 
-import urllib
-
 import numpy as np
-from matplotlib import pyplot as plt
+import PIL
+import matplotlib.pyplot as plt
 import Image
 from lib_db import SeismicObject
 
@@ -26,6 +25,7 @@ class MainPage(webapp2.RequestHandler):
         user = users.get_current_user()
 
         if not user:
+
 
             url = users.create_login_url('/')
             template = env.get_template("main.html")
