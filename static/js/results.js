@@ -3,11 +3,17 @@ $(function() {
     var current = 0;
     pickDrawing.setup('seismic-div');
     
+    var updateVoteCount = function(voteCount)
+    {
+        $('#vote-count').text(parseInt(voteCount));
+    };
+
     var loadPicks = function()
     {
         pickDrawing.load({
             pick_index: current
         });
+        $.get('/vote', {index: current}, updateVoteCount);
     }
     loadPicks();
 
@@ -25,8 +31,20 @@ $(function() {
         loadPicks();
     });
     
-    $('#vote-count').text('99');
+    var castVote = function(v)
+    {
+       $.post('/vote',{
+           index: current,
+           vote: v
+       },
+       updateVoteCount);
+    };
     
-    // get /vote?index=1
-    // post /vote?index=1&vote=1 
+    $('#up-vote-button').click(function(){
+        castVote(1);
+    });
+
+    $('#down-vote-button').click(function(){
+        castVote(-1);
+    });
 });
