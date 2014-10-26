@@ -10,33 +10,30 @@
 
   <div class="container">
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-	<h3 class="panel-title"> <b>Pick this!</b> </h3>
-      </div>
-      <p>
-	Click points on the image and create your picks for the horizon. Click submit when finished and browse the results
-    
-      </p>
-      <div class="col-med-6">
-        <div id="seismic-div" width=1080 height=720> 
-        </div>
-      </div>
-      <div class="col-med-4">
-      <button id="undo-button" type="button" class="alert alert-warning">
+ <div class="row">
+<div class="col-md-8">
+
+    <p class="lead">Click points on the image and create your pick. <strong>Submit</strong> when you're done.</p>
+</div>
+<div class="col-md-4">
+      <button id="undo-button" type="button" class="btn btn-primary">
         Undo
       </button>
-      <button id="clear-button" type="button" class="alert alert-warning">
+      <button id="clear-button" type="button" class="btn btn-primary">
         Clear
       </button>
-	  <button  type="button" 
-		  onclick="document.location.href='/results';">
-		  <img src="images/Skull_Sticker_Green_pickthis.jpg"/>
-	  </button>
+</div>
+</div>
+</div>
+
+    <div class="container">
+      <div id="seismic-div" width=1080 height=720>
       </div>
-
-
     </div>
-  </div>
 
+<div class="col-md-offset-2 col-md-8" style="margin-bottom:44px;">
+    <button type="button" class="btn btn-success btn-lg btn-block" onclick="document.location.href='/results'">I'm all done... Submit!</button>
+    </div>
+    
+  </div>
 {% endblock %}
