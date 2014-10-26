@@ -9,6 +9,8 @@ import numpy as np
 if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
     import PIL
     import matplotlib.pyplot as plt
+    import matplotlib.cm as cm
+    from scipy.ndimage.morphology import grey_dilation
     import Image
 
 from lib_db import SeismicObject, PickrParent
@@ -50,23 +52,51 @@ class ResultsHandler(webapp2.RequestHandler):
 
     def get(self):
 
+        # connect the dots using one dimensional linear interpretation: np.interp()
+        def regularize(xarr, yarr, px, py):
+            # connect the dots of the horizon spanning the image
+            # px : is the number of horizontal pixels
+            # py : is the number of horizontal pixels
+            horx = np.arange(px)
+            hory = np.interp(horx, xarr, yarr)
+            return horx, hory
+        
+        # Make a modified version of rainbow colormap with some transparency
+        # in the bottom of the colormap.
+        hot = cm.hot
+        hot.set_under(alpha = 0.0)  #anything that has value less than 0.5 goes transparent
+                            
+        # Load the image to a variable
+        im = Image.open('brazil_ang_unc.png')
+        px, py = im.size
+        
+        # append all horizons into one big file
+        all_picks_x = np.array([])
+        all_picks_y = np.array([])
+        
         data = SeismicObject().all().fetch(1000)
+        
+        for user in data:
+            picks = np.array(json.loads(user.picks))
+            hx, hy = regularize(picks[:,0], picks[:,1], px, py)
+            all_picks_x = np.concatenate((all_picks_x,hx))
+            all_picks_y = np.concatenate((all_picks_y,hy))
+        
+        # do 2d histogram to display heatmap
+        binsizex = 20
+        binsizey = 20
+        heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x, bins=(py/binsizex,px/binsizey))
+        extent = [xedges[0], xedges, yedges[-1], yedges[0] ]
+        
+        # do dilation of picks in heatmap
+        heatmap_dil = grey_dilation(heatmap,size=(10,5))
         
         fig = plt.figure(figsize=(15,8))
         ax = fig.add_axes([0.1,0.1,0.8,0.8])
-        
-        # Load the image to a variable
-        im = Image.open('Alaska.png')
-        
-        # plot the seismic image first
-        im = plt.imshow(im)
-       
-        for user in data:
-            picks = np.array(json.loads(user.picks))
-            ax.plot(picks[:,0], picks[:,1],'g-+', alpha=0.5, lw=3.0)
-        
-        ax.set_xlim(0,1000)
-        ax.set_ylim(0,600)
+        heatim = ax.imshow(heatmap, heatmap_dil, cmap=cm.hot, extent=extent, alpha=0.75)
+        heatim.set_clim(0.5, np.amax(heatmap))
+        ax.set_ylim(bottom = py, top = 0)
+        ax.set_xlim(0,px)
         ax.invert_yaxis()
         ax.set_xticks([])
         ax.set_yticks([])
