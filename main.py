@@ -30,6 +30,62 @@ if not db_parent:
     db_parent = PickrParent()
     db_parent.put()
 
+
+class CommentHandler(webapp2.RequestHandler):
+
+    def get(self):
+
+        index = int(self.request.get("index"))
+
+        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = data.fetch(1000)[index]
+
+        self.response.write(json.dumps(data.comments))
+
+    def post(self):
+
+        index = int(self.request.get("index"))
+        comment = int(self.request.get("comment"))
+
+        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = data.fetch(1000)[index]
+        comments = data.comments
+        comments.append(comment)
+
+        data.comments = comments
+        data.put()
+
+        self.response.write(comment)
+
+        
+
+        
+class VoteHandler(webapp2.RequestHandler):
+
+    def get(self):
+        
+        index = int(self.request.get("index"))
+
+        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = data.fetch(1000)[index]
+
+        self.response.write(data.votes)
+        
+        
+    def post(self):
+
+        index = int(self.request.get("index"))
+        vote = int(self.request.get("vote"))
+
+        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = data.fetch(1000)[index]
+
+        data.votes += vote
+
+        data.put()
+        
+        self.response.write(data.votes)
+        
 class MainPage(webapp2.RequestHandler):
     
     def get(self):
@@ -177,7 +233,7 @@ class PickHandler(webapp2.RequestHandler):
             data = SeismicObject.all().ancestor(db_parent)
             data = data.order("-date").fetch(1000)
 
-            index = self.request.get("pick_index")
+            index = int(self.request.get("pick_index"))
 
             self.response.write(data[index].picks)
             return
