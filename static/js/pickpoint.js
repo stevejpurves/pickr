@@ -2,16 +2,28 @@ $(function() {
     var paper = Raphael('seismic-div', 1080, 720);
     paper.image('/static/data/Alaska.png', 0, 0, 1080, 720);
     
-    var drawCircle = function(x, y)
+    var points = [];
+    var circles = [];
+    var linestrip;    
+
+    var addCircle = function(x, y)
     {
         var radius = 4;
         var circle = paper.circle(x, y, radius);
         circle.attr("fill", "#f00");
         circle.attr("stroke", "#fff");
+        circles.push(circle);
     }
     
-    var points = [];
-    var linestrip;
+    var removeCircle = function(x, y)
+    {
+        var circle = _.find(circles, function(c){
+            return c.attrs.cx === x && c.attrs.cy === y
+            });
+        circle.remove();
+        var index = circles.indexOf(circle);
+        circles.splice(index, 1);
+    }
     
     var connectTheDots = function() // Lalalalala
     {
@@ -31,7 +43,7 @@ $(function() {
     
     var addPoint = function(point){
         points.push(point);
-        drawCircle(point.x, point.y);
+        addCircle(point.x, point.y);
         connectTheDots();
     }
 
@@ -66,9 +78,8 @@ $(function() {
             type: "DELETE",
             dataType: "json",
             success: function(p){
-		        console.log(p);
 		        removePoint({x: p[0], y: p[1]});
-		       //remove point from screen
+		        removeCircle(p[0], p[1]);
 		     }
         });
     });
