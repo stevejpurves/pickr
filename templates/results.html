@@ -13,38 +13,43 @@ var count = {{count}}
 
 <div class="container">
 
-  
- 
-
-
-      <img height="720" width="1080" src="/static/data/brazil_ang_unc.png">
-      
     
-      <div class="row">
+  <div class="col-md-offset-4 col-md-4">
+
 	<button type="button" id="previous-button" 
 		class="btn btn-default btn-sm">
 	  <span class="glyphicon glyphicon-chevron-left"></span> 
 	  Previous
 	</button>
+
 	<div class="col">
 	  <button type="button" id="up-vote-button" 
 		  class="btn btn-default btn-sm">
 	    <span class="glyphicon glyphicon-chevron-up"></span> 
 	    Up vote
 	  </button>
-	  10
+	  
+<!-- do the county thing -->
+
 	  <button type="button" id="down-vote-button" 
 		  class="btn btn-default btn-sm">
 	    <span class="glyphicon glyphicon-chevron-down"></span> 
 	    Down vote
 	  </button>
 	</div>
+
       <button type="button" id="next-button" 
 	      class="btn btn-default btn-sm">
 	<span class="glyphicon glyphicon-chevron-right"></span> 
 	Next
       </button>
- 
+   
+ </div>
+
+
+      <img height="720" width="1080" src="/static/data/brazil_ang_unc.png">
+      
+
 </div>
 
 {% endblock %}
