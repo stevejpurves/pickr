@@ -5,6 +5,7 @@
 <head>
     <title>Pick a Point</title>
     <script src="/static/js/raphael-min.js"></script>
+    <script src="/static/js/underscore-min.js"></script>
     <script src="/static/js/pickpoint.js"></script>
 </head>
 
@@ -24,10 +25,9 @@
         </div>
       </div>
       <div class="col-med-4">
-	<button type="button" class="alert alert-warning" 
-		onclick='$.ajax("update_pick", {type: "DELETE"})'>
-	  Undo!
-	</button>
+      <button id="undo-button" type="button" class="alert alert-warning">
+        Undo
+      </button>
 	  <button class="btn btn-default" type="button" 
 		  onclick="document.location.href='/results';">
 	    Submit

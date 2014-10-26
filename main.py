@@ -30,6 +30,7 @@ class MainPage(webapp2.RequestHandler):
         user = users.get_current_user()
 
         if not user:
+      
 
 
             url = users.create_login_url('/')
@@ -144,12 +145,7 @@ class PickHandler(webapp2.RequestHandler):
         if self.request.get("user_picks"):
             data = SeismicObject.all().filter("user =", user).get()
 
-            if data:
-                picks = data.picks
-            else:
-                picks = json.dumps([])
-            
-            self.response.write(picks)
+            self.response.write(data.picks)
             return
         if self.request.get("all"):
             data = SeismicObject.all().fetch(1000)
@@ -193,6 +189,7 @@ class PickHandler(webapp2.RequestHandler):
                                                          user).get()
 
         points = json.loads(data.picks)
+        points.pop()
 
         if self.request.get("clear"):
             points = []
