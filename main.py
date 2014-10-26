@@ -192,8 +192,15 @@ class ResultsHandler(webapp2.RequestHandler):
 
         else:
             template = env.get_template("results.html")
+
+            with open("alaska.b64", "r") as f:
+                image = f.read()
+                
+            
             html = template.render(count=count,
-                                   logout=users.create_logout_url('/'))
+                                   logout=users.create_logout_url('/'),
+                                   image=image)
+                
             self.response.write(html)
 
         # Make composite image
