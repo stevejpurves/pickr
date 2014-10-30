@@ -14,7 +14,7 @@ pickDrawingSetup = function(){
     var addOverlay = function(url)
     {
         var overlay = paper.image(url, 0, 0, 1080, 720);
-        overlay.attr({opacity: 0.5});
+        return overlay.attr({opacity: 0.5});
     }
 
     var addCircle = function(x, y)

@@ -139,7 +139,7 @@ class ResultsHandler(webapp2.RequestHandler):
         if not local:
             
             fig = plt.figure(figsize=(15,8))
-            ax = fig.add_axes([0.1,0.1,0.8,0.8])
+            ax = fig.add_axes([0,0,1,1])
         
             # Load the image to a variable
             im = Image.open('brazil_ang_unc.png')
@@ -153,33 +153,39 @@ class ResultsHandler(webapp2.RequestHandler):
             hot.set_under(alpha = 0.0)  #anything that has value less than 0.5 goes transparent
             
             for user in data:
-                picks = np.array(json.loads(user.picks))
-                hx, hy = regularize(picks[:,0], picks[:,1], px, py)
-                all_picks_x = np.concatenate((all_picks_x,hx))
-                all_picks_y = np.concatenate((all_picks_y,hy))
+                try:
+                    picks = np.array(json.loads(user.picks))
+                    hx, hy = regularize(picks[:,0], picks[:,1], px, py)
+                    all_picks_x = np.concatenate((all_picks_x,hx))
+                    all_picks_y = np.concatenate((all_picks_y,hy))
+                    ax.plot(picks[:,0], picks[:,1], 'g-', alpha=0.5, lw=2)
 
-                m = 10
-                # do 2d histogram to display heatmap
-                binsizex = m
-                binsizey = m
-                heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x, bins=(py/binsizex,px/binsizey))
-                extent = [xedges[0], xedges[-1],
-                          yedges[-1], yedges[0] ]
+                    m = 1
+                    # do 2d histogram to display heatmap
+                    binsizex = m
+                    binsizey = m
+                    heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
+                                                             bins=(720/binsizex,1080/binsizey),
+                                                             range=np.array([[0, 720], [0,1080]]))
+                    extent = [0, 1080,
+                              720, 0 ]
+
+                    # do dilation of picks in heatmap
+                    heatmap_dil = heatmap#grey_dilation(heatmap,size=(5,5))
                 
-                # do dilation of picks in heatmap
-                heatmap_dil = heatmap#grey_dilation(heatmap,size=(5,5))
-                
-                fig = plt.figure(figsize=(15,8))
-                ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-                heatim = ax.imshow(heatmap,
-                                   cmap=cm.hot, extent=extent, alpha=0.75)
-                heatim.set_clim(0.5, np.amax(heatmap))
-                ax.set_ylim(bottom = py, top = 0)
-                ax.set_xlim(0,px)
-                ax.invert_yaxis()
-                ax.set_xticks([])
-                ax.set_yticks([])
-                ax.set_frame_on(False)
+                    #fig = plt.figure(figsize=(15,8))
+                    #ax = fig.add_axes([0, 0, 1, 1])
+                    #heatim = ax.imshow(heatmap,
+                    #                   cmap=cm.hot, extent=extent, alpha=0.75)
+                    #heatim.set_clim(0.5, np.amax(heatmap))
+                    ax.set_ylim((720,0))
+                    ax.set_xlim((0,1080))
+                    #ax.invert_yaxis()
+                    ax.set_xticks([])
+                    ax.set_yticks([])
+                    ax.set_frame_on(False)
+                except:
+                    pass
                 
             output = StringIO.StringIO()
             plt.savefig(output)
