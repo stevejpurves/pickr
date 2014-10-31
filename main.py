@@ -3,7 +3,10 @@ from jinja2 import Environment, FileSystemLoader
 from os.path import dirname, join
 import os
 import json
-from jinja2 import Environment, FileSystemLoader
+import base64
+import hashlib
+import StringIO
+from google.appengine.api import users
 
 import numpy as np
 if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
@@ -18,20 +21,15 @@ else:
 
 from lib_db import SeismicObject, PickrParent
 
-import base64
-
-import StringIO
-from google.appengine.api import users
-
-# Jinja2 environment to load templates
+# Jinja2 environment to load templates.
 env = Environment(loader=FileSystemLoader(join(dirname(__file__),
                                                'templates')))
 
+# Data store set up.
 db_parent = PickrParent.all().get()
 if not db_parent:
     db_parent = PickrParent()
     db_parent.put()
-
 
 
 class CommentHandler(webapp2.RequestHandler):
@@ -60,9 +58,7 @@ class CommentHandler(webapp2.RequestHandler):
 
         self.response.write(comment)
 
-        
-
-        
+      
 class VoteHandler(webapp2.RequestHandler):
 
     def get(self):
@@ -94,7 +90,8 @@ class VoteHandler(webapp2.RequestHandler):
         data.put()
         
         self.response.write(data.votes)
-        
+ 
+
 class MainPage(webapp2.RequestHandler):
     
     def get(self):
@@ -102,8 +99,6 @@ class MainPage(webapp2.RequestHandler):
 
         if not user:
       
-
-
             url = users.create_login_url('/')
             template = env.get_template("main.html")
 
@@ -211,13 +206,47 @@ class ResultsHandler(webapp2.RequestHandler):
 
         # Make composite image
 
+
 class AboutHandler(webapp2.RequestHandler):
 
     def get(self):
+        # Create logout url.
+        logout = users.create_logout_url('/')
 
-        # Load the main page welcome page
+        # Get Gravatar.
+        user = users.get_current_user()
+        
+        if user:
+            email_hash = hashlib.md5(user.email).hexdigest()
+        else:
+            email_hash=''
+
+        # Write the page.
         template = env.get_template('about.html')
-        self.response.write(template.render(logout=users.create_logout_url('/')))
+        html = template.render(logout=logout,
+                               email_hash=email_hash)
+        self.response.write(html)
+
+
+class TermsHandler(webapp2.RequestHandler):
+
+    def get(self):
+        # Create logout url.
+        logout = users.create_logout_url('/')
+
+        # Get Gravatar.
+        user = users.get_current_user()
+        if user:
+            email_hash = hashlib.md5(user.email).hexdigest()
+        else:
+            email_hash=''
+
+        # Write the page.
+        template = env.get_template('terms.html')
+        html = template.render(logout=logout,
+                               email_hash=email_hash)
+        self.response.write(html)
+
 
 class PickerHandler(webapp2.RequestHandler):
 
@@ -267,8 +296,7 @@ class PickerHandler(webapp2.RequestHandler):
 ##         new_db.put()
 
 ##         self.redirect('/')
-        
-        
+               
 
 class PickHandler(webapp2.RequestHandler):
 
@@ -349,10 +377,7 @@ class PickHandler(webapp2.RequestHandler):
             value = points.pop()
             data.picks = json.dumps(points).encode()
             data.put()
-            
-        
-
-      
+                 
         self.response.write(json.dumps(value))
 
 
@@ -366,14 +391,17 @@ class PickHandler(webapp2.RequestHandler):
 
 ##         html = template.render(upload_url=upload_url))
 ##         self.response.write(html)
-    
+  
+
+# This is the app.  
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     #('/upload', UploadModel),
-    ('/about', AboutHandler),
     #('/new_image', AddImageHandler),
+    ('/about', AboutHandler),
     ('/update_pick', PickHandler),
     ('/pickr', PickerHandler),
+    ('/terms', TermsHandler),
     ('/results', ResultsHandler),
     ('/comment', CommentHandler),
     ('/vote', VoteHandler)],

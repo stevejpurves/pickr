@@ -1,0 +1,23 @@
+
+body {
+  padding-top: 24px;
+  padding-bottom: 40px;
+  }
+
+.modelr-footer {
+  color:lightgray;
+  }
+
+.modelr-footer a:link,
+.modelr-footer a:visited {
+  color:#b2b2b2;
+  }
+
+.modelr-footer a:hover,
+.modelr-footer a:focus {
+  color: #729fcf;
+  }
+
+.pt {
+  font-family: 'Nunito', sans-serif;
+  }
