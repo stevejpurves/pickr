@@ -45,25 +45,27 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
           </button>
-          <strong><a class="navbar-brand" style="font-family: 'Nunito', sans-serif;" href="/">pick this</a></strong>
+          <strong><a class="navbar-brand pt-title" style="font-family: 'Nunito', sans-serif;" href="/">pick this</a></strong>
         </div><!-- End of navbar-header -->
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li><p class="navbar-text">social image interpretation</p></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="/about">about</a></li>
-            {% if logout %}
+            {% if logout_url %}
               <li style="margin-left:7px; margin-top:8px;">
                 <figure style="width:32px; border: 1px solid #f2f2f2;">
                   <img src="https://www.gravatar.com/avatar/{{ email_hash }}?s=32&d=identicon" />
                 </figure>
               </li>
-              <li><a href="{{logout}}">sign out</a></li>
+              <li><a href="{{ logout_url }}">sign out</a></li>
             {% else %}
               <li>
-                <a class="btn btn-info" href={{login_url}}>Sign in</a>
+                <p class="navbar-btn">
+                  <a class="btn btn-info" href="{{ login_url }}">Sign in</a>
+                </p>
               </li>
+              <li>&nbsp;&nbsp;</li>
             {% endif %}
           </ul>
         </div><!-- End of navbar-collapse -->

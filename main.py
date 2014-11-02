@@ -95,18 +95,21 @@ class VoteHandler(webapp2.RequestHandler):
 class MainPage(webapp2.RequestHandler):
     
     def get(self):
+
         user = users.get_current_user()
 
         if not user:
-      
-            url = users.create_login_url('/')
+            login_url = users.create_login_url('/')
             template = env.get_template("main.html")
 
-            html = template.render(login_url=url)
+            html = template.render(login_url=login_url)
             self.response.out.write(html)
 
         else:
-            # Load the main page welcome page
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+
             self.redirect('/pickr')
             
 
@@ -185,21 +188,39 @@ class ResultsHandler(webapp2.RequestHandler):
             output = StringIO.StringIO()
             plt.savefig(output)
             image = base64.b64encode(output.getvalue())
+
+            user = users.get_current_user()
+
+            # User should exist, so this should fail otherwise.
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+
             template = env.get_template("results.html")
-            html = template.render(count=count, image=image,
-                                   logout=users.create_logout_url('/'))
+            html = template.render(count=count,
+                                   logout_url=logout_url,
+                                   email_hash=email_hash,
+                                   image=image)
+
             self.response.write(html)
             
 
         else:
-            template = env.get_template("results.html")
 
             with open("alaska.b64", "r") as f:
                 image = f.read()
                 
+            user = users.get_current_user()
+
+            # User should exist, so this should fail otherwise.
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
             
+            template = env.get_template("results.html")
             html = template.render(count=count,
-                                   logout=users.create_logout_url('/'),
+                                   logout_url=logout_url,
+                                   email_hash=email_hash,
                                    image=image)
                 
             self.response.write(html)
@@ -210,20 +231,22 @@ class ResultsHandler(webapp2.RequestHandler):
 class AboutHandler(webapp2.RequestHandler):
 
     def get(self):
-        # Create logout url.
-        logout = users.create_logout_url('/')
 
-        # Get Gravatar.
         user = users.get_current_user()
         
         if user:
-            email_hash = hashlib.md5(user.email).hexdigest()
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
         else:
-            email_hash=''
+            logout_url = None
+            login_url = users.create_login_url('/')
+            email_hash = ''
 
         # Write the page.
         template = env.get_template('about.html')
-        html = template.render(logout=logout,
+        html = template.render(logout_url=logout_url,
+                               login_url=login_url,
                                email_hash=email_hash)
         self.response.write(html)
 
@@ -231,20 +254,24 @@ class AboutHandler(webapp2.RequestHandler):
 class TermsHandler(webapp2.RequestHandler):
 
     def get(self):
-        # Create logout url.
-        logout = users.create_logout_url('/')
 
-        # Get Gravatar.
         user = users.get_current_user()
+        
         if user:
-            email_hash = hashlib.md5(user.email).hexdigest()
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
         else:
-            email_hash=''
+            logout_url = None
+            login_url = users.create_login_url('/')
+            email_hash = ''
 
         # Write the page.
         template = env.get_template('terms.html')
-        html = template.render(logout=logout,
+        html = template.render(logout_url=logout_url,
+                               login_url=login_url,
                                email_hash=email_hash)
+
         self.response.write(html)
 
 
@@ -252,9 +279,20 @@ class PickerHandler(webapp2.RequestHandler):
 
     def get(self):
 
-        template = env.get_template('pickpoint.html')
+        user = users.get_current_user()
 
-        self.response.write(template.render(logout=users.create_logout_url('/')))
+        # User should exist, so this should fail otherwise.
+        logout_url = users.create_logout_url('/')
+        login_url = None
+        email_hash = hashlib.md5(user.email()).hexdigest()
+
+        # Write the page.
+        template = env.get_template('pickpoint.html')
+        html = template.render(logout_url=logout_url,
+                               login_url=login_url,
+                               email_hash=email_hash)
+
+        self.response.write(html)
 
 
 ## class UploadHandler(blobstore_handlers.BlobstoreUploadHandler,

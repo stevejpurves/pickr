@@ -2,22 +2,21 @@
 
 {% block title %}{% endblock %}
 
-  {% block content %}
+{% block content %}
       
-  <div class="container">
-<div class="col-md-8">
+<div class="ribbon-banner">in beta</div>
 
-    <p class="lead">Sign in with your Google account to start.</p>
-</div>
-<div class="col-md-4">
-<div class="btn-toolbar pull-right">
-      <a class="btn btn-info" href={{login_url}}>Sign in</a>
-   </div>
-   </div>
+<div class="container">
 
-    <div class="container">
-    <img class="img-reposnsive" src="/static/img/quick_whatis.png" />
- 
+  <div class="col-md-12">
+    <p style="margin-top:20px" class="lead pull-right">Sign in with your Google account to start.
+    <img src="/static/img/arrow.png" width="60px" style="margin-top:-20px; margin-right:20px" /></p>
   </div>
 
-  {% endblock %}
+  <div class="container">
+    <img class="img-reposnsive" src="/static/img/quick_whatis.png" />
+  </div>
+
+</div>
+
+{% endblock %}

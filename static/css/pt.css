@@ -4,17 +4,57 @@ body {
   padding-bottom: 40px;
   }
 
-.modelr-footer {
+.ribbon-banner {
+   display: block;
+   position: absolute;
+   top: 50px;
+   left: -120px;
+   width: 400px;
+   height: 50px;
+   line-height: 50px;
+   text-align: center;
+   opacity: 0.7;
+   -webkit-transform: rotate(-45deg);
+   -moz-transform:    rotate(-45deg);
+   -ms-transform:     rotate(-45deg);
+   transform:         rotate(-45deg);
+   font-size: 18px;
+   font-weight: 700;
+   color: white;
+   background-color: red;
+   border: 1px solid white;
+   z-index: 500;
+   }
+
+.navbar-text {
+  font-style: italic;
+  color: #cccccc;
+}
+
+.pt-title {
+  padding-left: 48px;
+  background:transparent url('/static/img/mouse_pointer.png') left center no-repeat;
+  background-size: 32px;
+  background-position: 12px;
+}
+.pt-title:hover {
+  background:transparent url('/static/img/mouse_pointer.png') left center no-repeat;
+  background-size: 32px;
+  background-position: 12px;
+}
+
+
+.pt-footer {
   color:lightgray;
   }
 
-.modelr-footer a:link,
-.modelr-footer a:visited {
+.pt-footer a:link,
+.pt-footer a:visited {
   color:#b2b2b2;
   }
 
-.modelr-footer a:hover,
-.modelr-footer a:focus {
+.pt-footer a:hover,
+.pt-footer a:focus {
   color: #729fcf;
   }
 
