@@ -3,7 +3,10 @@ from jinja2 import Environment, FileSystemLoader
 from os.path import dirname, join
 import os
 import json
-from jinja2 import Environment, FileSystemLoader
+import base64
+import hashlib
+import StringIO
+from google.appengine.api import users
 
 import numpy as np
 if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
@@ -18,20 +21,15 @@ else:
 
 from lib_db import SeismicObject, PickrParent
 
-import base64
-
-import StringIO
-from google.appengine.api import users
-
-# Jinja2 environment to load templates
+# Jinja2 environment to load templates.
 env = Environment(loader=FileSystemLoader(join(dirname(__file__),
                                                'templates')))
 
+# Data store set up.
 db_parent = PickrParent.all().get()
 if not db_parent:
     db_parent = PickrParent()
     db_parent.put()
-
 
 
 class CommentHandler(webapp2.RequestHandler):
@@ -60,9 +58,7 @@ class CommentHandler(webapp2.RequestHandler):
 
         self.response.write(comment)
 
-        
-
-        
+      
 class VoteHandler(webapp2.RequestHandler):
 
     def get(self):
@@ -94,24 +90,26 @@ class VoteHandler(webapp2.RequestHandler):
         data.put()
         
         self.response.write(data.votes)
-        
+ 
+
 class MainPage(webapp2.RequestHandler):
     
     def get(self):
+
         user = users.get_current_user()
 
         if not user:
-      
-
-
-            url = users.create_login_url('/')
+            login_url = users.create_login_url('/')
             template = env.get_template("main.html")
 
-            html = template.render(login_url=url)
+            html = template.render(login_url=login_url)
             self.response.out.write(html)
 
         else:
-            # Load the main page welcome page
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+
             self.redirect('/pickr')
             
 
@@ -190,42 +188,111 @@ class ResultsHandler(webapp2.RequestHandler):
             output = StringIO.StringIO()
             plt.savefig(output)
             image = base64.b64encode(output.getvalue())
+
+            user = users.get_current_user()
+
+            # User should exist, so this should fail otherwise.
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+
             template = env.get_template("results.html")
-            html = template.render(count=count, image=image,
-                                   logout=users.create_logout_url('/'))
+            html = template.render(count=count,
+                                   logout_url=logout_url,
+                                   email_hash=email_hash,
+                                   image=image)
+
             self.response.write(html)
             
 
         else:
-            template = env.get_template("results.html")
 
             with open("alaska.b64", "r") as f:
                 image = f.read()
                 
+            user = users.get_current_user()
+
+            # User should exist, so this should fail otherwise.
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
             
+            template = env.get_template("results.html")
             html = template.render(count=count,
-                                   logout=users.create_logout_url('/'),
+                                   logout_url=logout_url,
+                                   email_hash=email_hash,
                                    image=image)
                 
             self.response.write(html)
 
         # Make composite image
 
+
 class AboutHandler(webapp2.RequestHandler):
 
     def get(self):
 
-        # Load the main page welcome page
+        user = users.get_current_user()
+        
+        if user:
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+        else:
+            logout_url = None
+            login_url = users.create_login_url('/')
+            email_hash = ''
+
+        # Write the page.
         template = env.get_template('about.html')
-        self.response.write(template.render(logout=users.create_logout_url('/')))
+        html = template.render(logout_url=logout_url,
+                               login_url=login_url,
+                               email_hash=email_hash)
+        self.response.write(html)
+
+
+class TermsHandler(webapp2.RequestHandler):
+
+    def get(self):
+
+        user = users.get_current_user()
+        
+        if user:
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+        else:
+            logout_url = None
+            login_url = users.create_login_url('/')
+            email_hash = ''
+
+        # Write the page.
+        template = env.get_template('terms.html')
+        html = template.render(logout_url=logout_url,
+                               login_url=login_url,
+                               email_hash=email_hash)
+
+        self.response.write(html)
+
 
 class PickerHandler(webapp2.RequestHandler):
 
     def get(self):
 
-        template = env.get_template('pickpoint.html')
+        user = users.get_current_user()
 
-        self.response.write(template.render(logout=users.create_logout_url('/')))
+        # User should exist, so this should fail otherwise.
+        logout_url = users.create_logout_url('/')
+        login_url = None
+        email_hash = hashlib.md5(user.email()).hexdigest()
+
+        # Write the page.
+        template = env.get_template('pickpoint.html')
+        html = template.render(logout_url=logout_url,
+                               login_url=login_url,
+                               email_hash=email_hash)
+
+        self.response.write(html)
 
 
 ## class UploadHandler(blobstore_handlers.BlobstoreUploadHandler,
@@ -267,8 +334,7 @@ class PickerHandler(webapp2.RequestHandler):
 ##         new_db.put()
 
 ##         self.redirect('/')
-        
-        
+               
 
 class PickHandler(webapp2.RequestHandler):
 
@@ -349,10 +415,7 @@ class PickHandler(webapp2.RequestHandler):
             value = points.pop()
             data.picks = json.dumps(points).encode()
             data.put()
-            
-        
-
-      
+                 
         self.response.write(json.dumps(value))
 
 
@@ -366,14 +429,17 @@ class PickHandler(webapp2.RequestHandler):
 
 ##         html = template.render(upload_url=upload_url))
 ##         self.response.write(html)
-    
+  
+
+# This is the app.  
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     #('/upload', UploadModel),
-    ('/about', AboutHandler),
     #('/new_image', AddImageHandler),
+    ('/about', AboutHandler),
     ('/update_pick', PickHandler),
     ('/pickr', PickerHandler),
+    ('/terms', TermsHandler),
     ('/results', ResultsHandler),
     ('/comment', CommentHandler),
     ('/vote', VoteHandler)],
