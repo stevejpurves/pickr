@@ -4,25 +4,33 @@ pickDrawingSetup = function(){
     var points = [];
     var circles = [];
     var linestrip;
+    
     var baseImage;
+    // TODO: Hard-coded base image size
+    var baseImageWidth = 1080;
+    var baseImageHeight = 720;
+    var aspectRatio = baseImageWidth / baseImageHeight;
+    var resizeScale = 1;
     
     var setup = function(elementId)
     {
         var element = $('#' + elementId);
         var w = element.width();
-        var aspectRatio = 1080 / 720; // TODO: Hard-coded image aspect ratio
         var h = w / aspectRatio;
+        resizeScale = w / baseImageWidth;
         
         paper = Raphael(elementId, w, h);
         baseImage = paper.image('/static/data/brazil_ang_unc.png', 0, 0, w, h);
         
         $(window).resize(function(){
             var w = element.width();
-            var aspectRatio = 1080 / 720; // TODO: Hard-coded image aspect ratio
             var h = w / aspectRatio;
-            //paper.remove();
-            //paper = Raphael(elementId, w, h);
-            //paper.image('/static/data/brazil_ang_unc.png', 0, 0, w, h);
+            resizeScale = w / baseImageWidth;
+            if (linestrip) {
+                linestrip.transform('');
+                linestrip.transform('s' + resizeScale + ',' + resizeScale + ',0,0');
+            }
+            
             paper.setSize(w, h);
             baseImage.attr({width: w, height: h});
         });        
@@ -78,12 +86,24 @@ pickDrawingSetup = function(){
         });
         linestrip = paper.path(path);
         linestrip.attr({stroke: '#f00'});
+
+        linestrip.transform('');
+        linestrip.transform('s' + resizeScale + ',' + resizeScale + ',0,0');
     }
     
     var addPoint = function(point){
         addCircle(point.x, point.y);
         points.push(point);
         connectTheDots();
+    }
+    
+    var clickPoint = function(point){
+        var imagePoint = { 
+            x: Math.round(point.x / resizeScale),
+            y: Math.round(point.y / resizeScale)
+        };
+        $.post('/update_pick', imagePoint, 
+            function(){addPoint(imagePoint)});
     }
 
     var removePoint = function(point){
@@ -108,13 +128,13 @@ pickDrawingSetup = function(){
            data.forEach(function(item){
                addPoint({x:item[0], y:item[1]});
            });
-        }, "json");
+        }, 'json');
     }
     
     return {
         setup: setup,
         addOverlay: addOverlay,
-        addPoint: addPoint,
+        clickPoint: clickPoint,
         removePoint: removePoint,
         clear: clearPoints,
         load: loadPoints
