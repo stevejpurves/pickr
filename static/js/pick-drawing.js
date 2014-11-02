@@ -3,12 +3,29 @@ pickDrawingSetup = function(){
     var paper = {};
     var points = [];
     var circles = [];
-    var linestrip;    
+    var linestrip;
+    var baseImage;
     
     var setup = function(elementId)
     {
-        paper = Raphael(elementId, 1080, 720);
-        paper.image('/static/data/brazil_ang_unc.png', 0, 0, 1080, 720);
+        var element = $('#' + elementId);
+        var w = element.width();
+        var aspectRatio = 1080 / 720; // TODO: Hard-coded image aspect ratio
+        var h = w / aspectRatio;
+        
+        paper = Raphael(elementId, w, h);
+        baseImage = paper.image('/static/data/brazil_ang_unc.png', 0, 0, w, h);
+        
+        $(window).resize(function(){
+            var w = element.width();
+            var aspectRatio = 1080 / 720; // TODO: Hard-coded image aspect ratio
+            var h = w / aspectRatio;
+            //paper.remove();
+            //paper = Raphael(elementId, w, h);
+            //paper.image('/static/data/brazil_ang_unc.png', 0, 0, w, h);
+            paper.setSize(w, h);
+            baseImage.attr({width: w, height: h});
+        });        
     }
     
     var addOverlay = function(url)
