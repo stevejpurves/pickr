@@ -1,19 +1,38 @@
 pickDrawingSetup = function(){
+    var pickrElement;
+    var paper;
+    var baseImage;
 
-    var paper = {};
     var points = [];
     var circles = [];
     var linestrip;    
     
+    // TODO: Hard-coded base image size
+    var baseImageWidth = 1080;
+    var baseImageHeight = 720;
+    var aspectRatio = baseImageWidth / baseImageHeight;
+    var resizeScale = 1;
+    
+    var updatePaperSize = function(){
+        var w = pickrElement.width();
+        var h = w / aspectRatio;
+        resizeScale = w / baseImageWidth;
+        paper.setSize(w, h);
+    };
+    
     var setup = function(elementId)
     {
-        paper = Raphael(elementId, 1080, 720);
-        paper.image('/static/data/brazil_ang_unc.png', 0, 0, 1080, 720);
+        pickrElement = $('#' + elementId);
+        paper = Raphael(elementId);
+        updatePaperSize();
+        paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
+        baseImage = paper.image('/static/data/brazil_ang_unc.png', 0, 0, baseImageWidth, baseImageHeight);
+        $(window).resize(updatePaperSize);        
     }
     
     var addOverlay = function(url)
     {
-        var overlay = paper.image(url, 0, 0, 1080, 720);
+        var overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
         return overlay.attr({opacity: 0.5});
     }
 
@@ -68,6 +87,15 @@ pickDrawingSetup = function(){
         points.push(point);
         connectTheDots();
     }
+    
+    var clickPoint = function(point){
+        var imagePoint = { 
+            x: Math.round(point.x / resizeScale),
+            y: Math.round(point.y / resizeScale)
+        };
+        $.post('/update_pick', imagePoint, 
+            function(){addPoint(imagePoint)});
+    }
 
     var removePoint = function(point){
         removeCircle(point.x, point.y);
@@ -91,13 +119,13 @@ pickDrawingSetup = function(){
            data.forEach(function(item){
                addPoint({x:item[0], y:item[1]});
            });
-        }, "json");
+        }, 'json');
     }
     
     return {
         setup: setup,
         addOverlay: addOverlay,
-        addPoint: addPoint,
+        clickPoint: clickPoint,
         removePoint: removePoint,
         clear: clearPoints,
         load: loadPoints

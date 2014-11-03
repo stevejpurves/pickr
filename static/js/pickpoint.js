@@ -6,8 +6,7 @@ $(function() {
         var imageX = e.pageX - this.offsetLeft;
         var imageY = e.pageY - this.offsetTop - 2;
         var point = { x: imageX, y: imageY };
-        $.post('/update_pick', point, 
-            function(){pickDrawing.addPoint(point)});
+        pickDrawing.clickPoint(point);
     });
     
     $('#clear-button').click(function(){
