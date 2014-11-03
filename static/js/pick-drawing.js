@@ -1,44 +1,38 @@
 pickDrawingSetup = function(){
+    var pickrElement;
+    var paper;
+    var baseImage;
 
-    var paper = {};
     var points = [];
     var circles = [];
-    var linestrip;
+    var linestrip;    
     
-    var baseImage;
     // TODO: Hard-coded base image size
     var baseImageWidth = 1080;
     var baseImageHeight = 720;
     var aspectRatio = baseImageWidth / baseImageHeight;
     var resizeScale = 1;
     
-    var setup = function(elementId)
-    {
-        var element = $('#' + elementId);
-        var w = element.width();
+    var updatePaperSize = function(){
+        var w = pickrElement.width();
         var h = w / aspectRatio;
         resizeScale = w / baseImageWidth;
-        
-        paper = Raphael(elementId, w, h);
-        baseImage = paper.image('/static/data/brazil_ang_unc.png', 0, 0, w, h);
-        
-        $(window).resize(function(){
-            var w = element.width();
-            var h = w / aspectRatio;
-            resizeScale = w / baseImageWidth;
-            if (linestrip) {
-                linestrip.transform('');
-                linestrip.transform('s' + resizeScale + ',' + resizeScale + ',0,0');
-            }
-            
-            paper.setSize(w, h);
-            baseImage.attr({width: w, height: h});
-        });        
+        paper.setSize(w, h);
+    };
+    
+    var setup = function(elementId)
+    {
+        pickrElement = $('#' + elementId);
+        paper = Raphael(elementId);
+        updatePaperSize();
+        paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
+        baseImage = paper.image('/static/data/brazil_ang_unc.png', 0, 0, baseImageWidth, baseImageHeight);
+        $(window).resize(updatePaperSize);        
     }
     
     var addOverlay = function(url)
     {
-        var overlay = paper.image(url, 0, 0, 1080, 720);
+        var overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
         return overlay.attr({opacity: 0.5});
     }
 
@@ -86,9 +80,6 @@ pickDrawingSetup = function(){
         });
         linestrip = paper.path(path);
         linestrip.attr({stroke: '#f00'});
-
-        linestrip.transform('');
-        linestrip.transform('s' + resizeScale + ',' + resizeScale + ',0,0');
     }
     
     var addPoint = function(point){
