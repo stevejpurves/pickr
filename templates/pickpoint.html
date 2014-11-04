@@ -4,40 +4,40 @@
 
 {% block content %}
 
+<head>
 <script src="/static/js/raphael-min.js"></script>
 <script src="/static/js/underscore-min.js"></script>
 <script src="/static/js/pick-drawing.js"></script>
 <script src="/static/js/pickpoint.js"></script>
+</head>
 
+<div class="container"><!-- start of main container -->
 
-  <div class="container">
-
- <div class="row">
-<div class="col-md-8">
-
+  <div class="row">
+    <div class="col-md-8">
     <p class="lead">Click points on the image and create your pick. <strong>Submit</strong> when you're done.</p>
-</div>
-<div class="col-md-4">
-<div class="btn-toolbar pull-right">
-      <button id="undo-button" type="button" class="btn btn-primary">
-        Undo
-      </button>
-      <button id="clear-button" type="button" class="btn btn-primary">
-        Clear
-      </button>
-      </div>
-</div>
-</div>
-</div>
-
-    <div class="container">
-      <div id="seismic-div" width=1080 height=720>
+    </div>
+    <div class="col-md-4">
+      <div class="btn-toolbar pull-right">
+        <button id="undo-button" type="button" class="btn btn-primary">
+          Undo
+        </button>
+        <button id="clear-button" type="button" class="btn btn-primary">
+          Clear
+        </button>
       </div>
     </div>
+  </div><!-- end of row -->
 
-<div class="col-md-offset-2 col-md-8" style="margin-bottom:44px;">
-    <button type="button" class="btn btn-success btn-lg btn-block" onclick="document.location.href='/results'">I'm all done... Submit!</button>
-    </div>
-    
+  <div id="seismic-div" width=1080 height=720>
+    <!-- image goes here -->
   </div>
+
+  <!-- div for big green button at bottom -->
+  <div class="col-md-offset-2 col-md-8" style="margin-bottom:44px;">
+    <button type="button" class="btn btn-success btn-lg btn-block" onclick="document.location.href='/results'">I'm all done... Submit!</button>
+  </div>
+    
+</div><!-- end of main container -->
+
 {% endblock %}
