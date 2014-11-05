@@ -31,6 +31,25 @@ body {
   color: #cccccc;
 }
 
+/* This stuff disables the hamburger menu on navbar *
+.navbar-collapse.collapse {
+display: block!important;
+}
+
+.navbar-nav>li, .navbar-nav {
+float: left !important;
+}
+*/
+.navbar-nav.navbar-right:last-child {
+margin-right: -15px !important;
+}
+
+.navbar-right {
+float: right!important;
+}
+/* END OF HAMBURGER KILLER */
+
+
 .pt-title {
   padding-left: 48px;
   background:transparent url('/static/img/mouse_pointer.png') left center no-repeat;
