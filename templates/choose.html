@@ -38,10 +38,8 @@
         <img class="img-responsive" src="{{i['image']}}" alt="" />
       </a>
       <div class="caption">
-        {{i.description}}
-	{{i.challenge}}
-	{{i.permission}}
-	{{i.title}}
+      	<span class="lead">{{i.title}}</span><br />
+        {{i.description[:100]}} <!-- Limit to 100 characters -->
       </div>
     </div>
   </div>

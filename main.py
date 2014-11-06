@@ -322,6 +322,8 @@ class PickerHandler(webapp2.RequestHandler):
         except:
             print "handle this error"
                 
+        challenge = image_obj.challenge
+        permission = image_obj.permission
                 
         # Write the page.
         template = env.get_template('pickpoint.html')
@@ -329,13 +331,12 @@ class PickerHandler(webapp2.RequestHandler):
                                login_url=login_url,
                                email_hash=email_hash,
                                image_url=image_url,
-                               image_key = key_id)
+                               image_key=key_id,
+                               challenge=challenge,
+                               permission=permission)
 
         self.response.write(html)
-
-
-
-               
+     
 
 class PickHandler(webapp2.RequestHandler):
 
@@ -555,6 +556,7 @@ class AddImageHandler(webapp2.RequestHandler):
         title = self.request.get("title")
         description = self.request.get("description")
         challenge = self.request.get("challenge")
+        pickstyle = self.request.get("pickstyle")
         permission = self.request.get("permission")
 
         img_obj = ImageObject.get_by_id(int(image_key),
@@ -563,6 +565,7 @@ class AddImageHandler(webapp2.RequestHandler):
         img_obj.title = title
         img_obj.description = description
         img_obj.challenge = challenge
+        img_obj.pickstyle = pickstyle
         img_obj.permission = permission
 
         img_obj.put()
