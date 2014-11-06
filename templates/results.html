@@ -4,16 +4,19 @@
 
 {% block content %}
 
+<script>
+  var count = {{count}};
+  var overlay64 = "{{image}}";
+  var image_url = "{{image_url}}";
+  var image_key = "{{image_key}}";
+</script>
+
 <script src="/static/js/raphael-min.js"></script>
 <script src="/static/js/underscore-min.js"></script>
 <script src="/static/js/pick-drawing.js"></script>
 <script src="/static/js/results.js"></script>
 
-<script>
-var count = {{count}};
-var overlay64 = "{{image}}";
-var image_url = "{{image_url}}";
-</script>
+
 
 
 <div class="container">

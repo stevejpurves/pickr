@@ -13,7 +13,8 @@ $(function() {
     var loadPicks = function()
     {
         pickDrawing.load({
-            pick_index: current
+            pick_index: current,
+	    image_key: image_key
         });
         $.get('/vote', {index: current}, updateVoteCount);
     }

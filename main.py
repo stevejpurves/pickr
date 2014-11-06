@@ -218,7 +218,8 @@ class ResultsHandler(webapp2.RequestHandler):
                                    logout_url=logout_url,
                                    email_hash=email_hash,
                                    image=image,
-                                   image_url=image_url)
+                                   image_url=image_url,
+                                   image_key=image_key)
 
             self.response.write(html)
             
@@ -240,7 +241,8 @@ class ResultsHandler(webapp2.RequestHandler):
                                    logout_url=logout_url,
                                    email_hash=email_hash,
                                    image=image,
-                                   image_url=image_url)
+                                   image_url=image_url,
+                                   image_key=image_key)
                 
             self.response.write(html)
 
