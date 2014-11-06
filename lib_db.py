@@ -20,6 +20,10 @@ class ImageObject(db.Model):
     image = blobstore.BlobReferenceProperty()
     description = db.StringProperty()
 
+    challenge = db.StringProperty()
+    title = db.StringProperty()
+    permission = db.StringProperty()
+
     user = db.UserProperty()
     name = db.StringProperty()
    
