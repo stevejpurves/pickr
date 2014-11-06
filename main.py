@@ -122,7 +122,7 @@ class MainPage(webapp2.RequestHandler):
             login_url = None
             email_hash = hashlib.md5(user.email()).hexdigest()
 
-            self.redirect('/pickr')
+            self.redirect('/library')
             
 
 class ResultsHandler(webapp2.RequestHandler):
@@ -143,7 +143,8 @@ class ResultsHandler(webapp2.RequestHandler):
         all_picks_y = np.array([])
 
         image_key = self.request.get("image_key")
-        img_obj = ImageObject.get_by_id(int(image_key))
+        img_obj = ImageObject.get_by_id(int(image_key),
+                                        parent=db_parent)
         image_url = images.get_serving_url(img_obj.image)
         
         
@@ -307,15 +308,15 @@ class PickerHandler(webapp2.RequestHandler):
         login_url = None
         email_hash = hashlib.md5(user.email()).hexdigest()
 
-        if self.request.get("image_key"):
 
-            key_id = self.request.get("image_key")
-            image_obj= ImageObject.get_by_id(int(key_id))
+        key_id = self.request.get("image_key")
+        image_obj= ImageObject.get_by_id(int(key_id),
+                                         parent=db_parent)
 
-            try:
-                image_url = images.get_serving_url(image_obj.image)
-            except:
-                print "handle this error"
+        try:
+            image_url = images.get_serving_url(image_obj.image)
+        except:
+            print "handle this error"
                 
                 
         # Write the page.
@@ -338,7 +339,8 @@ class PickHandler(webapp2.RequestHandler):
 
         user = users.get_current_user()
         image_key = self.request.get("image_key")
-        img_obj = ImageObject.get_by_id(int(image_key))
+        img_obj = ImageObject.get_by_id(int(image_key),
+                                        parent=db_parent)
 
         if self.request.get("user_picks"):
    
@@ -380,7 +382,8 @@ class PickHandler(webapp2.RequestHandler):
         if not user:
             self.redirect('/')
 
-        image_obj = ImageObject.get_by_id(int(image_key))
+        image_obj = ImageObject.get_by_id(int(image_key),
+                                          parent=db_parent)
         picks = SeismicPicks.all().ancestor(image_obj)
         picks = picks.filter("user =", user).get()
 
@@ -404,7 +407,8 @@ class PickHandler(webapp2.RequestHandler):
         user = users.get_current_user()
         image_key = self.request.get("image_key")
 
-        img_obj = ImageObject.get_by_id(int(image_key))
+        img_obj = ImageObject.get_by_id(int(image_key),
+                                        parent=db_parent)
 
         data = SeismicPicks.all().ancestor(img_obj).filter("user =",
                                                            user)
@@ -425,16 +429,24 @@ class PickHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(value))
 
 
-class AddImageHandler(blobstore_handlers.BlobstoreUploadHandler,
-                      webapp2.RequestHandler):
+class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
+                    webapp2.RequestHandler):
 
     def get(self):
 
         upload_url = blobstore.create_upload_url('/upload')
 
-        template = env.get_template("upload_image.html")
+        # Get the thumbnail urls
+        img_obj = ImageObject.all().ancestor(db_parent).fetch(1000)
 
-        html = template.render(upload_url=upload_url)
+        image_dict = [{"key": i.key().id(),
+                       "description": i.description,
+                       "image": images.get_serving_url(i.image)}
+                       for i in img_obj]
+
+        template = env.get_template('choose.html')
+        html = template.render(images=image_dict,
+                               upload_url=upload_url)
         self.response.write(html)
 
     def post(self):
@@ -470,20 +482,66 @@ class AddImageHandler(blobstore_handlers.BlobstoreUploadHandler,
         description = self.request.get("description")
 
         new_db = ImageObject(description=description,
-                             image=output_blob_key)
+                             image=output_blob_key,
+                             parent=db_parent)
 
         new_db.put()
 
-        self.redirect('/pickr?image_key=' +
+        self.redirect('/add_image?image_key=' +
                       str(new_db.key().id())) 
+        
+        
+class AddImageHandler(webapp2.RequestHandler):
+
+    def get(self):
+        
+        user = users.get_current_user()
+        image_key = self.request.get("image_key")
+
+        img_obj = ImageObject.get_by_id(int(image_key),
+                                        parent=db_parent)
+
+        image_url = images.get_serving_url(img_obj.image)
+
+        
+        template = env.get_template("add_image.html")
+
+        html = template.render(image_url=image_url,
+                               image_key=image_key)
+
+        self.response.write(html)
+
+    def post(self):
+
+        user = users.get_current_user()
+        image_key = self.request.get("image_key")
+
+        description = self.request.get("description")
+
+
+        img_obj = ImageObject.get_by_id(int(image_key),
+                                        parent=db_parent)
+
+        img_obj.description = description
+
+        img_obj.put()
+
+        self.redirect('/')
+        
+
+        
+
+
+   
         
   
 
 # This is the app.  
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/upload', AddImageHandler),
-    ('/new_image', AddImageHandler),
+    ('/upload', LibraryHandler),
+    ('/library', LibraryHandler),
+    ('/add_image', AddImageHandler),
     ('/about', AboutHandler),
     ('/update_pick', PickHandler),
     ('/pickr', PickerHandler),
