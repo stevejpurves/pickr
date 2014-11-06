@@ -23,11 +23,6 @@ import cloudstorage as gcs
 
 import numpy as np
 if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
-    
-    import matplotlib.pyplot as plt
-    import matplotlib.cm as cm
-
-
     local = False
 else:
     local = True
@@ -136,6 +131,11 @@ class ResultsHandler(webapp2.RequestHandler):
             horx = np.arange(np.amin(xarr),np.amax(xarr)+1)
             hory = np.interp(horx, xarr, yarr)
             return horx, hory
+            
+        def normalize(arr):
+            maxval = np.amax(arr)
+            normalized = 255.0*(arr)/maxval
+            return normalized
 
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
@@ -148,106 +148,58 @@ class ResultsHandler(webapp2.RequestHandler):
         
         # append all horizons into one big file
         all_picks_x = np.array([])
-        all_picks_y = np.array([])
-
-        if not local:
-            
-            fig = plt.figure(figsize=(15,8))
-            ax = fig.add_axes([0,0,1,1])
+        all_picks_y = np.array([])   
         
-            # Load the image to a variable
-            im = Image.open('brazil_ang_unc.png')
-            px, py = im.size
+        # Load the image to a variable
+        im = Image.open('brazil_ang_unc.png')
+        px, py = im.size
         
-            # plot the seismic image first
-            # im = plt.imshow(im)
-            # Make a modified version of rainbow colormap with some transparency
-            # in the bottom of the colormap.
-            hot = cm.hot
-            hot.set_under(alpha = 0.0)  #anything that has value less than 0.5 goes transparent
-            
-            for user in data:
-                try:
-                    picks = np.array(json.loads(user.picks))
-                    hx, hy = regularize(picks[:,0], picks[:,1], px, py)
-                    all_picks_x = np.concatenate((all_picks_x,hx))
-                    all_picks_y = np.concatenate((all_picks_y,hy))
-                    #ax.plot(picks[:,0], picks[:,1], 'g-', alpha=0.5, lw=2)
+        for user in data:
+            try:
+                picks = np.array(json.loads(user.picks))
+                hx, hy = regularize(picks[:,0], picks[:,1], px, py)
+                all_picks_x = np.concatenate((all_picks_x,hx))
+                all_picks_y = np.concatenate((all_picks_y,hy))
 
-                    m = 1
-                    # do 2d histogram to display heatmap
-                    binsizex = m
-                    binsizey = m
-                    heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
-                                                             bins=(py/binsizex,px/binsizey),
-                                                             range=np.array([[0, py], [0, px]]))
-                    #extent = [0, px, py, 0 ]
-
-                    # do dilation of picks in heatmap
-                    n = 11   # the dilation structuring element (nxn)
-                    heatmap_morph = dilate( heatmap.astype(int), B = np.ones((n,n)).astype(int) )
+                m = 1
                 
-                    #fig = plt.figure(figsize=(15,8))
-                    #ax = fig.add_axes([0, 0, 1, 1])
-                    #heatim = ax.imshow(heatmap,
-                    #                   cmap=cm.hot, extent=extent, alpha=0.75)
-                    #heatim.set_clim(0.5, np.amax(heatmap))
-                    #ax.set_ylim((py,0))
-                    #ax.set_xlim((0,px))
-                    #ax.invert_yaxis()
-                    #ax.set_xticks([])
-                    #ax.set_yticks([])
-                    #ax.set_frame_on(False)
-                except:
-                    pass
-                
-            output = StringIO.StringIO()
-            im_out = Image.fromarray(heatmap_morph)
-            im_out.save(output)
-            #plt.savefig(output)
-            image = base64.b64encode(output.getvalue())
+                # do 2d histogram of the heatmap
+                binsizex = m
+                binsizey = m
+                heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
+                                                            bins=(py/binsizex,px/binsizey),
+                                                            range=np.array([[0, py], [0, px]]))
 
-            user = users.get_current_user()
+                # do dilation of picks in heatmap
+                n = 3   # the dilation structuring element (nxn)
+                heatmap_morph = dilate( heatmap.astype(int), B = np.ones((n,n)).astype(int) )
+                hmap_norm = normalize(heatmap_morph)
+                           
+            except:
+                pass
+             
+        output = StringIO.StringIO()
+        im_out = Image.fromarray( hmap_norm.astype('uint8'),'L' )
+        im_out.save(output)
 
-            # User should exist, so this should fail otherwise.
-            logout_url = users.create_logout_url('/')
-            login_url = None
-            email_hash = hashlib.md5(user.email()).hexdigest()
+        image = base64.b64encode(output.getvalue())
 
-            template = env.get_template("results.html")
-            html = template.render(count=count,
-                                   logout_url=logout_url,
-                                   email_hash=email_hash,
-                                   image=image,
-                                   image_url=image_url,
-                                   image_key=image_key)
+        user = users.get_current_user()
 
-            self.response.write(html)
-            
+        # User should exist, so this should fail otherwise.
+        logout_url = users.create_logout_url('/')
+        login_url = None
+        email_hash = hashlib.md5(user.email()).hexdigest()
 
-        else:
+        template = env.get_template("results.html")
+        html = template.render(count=count,
+                                logout_url=logout_url,
+                                email_hash=email_hash,
+                                image=image,
+                                image_url=image_url,
+                                image_key=image_key)
 
-            with open("alaska.b64", "r") as f:
-                image = f.read()
-                
-            user = users.get_current_user()
-
-            # User should exist, so this should fail otherwise.
-            logout_url = users.create_logout_url('/')
-            login_url = None
-            email_hash = hashlib.md5(user.email()).hexdigest()
-            
-            template = env.get_template("results.html")
-            html = template.render(count=count,
-                                   logout_url=logout_url,
-                                   email_hash=email_hash,
-                                   image=image,
-                                   image_url=image_url,
-                                   image_key=image_key)
-                
-            self.response.write(html)
-
-        # Make composite image
+        self.response.write(html)
 
 
 class AboutHandler(webapp2.RequestHandler):
