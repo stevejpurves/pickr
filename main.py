@@ -299,7 +299,12 @@ class TermsHandler(webapp2.RequestHandler):
 
 class PickerHandler(webapp2.RequestHandler):
 
-    def get(self):
+    def get(self, id=None):
+
+        if id:
+            key_id = id
+        else:
+            key_id = self.request.get("image_key")
 
         user = users.get_current_user()
 
@@ -309,7 +314,6 @@ class PickerHandler(webapp2.RequestHandler):
         email_hash = hashlib.md5(user.email()).hexdigest()
 
 
-        key_id = self.request.get("image_key")
         image_obj= ImageObject.get_by_id(int(key_id),
                                          parent=db_parent)
 
@@ -434,19 +438,37 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 
     def get(self):
 
+        user = users.get_current_user()
+        
+        if user:
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+        else:
+            logout_url = None
+            login_url = users.create_login_url('/')
+            email_hash = ''
+
         upload_url = blobstore.create_upload_url('/upload')
 
         # Get the thumbnail urls
         img_obj = ImageObject.all().ancestor(db_parent).fetch(1000)
 
         image_dict = [{"key": i.key().id(),
+                       "title": i.title,
                        "description": i.description,
+                       "challenge": i.challenge,
+                       "permission": i.permission,
                        "image": images.get_serving_url(i.image)}
                        for i in img_obj]
 
         template = env.get_template('choose.html')
         html = template.render(images=image_dict,
-                               upload_url=upload_url)
+                               upload_url=upload_url,
+                               logout_url=logout_url,
+                               login_url=login_url,
+                               email_hash=email_hash)
+
         self.response.write(html)
 
     def post(self):
@@ -494,8 +516,19 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 class AddImageHandler(webapp2.RequestHandler):
 
     def get(self):
-        
+
         user = users.get_current_user()
+        
+        if user:
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+        else:
+            # Should never be here
+            logout_url = None
+            login_url = users.create_login_url('/')
+            email_hash = ''
+
         image_key = self.request.get("image_key")
 
         img_obj = ImageObject.get_by_id(int(image_key),
@@ -507,7 +540,10 @@ class AddImageHandler(webapp2.RequestHandler):
         template = env.get_template("add_image.html")
 
         html = template.render(image_url=image_url,
-                               image_key=image_key)
+                               image_key=image_key,
+                               logout_url=logout_url,
+                               login_url=login_url,
+                               email_hash=email_hash)
 
         self.response.write(html)
 
@@ -516,29 +552,27 @@ class AddImageHandler(webapp2.RequestHandler):
         user = users.get_current_user()
         image_key = self.request.get("image_key")
 
+        title = self.request.get("title")
         description = self.request.get("description")
-
+        challenge = self.request.get("challenge")
+        permission = self.request.get("permission")
 
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
+        img_obj.title = title
         img_obj.description = description
+        img_obj.challenge = challenge
+        img_obj.permission = permission
 
         img_obj.put()
 
         self.redirect('/')
-        
-
-        
-
-
-   
-        
-  
 
 # This is the app.  
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    (r'/([0-9]+)$', PickerHandler),
     ('/upload', LibraryHandler),
     ('/library', LibraryHandler),
     ('/add_image', AddImageHandler),

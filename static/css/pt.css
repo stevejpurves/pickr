@@ -80,3 +80,13 @@ float: right!important;
 .pt {
   font-family: 'Nunito', sans-serif;
   }
+
+.thumbnail{
+    /*width: 300px;*/
+    height: 200px;
+    overflow: auto;
+}
+
+.thumbnail img{
+// your styles for the images
+}
