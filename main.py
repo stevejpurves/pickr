@@ -13,7 +13,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
 from google.appengine.api import images
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 from mmorph import dilate
 
@@ -175,12 +175,20 @@ class ResultsHandler(webapp2.RequestHandler):
         heatmap_morph = dilate( heatmap.astype(int), B = np.ones((n,n)).astype(int) )
         # normalize the heatmap from 0-255 for making an image
         hmap_norm = normalize(heatmap_morph)
-                  
+        
+        r, g, b = hmap_norm, hmap_norm, hmap_norm
+        a = 100*np.ones(hmap_norm.shape)
+        
+        a[r == 0] = 255
+    
+        x = np.dstack([r, g, b, a])
+        im_out = Image.fromarray(x.astype('uint8'), 'RGBA')
+        #inverted_image = ImageOps.invert(im_out)
+        
         output = StringIO.StringIO()
         
-        im_out = Image.fromarray( hmap_norm.astype('uint8'),'L' )
         im_out.save(output,'png')
-
+        
         image = base64.b64encode(output.getvalue())
 
         user = users.get_current_user()
