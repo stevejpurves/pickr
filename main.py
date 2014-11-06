@@ -152,77 +152,103 @@ class ResultsHandler(webapp2.RequestHandler):
         
         count = len(data)
 
+        if not local:
             
-        fig = plt.figure(figsize=(15,8))
-        ax = fig.add_axes([0,0,1,1])
-    
-        # Load the image to a variable
-        im = Image.open('brazil_ang_unc.png')
-        px, py = im.size
-    
-        # plot the seismic image first
-        # im = plt.imshow(im)
-        # Make a modified version of rainbow colormap with some transparency
-        # in the bottom of the colormap.
-        hot = cm.hot
-        hot.set_under(alpha = 0.0)  #anything that has value less than 0.5 goes transparent
+            fig = plt.figure(figsize=(15,8))
+            ax = fig.add_axes([0,0,1,1])
         
-        for user in data:
-            try:
-                picks = np.array(json.loads(user.picks))
-                hx, hy = regularize(picks[:,0], picks[:,1], px, py)
-                all_picks_x = np.concatenate((all_picks_x,hx))
-                all_picks_y = np.concatenate((all_picks_y,hy))
-                ax.plot(picks[:,0], picks[:,1], 'g-', alpha=0.5, lw=2)
-
-                m = 1
-                # do 2d histogram to display heatmap
-                binsizex = m
-                binsizey = m
-                heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
-                                                         bins=(720/binsizex,1080/binsizey),
-                                                         range=np.array([[0, 720], [0,1080]]))
-                extent = [0, 1080,
-                          720, 0 ]
-
-                # do dilation of picks in heatmap
-                heatmap_dil = heatmap#grey_dilation(heatmap,size=(5,5))
+            # Load the image to a variable
+            im = Image.open('brazil_ang_unc.png')
+            px, py = im.size
+        
+            # plot the seismic image first
+            # im = plt.imshow(im)
+            # Make a modified version of rainbow colormap with some transparency
+            # in the bottom of the colormap.
+            hot = cm.hot
+            hot.set_under(alpha = 0.0)  #anything that has value less than 0.5 goes transparent
             
-                #fig = plt.figure(figsize=(15,8))
-                #ax = fig.add_axes([0, 0, 1, 1])
-                #heatim = ax.imshow(heatmap,
-                #                   cmap=cm.hot, extent=extent, alpha=0.75)
-                #heatim.set_clim(0.5, np.amax(heatmap))
-                ax.set_ylim((720,0))
-                ax.set_xlim((0,1080))
-                #ax.invert_yaxis()
-                ax.set_xticks([])
-                ax.set_yticks([])
-                ax.set_frame_on(False)
-            except:
-                pass
+            for user in data:
+                try:
+                    picks = np.array(json.loads(user.picks))
+                    hx, hy = regularize(picks[:,0], picks[:,1], px, py)
+                    all_picks_x = np.concatenate((all_picks_x,hx))
+                    all_picks_y = np.concatenate((all_picks_y,hy))
+                    ax.plot(picks[:,0], picks[:,1], 'g-', alpha=0.5, lw=2)
+
+                    m = 1
+                    # do 2d histogram to display heatmap
+                    binsizex = m
+                    binsizey = m
+                    heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
+                                                             bins=(720/binsizex,1080/binsizey),
+                                                             range=np.array([[0, 720], [0,1080]]))
+                    extent = [0, 1080,
+                              720, 0 ]
+
+                    # do dilation of picks in heatmap
+                    heatmap_dil = heatmap#grey_dilation(heatmap,size=(5,5))
+                
+                    #fig = plt.figure(figsize=(15,8))
+                    #ax = fig.add_axes([0, 0, 1, 1])
+                    #heatim = ax.imshow(heatmap,
+                    #                   cmap=cm.hot, extent=extent, alpha=0.75)
+                    #heatim.set_clim(0.5, np.amax(heatmap))
+                    ax.set_ylim((720,0))
+                    ax.set_xlim((0,1080))
+                    #ax.invert_yaxis()
+                    ax.set_xticks([])
+                    ax.set_yticks([])
+                    ax.set_frame_on(False)
+                except:
+                    pass
+                
+            output = StringIO.StringIO()
+            plt.savefig(output)
+            image = base64.b64encode(output.getvalue())
+
+            user = users.get_current_user()
+
+            # User should exist, so this should fail otherwise.
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+
+            template = env.get_template("results.html")
+            html = template.render(count=count,
+                                   logout_url=logout_url,
+                                   email_hash=email_hash,
+                                   image=image,
+                                   image_url=image_url,
+                                   image_key=image_key)
+
+            self.response.write(html)
             
-        output = StringIO.StringIO()
-        plt.savefig(output)
-        image = base64.b64encode(output.getvalue())
 
-        user = users.get_current_user()
+        else:
 
-        # User should exist, so this should fail otherwise.
-        logout_url = users.create_logout_url('/')
-        login_url = None
-        email_hash = hashlib.md5(user.email()).hexdigest()
+            with open("alaska.b64", "r") as f:
+                image = f.read()
+                
+            user = users.get_current_user()
 
-        template = env.get_template("results.html")
-        html = template.render(count=count,
-                               logout_url=logout_url,
-                               email_hash=email_hash,
-                               image=image,
-                               image_url=image_url,
-                               image_key=image_key)
+            # User should exist, so this should fail otherwise.
+            logout_url = users.create_logout_url('/')
+            login_url = None
+            email_hash = hashlib.md5(user.email()).hexdigest()
+            
+            template = env.get_template("results.html")
+            html = template.render(count=count,
+                                   logout_url=logout_url,
+                                   email_hash=email_hash,
+                                   image=image,
+                                   image_url=image_url,
+                                   image_key=image_key)
+                
+            self.response.write(html)
 
-        self.response.write(html)
-          
+        # Make composite image
+
 
 class AboutHandler(webapp2.RequestHandler):
 

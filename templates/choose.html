@@ -37,9 +37,9 @@
       <a class="thumbnail" href="/pickr?image_key={{i['key']}}">
         <img class="img-responsive" src="{{i['image']}}" alt="" />
       </a>
-      <div class="caption">
+      <div class="caption" style="height:140px;">
       	<span class="lead">{{i.title}}</span><br />
-        {{i.description[:100]}} <!-- Limit to 100 characters -->
+        {{i.description[:100]}}{% if i.description | length>100 %}&#8230;{% endif %} <!-- Limit to 100 characters -->
       </div>
     </div>
   </div>
