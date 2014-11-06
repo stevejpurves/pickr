@@ -6,29 +6,41 @@ import json
 import base64
 import hashlib
 import StringIO
+import time
+
 from google.appengine.api import users
+from google.appengine.ext.webapp import blobstore_handlers
+from google.appengine.ext import blobstore
+from google.appengine.api import images
+
+from PIL import Image
+
+
+
+# For image serving
+import cloudstorage as gcs
 
 import numpy as np
 if not os.environ.get('SERVER_SOFTWARE','').startswith('Development'):
-    import PIL
+    
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
-    #from scipy.ndimage.morphology import grey_dilation
-    import Image
+
+
     local = False
 else:
     local = True
 
-from lib_db import SeismicObject, PickrParent
+from lib_db import ImageObject, SeismicParent, SeismicPicks
 
 # Jinja2 environment to load templates.
 env = Environment(loader=FileSystemLoader(join(dirname(__file__),
                                                'templates')))
 
 # Data store set up.
-db_parent = PickrParent.all().get()
+db_parent = SeismicParent.all().get()
 if not db_parent:
-    db_parent = PickrParent()
+    db_parent = SeismicParent()
     db_parent.put()
 
 
@@ -38,7 +50,7 @@ class CommentHandler(webapp2.RequestHandler):
 
         index = int(self.request.get("index"))
 
-        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = ImageObject.all().ancestor(db_parent).sort("-date")
         data = data.fetch(1000)[index]
 
         self.response.write(json.dumps(data.comments))
@@ -48,7 +60,7 @@ class CommentHandler(webapp2.RequestHandler):
         index = int(self.request.get("index"))
         comment = int(self.request.get("comment"))
 
-        data = SeismicObject.all().ancestor(db_parent).sort("-date")
+        data = ImageObject.all().ancestor(db_parent).sort("-date")
         data = data.fetch(1000)[index]
         comments = data.comments
         comments.append(comment)
@@ -65,7 +77,7 @@ class VoteHandler(webapp2.RequestHandler):
         
         index = int(self.request.get("index"))
 
-        data = SeismicObject.all().ancestor(db_parent).order("-date")
+        data = ImageObject.all().ancestor(db_parent).order("-date")
         data = data.fetch(1000)[index]
 
         self.response.write(data.votes)
@@ -76,7 +88,7 @@ class VoteHandler(webapp2.RequestHandler):
         index = int(self.request.get("index"))
         vote = int(self.request.get("vote"))
 
-        data = SeismicObject.all().ancestor(db_parent).order("-date")
+        data = ImageObject.all().ancestor(db_parent).order("-date")
         data = data.fetch(1000)[index]
 
 
@@ -129,8 +141,13 @@ class ResultsHandler(webapp2.RequestHandler):
         # append all horizons into one big file
         all_picks_x = np.array([])
         all_picks_y = np.array([])
+
+        image_key = self.request.get("image_key")
+        img_obj = ImageObject.get_by_id(int(image_key))
+        image_url = images.get_serving_url(img_obj.image)
         
-        data = SeismicObject().all().fetch(1000)
+        
+        data = SeismicPicks.all().ancestor(img_obj).fetch(1000)
         
         count = len(data)
 
@@ -200,7 +217,8 @@ class ResultsHandler(webapp2.RequestHandler):
             html = template.render(count=count,
                                    logout_url=logout_url,
                                    email_hash=email_hash,
-                                   image=image)
+                                   image=image,
+                                   image_url=image_url)
 
             self.response.write(html)
             
@@ -221,7 +239,8 @@ class ResultsHandler(webapp2.RequestHandler):
             html = template.render(count=count,
                                    logout_url=logout_url,
                                    email_hash=email_hash,
-                                   image=image)
+                                   image=image,
+                                   image_url=image_url)
                 
             self.response.write(html)
 
@@ -286,54 +305,29 @@ class PickerHandler(webapp2.RequestHandler):
         login_url = None
         email_hash = hashlib.md5(user.email()).hexdigest()
 
+        if self.request.get("image_key"):
+
+            key_id = self.request.get("image_key")
+            image_obj= ImageObject.get_by_id(int(key_id))
+
+            try:
+                image_url = images.get_serving_url(image_obj.image)
+            except:
+                print "handle this error"
+                
+                
         # Write the page.
         template = env.get_template('pickpoint.html')
         html = template.render(logout_url=logout_url,
                                login_url=login_url,
-                               email_hash=email_hash)
+                               email_hash=email_hash,
+                               image_url=image_url,
+                               image_key = key_id)
 
         self.response.write(html)
 
 
-## class UploadHandler(blobstore_handlers.BlobstoreUploadHandler,
-##                     webapp2.RequestHandler):
 
-##     def post(self):
-
-##         upload_file = self.get_uploads()
-##         blob_info = upload_files[0]
-
-##         # Read the image file
-##         reader = blobstore.BlobReader(blob_info.key())
-
-##         im = Image.open(reader, 'r')
-##         im = im.convert('RGB').resize((350,350))
-
-##         output = StringIO.StringIO()
-##         im.save(output, format='PNG')
-
-##         bucket = '/pickr_bucket/'
-##         output_filename = (bucket +'/2' + str(time.time()))
-
-##         gcsfile = gcs.open(output_filename, 'w')
-##         gcsfile.write(output.getvalue())
-
-##         output.close()
-##         gcsfile.close()
-
-##         # Make a blob reference
-##         bs_file = '/gs' + output_filename
-##         output_blob_key = blobstore.create_gs_key(bs_file)
-
-##         name = self.request.get("name")
-##         description = self.request.get("description")
-
-##         new_db = SeismicObject(name=name, description=description,
-##                                image=output_blob_key)
-
-##         new_db.put()
-
-##         self.redirect('/')
                
 
 class PickHandler(webapp2.RequestHandler):
@@ -341,11 +335,14 @@ class PickHandler(webapp2.RequestHandler):
     def get(self):
 
         user = users.get_current_user()
-        if self.request.get("user_picks"):
-            data = \
-              SeismicObject.all().ancestor(db_parent).filter("user =",
-                                                             user).get()
+        image_key = self.request.get("image_key")
+        img_obj = ImageObject.get_by_id(int(image_key))
 
+        if self.request.get("user_picks"):
+   
+            seismic_obj = SeismicPicks.all().ancestor(img_obj)
+            data = seismic_obj.filter("user =", user).get()
+            
             if data:
                 picks = data.picks
             else:
@@ -354,7 +351,7 @@ class PickHandler(webapp2.RequestHandler):
             return
         
         if self.request.get("all"):
-            data = SeismicObject.all().fetch(1000)
+            data = SeismicPicks.all().ancestor(img_obj).fetch(1000)
 
             picks = [i.picks for i in data]
             self.response.write(data)
@@ -362,7 +359,7 @@ class PickHandler(webapp2.RequestHandler):
 
         if self.request.get("pick_index"):
 
-            data = SeismicObject.all().ancestor(db_parent)
+            data = SeismicPicks.all().ancestor(img_obj)
             data = data.order("-date").fetch(1000)
 
             index = int(self.request.get("pick_index"))
@@ -376,33 +373,40 @@ class PickHandler(webapp2.RequestHandler):
                  int(self.request.get("y")))
 
         user = users.get_current_user()
+        image_key = self.request.get("image_key")
 
         if not user:
             self.redirect('/')
 
-        d = SeismicObject.all().ancestor(db_parent).filter("user =",
-                                                           user).get()
+        image_obj = ImageObject.get_by_id(int(image_key))
+        picks = SeismicPicks.all().ancestor(image_obj)
+        picks = picks.filter("user =", user).get()
 
-        if not d:
-            d = SeismicObject(picks=json.dumps([point]).encode(),
-                              user=user, parent=db_parent,votes=0)
-            d.put()
+        if not picks:
+            picks = SeismicPicks(user=user,
+                                 picks=json.dumps([point]).encode(),
+                                 parent=image_obj)
+            picks.put()
         else:
 
-            picks = json.loads(d.picks)
-            picks.append(point)
-            d.picks = json.dumps(picks).encode()
-            d.put()
+            all_picks = json.loads(picks.picks)
+            all_picks.append(point)
+            picks.picks = json.dumps(all_picks).encode()
+            picks.put()
+            
         self.response.write("Ok")
 
 
     def delete(self):
 
         user = users.get_current_user()
+        image_key = self.request.get("image_key")
 
-        data = \
-          SeismicObject.all().ancestor(db_parent).filter("user =",
-                                                         user).get()
+        img_obj = ImageObject.get_by_id(int(image_key))
+
+        data = SeismicPicks.all().ancestor(img_obj).filter("user =",
+                                                           user)
+        data = data.get()
 
         points = json.loads(data.picks)
 
@@ -419,23 +423,65 @@ class PickHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(value))
 
 
-## class AddImageHandler(webapp2.RequestHandler):
+class AddImageHandler(blobstore_handlers.BlobstoreUploadHandler,
+                      webapp2.RequestHandler):
 
-##     def get(self):
+    def get(self):
 
-##         upload_url = blobstore.create_upload_url('/upload')
+        upload_url = blobstore.create_upload_url('/upload')
 
-##         template = env.get_template("new_image.html")
+        template = env.get_template("upload_image.html")
 
-##         html = template.render(upload_url=upload_url))
-##         self.response.write(html)
+        html = template.render(upload_url=upload_url)
+        self.response.write(html)
+
+    def post(self):
+
+        user = users.get_current_user()
+
+
+        upload_files = self.get_uploads()
+        blob_info = upload_files[0]
+
+        # Read the image file
+        reader = blobstore.BlobReader(blob_info.key())
+
+        im = Image.open(reader, 'r')
+
+        output = StringIO.StringIO()
+        im.save(output, format='PNG')
+
+        bucket = '/pickr_bucket/'
+        output_filename = (bucket +'/2' + str(time.time()))
+
+        gcsfile = gcs.open(output_filename, 'w')
+        gcsfile.write(output.getvalue())
+
+        output.close()
+        gcsfile.close()
+
+        # Make a blob reference
+        bs_file = '/gs' + output_filename
+        output_blob_key = blobstore.create_gs_key(bs_file)
+
+        name = self.request.get("name")
+        description = self.request.get("description")
+
+        new_db = ImageObject(description=description,
+                             image=output_blob_key)
+
+        new_db.put()
+
+        self.redirect('/pickr?image_key=' +
+                      str(new_db.key().id())) 
+        
   
 
 # This is the app.  
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    #('/upload', UploadModel),
-    #('/new_image', AddImageHandler),
+    ('/upload', AddImageHandler),
+    ('/new_image', AddImageHandler),
     ('/about', AboutHandler),
     ('/update_pick', PickHandler),
     ('/pickr', PickerHandler),

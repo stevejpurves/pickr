@@ -5,6 +5,11 @@
 {% block content %}
 
 <head>
+<script>
+  var image_url = "{{image_url}}";
+  var image_key = "{{image_key}}";
+
+</script>
 <script src="/static/js/raphael-min.js"></script>
 <script src="/static/js/underscore-min.js"></script>
 <script src="/static/js/pick-drawing.js"></script>
@@ -19,10 +24,12 @@
     </div>
     <div class="col-md-4">
       <div class="btn-toolbar pull-right">
-        <button id="undo-button" type="button" class="btn btn-primary">
+        <button id="undo-button" type="button" 
+		class="btn btn-primary">
           Undo
         </button>
-        <button id="clear-button" type="button" class="btn btn-primary">
+        <button id="clear-button" type="button" 
+		class="btn btn-primary">
           Clear
         </button>
       </div>
@@ -35,7 +42,10 @@
 
   <!-- div for big green button at bottom -->
   <div class="col-md-offset-2 col-md-8" style="margin-bottom:44px;">
-    <button type="button" class="btn btn-success btn-lg btn-block" onclick="document.location.href='/results'">I'm all done... Submit!</button>
+    <button type="button" class="btn btn-success btn-lg btn-block" 
+	    onclick="document.location.href='/results?image_key={{image_key}}'">
+      I'm all done... Submit!
+    </button>
   </div>
     
 </div><!-- end of main container -->

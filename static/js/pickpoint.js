@@ -1,6 +1,7 @@
 $(function() {
     pickDrawing.setup('seismic-div');
-    pickDrawing.load({ user_picks: 1});
+    pickDrawing.load({ user_picks: 1,
+		       image_key: image_key});
 
     $('#seismic-div').click(function(e) {
         var imageX = e.pageX - this.offsetLeft;
@@ -10,8 +11,9 @@ $(function() {
     });
     
     $('#clear-button').click(function(){
-	$.ajax("/update_pick?clear=1",{
+	$.ajax("/update_pick?clear=1&image_key=" + image_key,{
 	        type: "DELETE",
+
             success: function(){
 		        pickDrawing.clear();
             }
@@ -19,7 +21,7 @@ $(function() {
     });
 
     $('#undo-button').click(function(){
-        $.ajax("/update_pick?undo=1", {
+        $.ajax("/update_pick?undo=1&image_key="+image_key, {
             type: "DELETE",
             dataType: "json",
             success: function(p){

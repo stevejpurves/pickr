@@ -26,7 +26,7 @@ pickDrawingSetup = function(){
         paper = Raphael(elementId);
         updatePaperSize();
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
-        baseImage = paper.image('/static/data/brazil_ang_unc.png', 0, 0, baseImageWidth, baseImageHeight);
+        baseImage = paper.image(image_url, 0, 0, baseImageWidth, baseImageHeight);
         $(window).resize(updatePaperSize);        
     }
     
@@ -89,12 +89,13 @@ pickDrawingSetup = function(){
     }
     
     var clickPoint = function(point){
-        var imagePoint = { 
+        var data = { 
+	    image_key:image_key,
             x: Math.round(point.x / resizeScale),
             y: Math.round(point.y / resizeScale)
         };
-        $.post('/update_pick', imagePoint, 
-            function(){addPoint(imagePoint)});
+        $.post('/update_pick', data, 
+            function(){addPoint(data)});
     }
 
     var removePoint = function(point){
