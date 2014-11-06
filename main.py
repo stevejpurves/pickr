@@ -155,32 +155,31 @@ class ResultsHandler(webapp2.RequestHandler):
         px, py = im.size
         
         for user in data:
-            try:
+            #try:
                 picks = np.array(json.loads(user.picks))
-                hx, hy = regularize(picks[:,0], picks[:,1], px, py)
+                hx, hy = regularize(picks[:,0], picks[:,1])
                 all_picks_x = np.concatenate((all_picks_x,hx))
                 all_picks_y = np.concatenate((all_picks_y,hy))
-
-                m = 1
-                
-                # do 2d histogram of the heatmap
-                binsizex = m
-                binsizey = m
-                heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
-                                                            bins=(py/binsizex,px/binsizey),
-                                                            range=np.array([[0, py], [0, px]]))
-
-                # do dilation of picks in heatmap
-                n = 3   # the dilation structuring element (nxn)
-                heatmap_morph = dilate( heatmap.astype(int), B = np.ones((n,n)).astype(int) )
-                hmap_norm = normalize(heatmap_morph)
-                           
-            except:
-                pass
-             
+                                     
+            #except:
+            #    pass
+        # do 2d histogram of the heatmap
+        m = 1
+        binsizex = m
+        binsizey = m
+        heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
+                                                bins=(py/binsizex,px/binsizey),
+                                                range=np.array([[0, py], [0, px]])) 
+        # do dilation of picks in heatmap
+        n = 3   # the dilation structuring element (nxn)
+        heatmap_morph = dilate( heatmap.astype(int), B = np.ones((n,n)).astype(int) )
+        # normalize the heatmap from 0-255 for making an image
+        hmap_norm = normalize(heatmap_morph)
+                  
         output = StringIO.StringIO()
+        
         im_out = Image.fromarray( hmap_norm.astype('uint8'),'L' )
-        im_out.save(output)
+        im_out.save(output,'png')
 
         image = base64.b64encode(output.getvalue())
 
