@@ -15,6 +15,7 @@ from google.appengine.api import images
 
 from PIL import Image
 
+from mmorph import dilate
 
 
 # For image serving
@@ -130,27 +131,24 @@ class ResultsHandler(webapp2.RequestHandler):
     def get(self):
 
         # connect the dots using one dimensional linear interpretation: np.interp()
-        def regularize(xarr, yarr, px, py):
+        def regularize(xarr, yarr):
             # connect the dots of the horizon spanning the image
-            # px : is the number of horizontal pixels
-            # py : is the number of horizontal pixels
-            horx = np.arange(px)
+            horx = np.arange(np.amin(xarr),np.amax(xarr)+1)
             hory = np.interp(horx, xarr, yarr)
             return horx, hory
-        
-        # append all horizons into one big file
-        all_picks_x = np.array([])
-        all_picks_y = np.array([])
 
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
         image_url = images.get_serving_url(img_obj.image)
         
-        
         data = SeismicPicks.all().ancestor(img_obj).fetch(1000)
         
         count = len(data)
+        
+        # append all horizons into one big file
+        all_picks_x = np.array([])
+        all_picks_y = np.array([])
 
         if not local:
             
@@ -174,37 +172,39 @@ class ResultsHandler(webapp2.RequestHandler):
                     hx, hy = regularize(picks[:,0], picks[:,1], px, py)
                     all_picks_x = np.concatenate((all_picks_x,hx))
                     all_picks_y = np.concatenate((all_picks_y,hy))
-                    ax.plot(picks[:,0], picks[:,1], 'g-', alpha=0.5, lw=2)
+                    #ax.plot(picks[:,0], picks[:,1], 'g-', alpha=0.5, lw=2)
 
                     m = 1
                     # do 2d histogram to display heatmap
                     binsizex = m
                     binsizey = m
                     heatmap, yedges, xedges = np.histogram2d(all_picks_y, all_picks_x,
-                                                             bins=(720/binsizex,1080/binsizey),
-                                                             range=np.array([[0, 720], [0,1080]]))
-                    extent = [0, 1080,
-                              720, 0 ]
+                                                             bins=(py/binsizex,px/binsizey),
+                                                             range=np.array([[0, py], [0, px]]))
+                    #extent = [0, px, py, 0 ]
 
                     # do dilation of picks in heatmap
-                    heatmap_dil = heatmap#grey_dilation(heatmap,size=(5,5))
+                    n = 11   # the dilation structuring element (nxn)
+                    heatmap_morph = dilate( heatmap.astype(int), B = np.ones((n,n)).astype(int) )
                 
                     #fig = plt.figure(figsize=(15,8))
                     #ax = fig.add_axes([0, 0, 1, 1])
                     #heatim = ax.imshow(heatmap,
                     #                   cmap=cm.hot, extent=extent, alpha=0.75)
                     #heatim.set_clim(0.5, np.amax(heatmap))
-                    ax.set_ylim((720,0))
-                    ax.set_xlim((0,1080))
+                    #ax.set_ylim((py,0))
+                    #ax.set_xlim((0,px))
                     #ax.invert_yaxis()
-                    ax.set_xticks([])
-                    ax.set_yticks([])
-                    ax.set_frame_on(False)
+                    #ax.set_xticks([])
+                    #ax.set_yticks([])
+                    #ax.set_frame_on(False)
                 except:
                     pass
                 
             output = StringIO.StringIO()
-            plt.savefig(output)
+            im_out = Image.fromarray(heatmap_morph)
+            im_out.save(output)
+            #plt.savefig(output)
             image = base64.b64encode(output.getvalue())
 
             user = users.get_current_user()
