@@ -4485,3 +4485,7 @@ def pad4n(f, Bc, value, scale=1):
     g = value * ones( f.shape + scale * (array(Bc.shape) - 1))
     g[ ch: -ch, cw: -cw] = f
     return g.astype(f.dtype)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7f17e393bdd0a364f72ee07a1e46206fecf3422c

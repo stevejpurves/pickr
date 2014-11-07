@@ -38,23 +38,44 @@
         </div>
 
         <div class="form-group">
+          <label for="pickstyle" class="col-sm-2 control-label">Pick style</label>
+          <div class="radio col-sm-10">
+            <label>
+              <input type="radio" name="pickstyle" id="points" value="points" checked>
+              Pick and count points.
+            </label>
+          </div>
+          <div class="radio col-sm-offset-2 col-sm-10">
+            <label>
+              <input type="radio" name="pickstyle" id="line" value="line">
+              Pick a line.
+            </label>
+          </div>
+          <div class="radio disabled col-sm-offset-2 col-sm-10">
+            <label>
+              <input type="radio" name="pickstyle" id="polygon" value="polygon" disabled>
+              Pick a polygon. COMING SOON.
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label for="permission" class="col-sm-2 control-label">Permission</label>
           <div class="radio col-sm-10">
             <label>
-              <input type="radio" name="optionsRadios" id="cc-by" value="cc-by" 
-		     name="cc-by" checked>
+              <input type="radio" name="permission" id="cc-by" value="CC-BY" checked>
               This is my image and I release it under the terms of <a href="http://bit.ly/cc-by">CC-BY</a>.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="optionsRadios" id="limited" value="limited">
+              <input type="radio" name="permission" id="limited" value="Copyright. Used with permission">
               This is my image and I am allowing its use here, but only here.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="optionsRadios" id="3rdparty" value="3rdparty">
+              <input type="radio" name="permission" id="3rdparty" value="Copyright. Used with permission">
               This is not my image, but I have permission to share it here.
             </label>
           </div>
