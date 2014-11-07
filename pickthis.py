@@ -55,7 +55,7 @@ def get_result_image(img_obj):
 
         # Do dilation of the histogram 'image' in heatmap.
         n = 3   # The dilation structuring element (n x n).
-        heatmap_morph = dilate( heatmap.astype(int), B = np.ones((n,n)).astype(int) )
+        heatmap_morph = dilate( heatmap.astype(int), B = np.zeros((n,n)).astype(int) )
 
         # Normalize the heatmap from 0-255 for making an image.
         heatmap_norm = normalize(heatmap_morph)
@@ -63,8 +63,7 @@ def get_result_image(img_obj):
         # Make the RGB channels.
         r, g, b = heatmap_norm, heatmap_norm, heatmap_norm
         a = 200*np.ones(heatmap_norm.shape)
-        
-        #a[r == 0] = 255
+        a[r == 0] = 0
     
         x = np.dstack([r, g, b, a])
 
