@@ -65,7 +65,7 @@ def get_result_image(img_obj):
         user_image[(hy,hx)] = 1
         # dilate this image
         r = np.array([[0, py], [0, px]])
-        n = 1   # The radius of the disk structuring element
+        n = np.ceil(py / 500.0).astype(int) # The radius of the disk structuring element
         dilated_image = dilate(user_image.astype(int), B = sedisk(r=n) )
         heatmap_image += dilated_image
 
