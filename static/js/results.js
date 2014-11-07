@@ -3,7 +3,7 @@ $(function() {
     var current = 0;
     pickDrawing.setup('seismic-div');
     //var overlay64 = 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
-    var overlay = pickDrawing.addOverlay('data:image/gif;base64,' + overlay64);
+    var overlay = pickDrawing.addOverlay('data:image/png;base64,' + overlay64);
     
     var updateVoteCount = function(voteCount)
     {
@@ -52,7 +52,7 @@ $(function() {
     });
     
     $( "#overlay-slider" )
-        .slider({min: 0, max: 100, value:50, change: function( event, ui ) {
+        .slider({min: 0, max: 100, value:80, change: function( event, ui ) {
             console.log(overlay);
             overlay.animate({opacity: ui.value / 100});
         }});

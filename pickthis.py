@@ -82,7 +82,7 @@ def get_result_image(img_obj):
     b = np.clip(((3 * heatmap_norm) - 510), 0, 255)
 
     # Make the A chanel, setting all the non-picked areas to transparent.
-    opacity = 0.8
+    opacity = 1.0 #
     a = opacity * 255 * np.ones_like(heatmap_norm)
     # Set everything corresponding to zero data to transparent.
     a[heatmap_image==0] = 0 
