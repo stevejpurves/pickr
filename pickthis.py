@@ -20,7 +20,7 @@ def regularize(xarr, yarr):
     """
     horx = np.arange(np.amin(xarr), np.amax(xarr)+1)
     hory = np.interp(horx, xarr, yarr)
-    return horx, hory
+    return horx.astype(int), hory.astype(int)
 
     
 def normalize(arr, newmax):
@@ -45,10 +45,6 @@ def get_result_image(img_obj):
     # Read the interpretations for this image.
     data = SeismicPicks.all().ancestor(img_obj).fetch(1000)
     
-    # Append all horizons into one big file
-    all_picks_x = np.array([])
-    all_picks_y = np.array([])   
-    
     # Get the dimensions.
     reader = blobstore.BlobReader(img_obj.image)
     im = Image.open(reader, 'r')
@@ -59,30 +55,26 @@ def get_result_image(img_obj):
     print "im.size:", im.size
 
     # Get all the interpretations.
+    heatmap_image = np.zeros((py,px))
     for user in data:
+        user_image = np.zeros((py,px))
         picks = np.array(json.loads(user.picks))
+        # line of points (called h for horizon)
         hx, hy = regularize(picks[:,0], picks[:,1])
-        all_picks_x = np.concatenate((all_picks_x, hx))
-        all_picks_y = np.concatenate((all_picks_y, hy))
-                                 
-    # Make a 2d histogram (an image) of the heatmap.
-    r = np.array([[0, py], [0, px]])
-    heatmap = np.histogram2d(all_picks_y,
-                             all_picks_x,
-                             bins=(py, px),
-                             range=r
-                             )[0]
-
-    # Do dilation of the histogram 'image' in heatmap.
-    n = 2   # The radius of the disk structuring element
-    heatmap_morph = dilate( heatmap.astype(int), B = sedisk(r=n) )
+        # make line into image        
+        user_image[(hy,hx)] = 1
+        # dilate this image
+        r = np.array([[0, py], [0, px]])
+        n = 1   # The radius of the disk structuring element
+        dilated_image = dilate(user_image.astype(int), B = sedisk(r=n) )
+        heatmap_image += dilated_image
 
     # DEBUGGING SIZE ISSUE
-    print "heatmap.shape:", heatmap_morph.shape
+    print "heatmap.shape:", heatmap_image.shape
 
     # Normalize the heatmap from 0-255 for making an image.
     # We subtract 1 first to normalize to the non-zero data only.
-    heatmap_norm = normalize(heatmap_morph - 1, 255)
+    heatmap_norm = normalize(heatmap_image - 1, 255)
     
     # Make the RGB channels.
     r = np.clip((2 * heatmap_norm), 0, 255)
@@ -93,7 +85,7 @@ def get_result_image(img_obj):
     opacity = 0.8
     a = opacity * 255 * np.ones_like(heatmap_norm)
     # Set everything corresponding to zero data to transparent.
-    a[heatmap_morph==0] = 0 
+    a[heatmap_image==0] = 0 
 
     # Make the 4-channel image from an array.
     x = np.dstack([r, g, b, a])
