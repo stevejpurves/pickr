@@ -2,7 +2,7 @@
 import numpy as np
 import StringIO, json, base64
 
-from lib_db import SeismicPicks
+from lib_db import Picks
 
 from google.appengine.api import images
 from google.appengine.ext import blobstore
@@ -42,7 +42,7 @@ def get_result_image(img_obj):
     
     """
     # Read the interpretations for this image.
-    data = SeismicPicks.all().ancestor(img_obj).fetch(1000)
+    data = Picks.all().ancestor(img_obj).fetch(1000)
     
     # Get the dimensions.
     reader = blobstore.BlobReader(img_obj.image)

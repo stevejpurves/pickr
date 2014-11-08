@@ -7,18 +7,27 @@ $(function() {
     
     var updateVoteCount = function(voteCount)
     {
-        $('#vote-count').text(parseInt(voteCount));
+        $('#vote-count').text(parseInt(voteCount["votes"]));
+	// Update the button to reflect users current choice
+	if(voteCount["user_choice"] !=0){
+
     };
 
     var loadPicks = function()
     {
+
+
+	    
+	    
         pickDrawing.load({
             pick_index: current,
 	    image_key: image_key
         });
-        $.get('/vote', {index: current}, updateVoteCount);
+        $.get('/vote', {index: current,
+			image_key: image_key}, 
+	      updateVoteCount);
     }
-    loadPicks();
+    
 
     $('#previous-button').click(function(){
         if (current <= 0)
@@ -38,6 +47,7 @@ $(function() {
     {
        $.post('/vote',{
            index: current,
+	   image_key: image_key,
            vote: v
        },
        updateVoteCount);
