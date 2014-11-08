@@ -9,7 +9,7 @@
 
   <div class="row" style="margin-top:18px; margin-bottom:30px;">
     <div class="col-md-8 col-sm-6 col-xs-6">
-    <p class="lead">Choose an image to interpret, or upload one of your own.</p>
+    <p class="lead">Choose an image to interpret, or {% if login_url %}<strong><a href={{login_url}}>sign in</a></strong> to {% endif %}upload one of your own.</p>
     </div>
     <div class="col-md-4 col-sm-6 col-xs-6">
       <div class="pull-right">
@@ -23,7 +23,8 @@
           </div>
           <div class="btn btn-info btn-lg btn-block" 
                id="upload_btn" 
-               onclick="$('#file').click()">
+               onclick="$('#file').click()"
+               {% if login_url %}disabled="disabled"{% endif %}>
             <span class="hidden-xs">Upload a new image</span><span class="visible-xs">Upload new</span>
           </div> 
         </form>
