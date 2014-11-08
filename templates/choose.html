@@ -35,7 +35,7 @@
   {% for i in images %}
   <div>
     <div class="col-lg-3 col-md-4 col-xs-6 thumb">
-      <a class="thumbnail" href="/pickr?image_key={{i['key']}}">
+      <a class="thumbnail" {% if login_url %}href="#"{% else %} href="/pickr?image_key={{i['key']}}"{% endif %} >
         <img class="img-responsive" src="{{i['image']}}" alt="" />
       </a>
       <div class="caption" style="height:140px;">

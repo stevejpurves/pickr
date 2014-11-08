@@ -139,7 +139,6 @@ class MainPage(webapp2.RequestHandler):
             logout_url = users.create_logout_url('/')
             login_url = None
             email_hash = hashlib.md5(user.email()).hexdigest()
-
             self.redirect('/library')
             
 
@@ -192,17 +191,17 @@ class PickerHandler(webapp2.RequestHandler):
 
     def get(self, id=None):
 
-        if id:
-            key_id = id
-        else:
-            key_id = self.request.get("image_key")
-
         user = users.get_current_user()
 
         # User should exist, so this should fail otherwise.
         logout_url = users.create_logout_url('/')
         login_url = None
         email_hash = hashlib.md5(user.email()).hexdigest()
+
+        if id:
+            key_id = id
+        else:
+            key_id = self.request.get("image_key")
 
 
         image_obj= ImageObject.get_by_id(int(key_id),
