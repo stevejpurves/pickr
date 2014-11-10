@@ -9,25 +9,33 @@ $(function() {
     {
         $('#vote-count').text(parseInt(voteCount["votes"]));
 	// Update the button to reflect users current choice
-	if(voteCount["user_choice"] !=0){
+	var user_choice = voteCount["user_choice"];
+	if(user_choice != 0){
+
+	    if(user_choice == 1){
+		document.getElementById("up-vote-button").style.backgroundColor = '#FFFF00';
+		//$("#down-vote-button").style.backgroundColor = '#FFFF00';
+	    };
+	};
 
     };
 
-    var loadPicks = function()
+   
+     var loadPicks = function()
     {
 
 
 	    
-	    
-        pickDrawing.load({
-            pick_index: current,
-	    image_key: image_key
-        });
-        $.get('/vote', {index: current,
+	$.get('/vote', {index: current,
 			image_key: image_key}, 
 	      updateVoteCount);
-    }
-    
+
+	pickDrawing.load({
+           pick_index: current,
+	    image_key: image_key
+        });
+        
+    };
 
     $('#previous-button').click(function(){
         if (current <= 0)
@@ -66,4 +74,9 @@ $(function() {
             console.log(overlay);
             overlay.animate({opacity: ui.value / 100});
         }});
+
+loadPicks();
 });
+
+
+
