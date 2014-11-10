@@ -45,9 +45,8 @@ def get_result_image(img_obj):
     data = Picks.all().ancestor(img_obj).fetch(1000)
     
     # Get the dimensions.
-    reader = blobstore.BlobReader(img_obj.image)
-    im = Image.open(reader, 'r')
-    px, py = im.size
+    #px, py = img_obj.size # This gets the image from the blobstore
+    px, py = img_obj.width, img_obj.height # This doesn't 
 
     # Make an 'empty' image for all the results. 
     heatmap_image = np.zeros((py,px))
@@ -81,7 +80,7 @@ def get_result_image(img_obj):
 
     # Normalize the heatmap from 0-255 for making an image.
     # We subtract 1 first to normalize to the non-zero data only.
-    heatmap_norm = normalize(heatmap_image - 1, 255)
+    heatmap_norm = normalize(heatmap_image, 255)
     
     # Make the RGB channels.
     r = np.clip((2 * heatmap_norm), 0, 255)
