@@ -94,6 +94,8 @@ class VoteHandler(webapp2.RequestHandler):
 
     def get(self):
 
+        self.response.headers["Content-Type"] = "application/json"
+        
         user = users.get_current_user()
         index = int(self.request.get("index"))
         image_key = int(self.request.get("image_key"))
@@ -104,7 +106,6 @@ class VoteHandler(webapp2.RequestHandler):
         picks = picks[index]
 
         votes = picks.votes
-        print "VVVVVVVVVVVVVVVV", votes
 
         if user:
             user_vote = Vote.all().ancestor(picks).filter("user =",
@@ -120,8 +121,7 @@ class VoteHandler(webapp2.RequestHandler):
 
         data = {"votes": votes,
                 "user_choice": user_choice}
-
-        print data
+    
         
         self.response.write(json.dumps(data))
         
