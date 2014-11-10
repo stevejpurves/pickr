@@ -80,7 +80,7 @@ def get_result_image(img_obj):
 
     # Normalize the heatmap from 0-255 for making an image.
     # We subtract 1 first to normalize to the non-zero data only.
-    heatmap_norm = normalize(heatmap_image, 255)
+    heatmap_norm = normalize(heatmap_image - 1, 255)
     
     # Make the RGB channels.
     r = np.clip((2 * heatmap_norm), 0, 255)

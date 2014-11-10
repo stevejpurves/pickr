@@ -57,6 +57,5 @@ class ImageObject(db.Model):
         reader = blobstore.BlobReader(self.image)
         im = Image.open(reader, 'r')
         s = im.size
-        im.close()
 
         return s # width, height
