@@ -10,15 +10,21 @@ $(function() {
         $('#vote-count').text(parseInt(voteCount["votes"]));
 	// Update the button to reflect users current choice
 	var user_choice = voteCount["user_choice"];
-	if(user_choice != 0){
 
-	    if(user_choice == 1){
-		document.getElementById("up-vote-button").style.backgroundColor = '#FFFF00';
-		//$("#down-vote-button").style.backgroundColor = '#FFFF00';
-	    };
-	};
-
+	if(user_choice == 1){
+	    document.getElementById("thumbs-up").style.color = "green";
+	    document.getElementById("thumbs-down").style.color = "grey";
+	} else if(user_choice ==-1){
+	    document.getElementById("thumbs-up").style.color = "grey";
+	    document.getElementById("thumbs-down").style.color = "red";
+	} else{
+	    document.getElementById("thumbs-up").style.color = "grey";
+	document.getElementById("thumbs-down").style.color = "grey";
     };
+
+
+};
+
 
    
      var loadPicks = function()

@@ -94,7 +94,11 @@ class VoteHandler(webapp2.RequestHandler):
             vote = Vote(user=user, value=update_vote,
                         parent=picks[index])
         else:
-            vote.value = update_vote
+            # reset if they try to set to the same vote
+            if vote.value == update_vote:
+                vote.value = 0
+            else:
+                vote.value = update_vote
 
         vote.put()
         

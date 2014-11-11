@@ -4,6 +4,26 @@
 
 {% block content %}
 
+<style>
+.yellow {
+    color: yellow;
+}
+
+.grey {
+    color: grey;
+}
+
+.blue {
+    color: blue;
+}
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+</style>
 <script>
   var count = {{count}};
   var overlay64 = "{{image}}";
@@ -37,7 +57,10 @@
        style="vertical-align:center; text-align:center;">
     <button type="button" id="up-vote-button" 
 	    class="btn btn-default btn-sm">
-	  <span class="glyphicon glyphicon-thumbs-up"></span>
+	  <span class="glyphicon glyphicon-thumbs-up grey"
+		id="thumbs-up">
+	  </span>
+
 	</button>
 	  
 <!-- do the county thing -->
@@ -49,14 +72,16 @@
 
 	<button type="button" id="down-vote-button" 
 		class="btn btn-default btn-sm">
-	  <span class="glyphicon glyphicon-thumbs-down"></span>
+	  <span class="glyphicon glyphicon-thumbs-down grey"
+		id="thumbs-down"></span>
 	</button>
+
   </div>
 
   <div class="col-md-4" style="top:2.6em;">
     <button type="button" id="next-button" 
 	    class="btn btn-primary btn-lrg">
-	  <span class="glyphicon glyphicon-chevron-right"></span> 
+	  <span class="glyphicon glyphicon-chevron-right" ></span> 
 	  Next
     </button>
   </div>
