@@ -7,8 +7,38 @@ import json
 
 from google.appengine.api import users
 
+def authenticate(func):
+    """
+    Wrapper function for methods that require a logged in
+    user
+    """
+    def authenticate_and_call(self, *args, **kwargs):
+        user = users.get_current_user()
+        if user is None:
+            raise Exception
+            return
+        else:
+            return func(self, user,*args, **kwargs)
+    return authenticate_and_call
+
+def error_catch(func):
+    """
+    Wrapper for putting all page calls in a try and except
+    """
+    def call_and_catch(self, *args, **kwargs):
+
+        try:
+            func(self, *args, **kwargs)
+        except Exception as e:
+            print e
+            self.error(500)
+            
+    return call_and_catch
+
+
 class CommentHandler(webapp2.RequestHandler):
 
+    @error_catch
     def get(self):
 
         index = int(self.request.get("index"))
@@ -18,7 +48,9 @@ class CommentHandler(webapp2.RequestHandler):
 
         self.response.write(json.dumps(data.comments))
 
-    def post(self):
+    @error_catch
+    @authenticate
+    def post(self, user):
 
         index = int(self.request.get("index"))
         comment = int(self.request.get("comment"))
@@ -36,11 +68,12 @@ class CommentHandler(webapp2.RequestHandler):
       
 class VoteHandler(webapp2.RequestHandler):
 
+    @error_catch
     def get(self):
 
         self.response.headers["Content-Type"] = "application/json"
         
-        user = users.get_current_user()
+
         index = int(self.request.get("index"))
         image_key = int(self.request.get("image_key"))
 
@@ -51,6 +84,7 @@ class VoteHandler(webapp2.RequestHandler):
 
         votes = picks.votes
 
+        user = users.get_current_user()
         if user:
             user_vote = Vote.all().ancestor(picks).filter("user =",
                                                             user)
@@ -69,8 +103,10 @@ class VoteHandler(webapp2.RequestHandler):
         
         self.response.write(json.dumps(data))
         
-        
-    def post(self):
+
+    @error_catch
+    @authenticate
+    def post(self, user):
 
         self.response.headers["Content-Type"] = "application/json"
 
@@ -112,6 +148,7 @@ class VoteHandler(webapp2.RequestHandler):
 
 class PickHandler(webapp2.RequestHandler):
 
+    @error_catch
     def get(self):
 
         user = users.get_current_user()
@@ -148,19 +185,18 @@ class PickHandler(webapp2.RequestHandler):
             self.response.write(data[index].picks)
             return
 
-    def post(self):
+    @error_catch
+    @authenticate
+    def post(self, user):
 
         point = (int(self.request.get("x")),
                  int(self.request.get("y")))
 
-        user = users.get_current_user()
         image_key = self.request.get("image_key")
-
-        if not user:
-            self.redirect('/')
 
         image_obj = ImageObject.get_by_id(int(image_key),
                                           parent=db_parent)
+        
         picks = Picks.all().ancestor(image_obj)
         picks = picks.filter("user =", user).get()
 
@@ -178,8 +214,9 @@ class PickHandler(webapp2.RequestHandler):
             
         self.response.write("Ok")
 
-
-    def delete(self):
+    @error_catch
+    @authenticate
+    def delete(self, user):
 
         user = users.get_current_user()
         image_key = self.request.get("image_key")
