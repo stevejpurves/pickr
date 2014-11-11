@@ -19,6 +19,40 @@ from lib_db import ImageObject
 # For image serving
 import cloudstorage as gcs
 
+def authenticate(func):
+    """
+    Wrapper function for methods that require a logged in
+    user
+    """
+    def authenticate_and_call(self, *args, **kwargs):
+        user = users.get_current_user()
+        if user is None:
+            self.redirect('/')
+            return
+        else:
+            return func(self, user,*args, **kwargs)
+    return authenticate_and_call
+
+
+def error_catch(func):
+    """
+    Wrapper for putting all page calls in a try and except
+    """
+    def call_and_catch(self, *args, **kwargs):
+
+        try:
+            func(self, *args, **kwargs)
+        except:
+            self.redirect("/err")
+    return call_and_catch
+
+class ErrorHandler(webapp2.RequestHandler):
+    def get(self):
+        template = env.get_template("404.html")
+        html = template.render()
+
+        self.response.write(html)
+        
 # Make a basic PageRequest class to handle the params we always need...
 class PickThisPageRequest(webapp2.RequestHandler):
     
@@ -39,11 +73,13 @@ class PickThisPageRequest(webapp2.RequestHandler):
                       login_url=login_url,
                       email_hash=email_hash)
 
+        params.update(kwargs)
         return params
 
 
 class MainPage(webapp2.RequestHandler):
-    
+
+    @error_catch
     def get(self):
 
         user = users.get_current_user()
@@ -61,7 +97,9 @@ class MainPage(webapp2.RequestHandler):
             self.redirect('/library')
             
 
-class ResultsHandler(webapp2.RequestHandler):
+class ResultsHandler(PickThisPageRequest):
+
+    @error_catch
     def get(self):
 
         image_key = self.request.get("image_key")
@@ -73,27 +111,21 @@ class ResultsHandler(webapp2.RequestHandler):
         image_width = img_obj.width
         image_height = img_obj.height
 
-        user = users.get_current_user()
-
-        # User should exist, so this should fail otherwise.
-        logout_url = users.create_logout_url('/')
-        login_url = None
-        email_hash = hashlib.md5(user.email()).hexdigest()
+        params = self.get_base_params(count=count,
+                                      image=image,
+                                      image_url=image_url,
+                                      image_key=image_key,
+                                      image_width=image_width,
+                                      image_height=image_height)
 
         template = env.get_template("results.html")
-        html = template.render(count=count,
-                                logout_url=logout_url,
-                                email_hash=email_hash,
-                                image=image,
-                                image_url=image_url,
-                                image_key=image_key,
-                                image_width=image_width,
-                                image_height=image_height)
+        html = template.render(params)
 
         self.response.write(html)
 
 
 class AboutHandler(PickThisPageRequest):
+    @error_catch
     def get(self):
         template_params = self.get_base_params()
         template = env.get_template('about.html')
@@ -102,6 +134,7 @@ class AboutHandler(PickThisPageRequest):
 
 
 class TermsHandler(PickThisPageRequest):
+    @error_catch
     def get(self):
         template_params = self.get_base_params()
         template = env.get_template('terms.html')
@@ -109,16 +142,11 @@ class TermsHandler(PickThisPageRequest):
         self.response.write(html)
 
 
-class PickerHandler(webapp2.RequestHandler):
+class PickerHandler(PickThisPageRequest):
 
-    def get(self, id=None):
-
-        user = users.get_current_user()
-
-        # User should exist, so this should fail otherwise.
-        logout_url = users.create_logout_url('/')
-        login_url = None
-        email_hash = hashlib.md5(user.email()).hexdigest()
+    @error_catch
+    @authenticate
+    def get(self, user, id=None):
 
         if id:
             key_id = id
@@ -141,33 +169,27 @@ class PickerHandler(webapp2.RequestHandler):
 
         # Write the page.
         template = env.get_template('pickpoint.html')
-        html = template.render(logout_url=logout_url,
-                               login_url=login_url,
-                               email_hash=email_hash,
-                               image_url=image_url,
-                               image_key=key_id,
-                               challenge=challenge,
-                               permission=permission,
-                               image_width=image_width,
-                               image_height=image_height)
+
+        params = self.get_base_params(image_url=image_url,
+                                      image_key=key_id,
+                                      challenge=challenge,
+                                      permission=permission,
+                                      image_width=image_width,
+                                      image_height=image_height)
+        
+        html = template.render(params)
+
 
         self.response.write(html)
      
 class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
-                    webapp2.RequestHandler):
+                    PickThisPageRequest):
 
+    @error_catch
     def get(self):
 
         user = users.get_current_user()
-        
-        if user:
-            logout_url = users.create_logout_url('/')
-            login_url = None
-            email_hash = hashlib.md5(user.email()).hexdigest()
-        else:
-            logout_url = None
-            login_url = users.create_login_url('/')
-            email_hash = ''
+
 
         upload_url = blobstore.create_upload_url('/upload')
 
@@ -183,14 +205,14 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
                        for i in img_obj]
 
         template = env.get_template('choose.html')
-        html = template.render(images=image_dict,
-                               upload_url=upload_url,
-                               logout_url=logout_url,
-                               login_url=login_url,
-                               email_hash=email_hash)
+
+        params = self.get_base_params(images=image_dict,
+                                      upload_url=upload_url)
+        html = template.render(params)
 
         self.response.write(html)
 
+    @error_catch
     def post(self):
 
         user = users.get_current_user()
@@ -235,7 +257,9 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         
 class AddImageHandler(PickThisPageRequest):
 
-    def get(self):
+    @error_catch
+    @authenticate
+    def get(self, user):
 
         image_key = self.request.get("image_key")
 
@@ -253,9 +277,10 @@ class AddImageHandler(PickThisPageRequest):
         html = template.render(template_params)
         self.response.write(html)
 
-    def post(self):
+    @error_catch
+    @authenticate
+    def post(self, user):
 
-        user = users.get_current_user()
         image_key = self.request.get("image_key")
 
         title = self.request.get("title")
