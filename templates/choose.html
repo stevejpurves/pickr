@@ -35,7 +35,8 @@
   {% for i in images %}
   <div>
     <div class="col-lg-3 col-md-4 col-xs-6 thumb">
-      <a class="thumbnail" {% if login_url %}href="#"{% else %} href="/pickr?image_key={{i['key']}}"{% endif %} >
+      <a class="thumbnail"
+        {% if login_url %} data-toggle="modal" data-target="#signInModel" href="#"{% else %} href="/pickr?image_key={{i['key']}}"{% endif %}>
         <img class="img-responsive" src="{{i['image']}}" alt="" />
       </a>
       <div class="caption" style="height:140px;">
@@ -52,6 +53,26 @@
     </div>
   </div>
   {% endfor %}
+
+
+<!-- Sign-in Alert Modal -->
+<div class="modal fade" id="signInModel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Whoa there!</h4>
+      </div>
+      <div class="modal-body">
+        You must sign in to interpret an image or see others' interpretations. 
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <a class="btn btn-info" role="button" href="{{ login_url }}">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 
