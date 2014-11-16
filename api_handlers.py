@@ -144,8 +144,6 @@ class VoteHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(data))
  
 
-
-
 class PickHandler(webapp2.RequestHandler):
 
     @error_catch
@@ -194,19 +192,29 @@ class PickHandler(webapp2.RequestHandler):
 
         image_key = self.request.get("image_key")
 
-        image_obj = ImageObject.get_by_id(int(image_key),
+        img_obj = ImageObject.get_by_id(int(image_key),
                                           parent=db_parent)
         
-        picks = Picks.all().ancestor(image_obj)
+        picks = Picks.all().ancestor(img_obj)
         picks = picks.filter("user =", user).get()
 
         if not picks:
+            # Then the user has not picked
+            # this image before so start
+            # some picks for this user.
             picks = Picks(user=user,
-                                 picks=json.dumps([point]).encode(),
-                                 parent=image_obj)
+                          picks=json.dumps([point]).encode(),
+                          parent=img_obj)
             picks.put()
-        else:
+            
+            # In this case we also need to 
+            # make a note of this user
+            # interpreting this image.
+            img_obj.interpreters.append(user.user_id())
+            img_obj.put()
 
+        else:
+            # Then carry on adding picks.
             all_picks = json.loads(picks.picks)
             all_picks.append(point)
             picks.picks = json.dumps(all_picks).encode()
@@ -233,6 +241,11 @@ class PickHandler(webapp2.RequestHandler):
         if self.request.get("clear"):
             data.delete()
             value = []
+
+            # Also remove the user from the list of 
+            # interpreters of this image.
+            img_obj.interpreters.remove(user.user_id())
+            img_obj.put()
             
         elif self.request.get("undo"):
             

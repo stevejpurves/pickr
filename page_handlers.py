@@ -190,7 +190,6 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 
         user = users.get_current_user()
 
-
         upload_url = blobstore.create_upload_url('/upload')
 
         # Get the thumbnail urls
@@ -201,13 +200,16 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
                        "description": i.description,
                        "challenge": i.challenge,
                        "permission": i.permission,
+                       "interpreters": i.interpreters,
                        "image": images.get_serving_url(i.image)}
                        for i in img_obj]
 
         template = env.get_template('choose.html')
 
         params = self.get_base_params(images=image_dict,
-                                      upload_url=upload_url)
+                                      upload_url=upload_url,
+                                      user_id=user.user_id()
+                                      )
         html = template.render(params)
 
         self.response.write(html)
@@ -300,6 +302,11 @@ class AddImageHandler(PickThisPageRequest):
         img_obj.challenge = challenge
         img_obj.pickstyle = pickstyle
         img_obj.permission = permission
+        img_obj.user = user
+
+        # Seems like I have to do this to instantiate properly.
+        # I thought that's what default=[] is for.
+        #img_obj.interpreters = ['default_user']
 
         img_obj.put()
 

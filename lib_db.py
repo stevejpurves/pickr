@@ -45,9 +45,13 @@ class ImageObject(db.Model):
     description = db.StringProperty()
     challenge = db.StringProperty()
     permission = db.StringProperty()
+    pickstyle = db.StringProperty()
 
     user = db.UserProperty()
-    name = db.StringProperty()
+    name = db.StringProperty() # What is this for? 
+                               # Doesn't get populated.
+
+    interpreters = db.ListProperty(str, default=[])
 
     @property
     def size(self):
