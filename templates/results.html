@@ -4,26 +4,6 @@
 
 {% block content %}
 
-<style>
-.yellow {
-    color: yellow;
-}
-
-.grey {
-    color: grey;
-}
-
-.blue {
-    color: blue;
-}
-.green {
-    color: green;
-}
-
-.red {
-    color: red;
-}
-</style>
 <script>
   var count = {{count}};
   var overlay64 = "{{image}}";
@@ -39,59 +19,61 @@
 <script src="/static/js/results.js"></script>
 
 
-
-<div class="container">
 <div class="container">
 
-  <div class="col-md-offset-4 col-md-4" style="height:8em;">
+  <!-- col for buttons -->
+  <div class="col-md-offset-4 col-md-4 col-xs-offset-2 col-xs-8" style="height:8em;">
 
-  <div class="col-md-4" style="top:2.6em;">
-	<button type="button" id="previous-button" 
-		class="btn btn-primary btn-lrg">
-	  <span class="glyphicon glyphicon-chevron-left"></span> 
-	  Previous
-	</button>
-  </div>
+    <!-- PREVIOUS button -->
+    <div class="col-lg-5 col-md-5 col-xs-4" style="top:2.6em;">
+  	<button type="button" id="previous-button" 
+  		class="btn btn-primary btn-lrg">
+  	  <span class="glyphicon glyphicon-chevron-left"></span> 
+  	  Previous
+  	</button>
+    </div>
 
-  <div class="col-md-4" 
-       style="vertical-align:center; text-align:center;">
-    <button type="button" id="up-vote-button" 
-	    class="btn btn-default btn-sm">
-	  <span class="glyphicon glyphicon-thumbs-up grey"
-		id="thumbs-up">
-	  </span>
+    <!-- VOTING buttons -->
+    <div class="col-lg-2 col-md-2 col-xs-4" style="vertical-align:middle; text-align:center;">
 
-	</button>
-	  
-<!-- do the county thing -->
+      <!-- UP button -->
+      <button type="button" id="up-vote-button" class="btn btn-default btn-sm">
+    	  <span class="glyphicon glyphicon-thumbs-up grey"
+    		id="thumbs-up">
+    	  </span>
+      </button>
+  	  
+      <!-- count -->
+    	<div id="vote-count" 
+    	     style="font-size:200%; font-weight:bold; text-align:center;">
+    	  {{count}}
+    	</div>
 
-	<div id="vote-count" 
-	     style="font-size:200%; font-weight:bold; text-align:center;">
-	  {{count}}
-	</div>
+    <!-- DOWN button -->
+    	<button type="button" id="down-vote-button" 
+    		class="btn btn-default btn-sm">
+    	  <span class="glyphicon glyphicon-thumbs-down grey"
+    		id="thumbs-down"></span>
+    	</button>
 
-	<button type="button" id="down-vote-button" 
-		class="btn btn-default btn-sm">
-	  <span class="glyphicon glyphicon-thumbs-down grey"
-		id="thumbs-down"></span>
-	</button>
+    </div>
 
-  </div>
+    <!-- NEXT button -->
+    <div class="col-lg-5 col-md-5 col-xs-4" style="top:2.6em;">
+      <button type="button" id="next-button" 
+  	    class="btn btn-primary btn-lrg">
+  	  <span class="glyphicon glyphicon-chevron-right" ></span> 
+  	  Next
+      </button>
+    </div>
 
-  <div class="col-md-4" style="top:2.6em;">
-    <button type="button" id="next-button" 
-	    class="btn btn-primary btn-lrg">
-	  <span class="glyphicon glyphicon-chevron-right" ></span> 
-	  Next
-    </button>
-  </div>
-
-</div>
+  </div><!-- end of col with buttons -->
 
     <div id="seismic-div"> </div>         
-    <div id="overlay-slider"></div>
+    <div class="col-md-offset-2 col-md-8 col-xs-offset-1 col-xs-10" id="overlay-slider"></div>
 
-</div>
-</div>
+</div><!-- end of container -->
+
+<div style="bottom:24px;"><!-- Just a spacer -->&nbsp;</div>
 
 {% endblock %}

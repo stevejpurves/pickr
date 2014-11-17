@@ -65,7 +65,6 @@ body {
   background-position: 12px;
 }
 
-
 .pt-footer {
   color:lightgray;
   }
@@ -92,4 +91,23 @@ body {
 
 .thumbnail img{
 // your styles for the images
+}
+
+.yellow {
+    color: yellow;
+}
+
+.grey {
+    color: grey;
+}
+
+.blue {
+    color: blue;
+}
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
 }
