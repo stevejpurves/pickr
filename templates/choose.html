@@ -9,7 +9,7 @@
 
   <div class="row" style="margin-top:18px; margin-bottom:30px;">
     <div class="col-md-8 col-sm-6 col-xs-6">
-    <p class="lead">Choose an image to interpret, or {% if login_url %}<strong><a href={{login_url}}>sign in</a></strong> to {% endif %}upload one of your own.</p>
+    <p class="lead"> {% if login_url %}<strong><a href={{login_url}}>Sign in</a></strong> to choose{% else %}Choose{% endif %}&nbsp;an image to interpret, or upload one of your own.</p>
     </div>
     <div class="col-md-4 col-sm-6 col-xs-6">
       <div class="pull-right">
