@@ -190,7 +190,13 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 
         user = users.get_current_user()
 
-        upload_url = blobstore.create_upload_url('/upload')
+        # Unlogged-in people can see the library.
+        if user:
+            upload_url = blobstore.create_upload_url('/upload')
+            user_id = user.user_id()
+        else:
+            upload_url = ''
+            user_id = ''
 
         # Get the thumbnail urls
         img_obj = ImageObject.all().ancestor(db_parent).fetch(1000)
@@ -208,7 +214,7 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 
         params = self.get_base_params(images=image_dict,
                                       upload_url=upload_url,
-                                      user_id=user.user_id()
+                                      user_id=user_id
                                       )
         html = template.render(params)
 
