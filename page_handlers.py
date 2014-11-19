@@ -12,7 +12,7 @@ from google.appengine.api import images
 # For image manipulation
 from PIL import Image
 
-from pickthis import get_result_image
+from pickthis import get_result_image, get_cred
 from constants import local, env, db_parent
 from lib_db import ImageObject
 
@@ -64,6 +64,8 @@ class PickThisPageRequest(webapp2.RequestHandler):
             logout_url = users.create_logout_url('/')
             login_url = None
             email_hash = hashlib.md5(user.email()).hexdigest()
+
+            cred_points = get_cred(user)
         else:
             logout_url = None
             login_url = users.create_login_url('/')
@@ -71,7 +73,8 @@ class PickThisPageRequest(webapp2.RequestHandler):
 
         params = dict(logout_url=logout_url,
                       login_url=login_url,
-                      email_hash=email_hash)
+                      email_hash=email_hash,
+                      cred_points=cred_points)
 
         params.update(kwargs)
         return params

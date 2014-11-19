@@ -12,6 +12,7 @@ from PIL import Image
 from mmorph import dilate, sedisk
 
 
+
 def regularize(xarr, yarr, px, py):
     """
     For line interpretations.
@@ -107,3 +108,18 @@ def get_result_image(img_obj):
     count = len(data)
 
     return base64.b64encode(output.getvalue()), count
+
+
+def get_cred(user):
+
+    all_picks = Picks.all().filter("user =", user).fetch(1000)
+
+    cred_points = 0
+
+    for picks in all_picks:
+        cred_points += picks.votes
+
+    return cred_points
+
+
+    
