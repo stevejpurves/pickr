@@ -1,6 +1,9 @@
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
+from google.appengine.api import images
+
 from PIL import Image
+
 
 import json
 
@@ -63,3 +66,16 @@ class ImageObject(db.Model):
         s = im.size
 
         return s # width, height
+
+    @property
+    def url(self):
+        """
+        Returns a serving url for the image
+        """
+        return images.get_serving_url(self.image)
+
+    @property
+    def id(self):
+
+        return self.key().id()
+    

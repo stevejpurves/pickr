@@ -6,7 +6,7 @@ import time
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
-from google.appengine.api import images
+
 
 
 # For image manipulation
@@ -108,18 +108,12 @@ class ResultsHandler(PickThisPageRequest):
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
-        image_url = images.get_serving_url(img_obj.image)
 
         image, count = get_result_image(img_obj)
-        image_width = img_obj.width
-        image_height = img_obj.height
 
         params = self.get_base_params(count=count,
                                       image=image,
-                                      image_url=image_url,
-                                      image_key=image_key,
-                                      image_width=image_width,
-                                      image_height=image_height)
+                                      img_obj=img_obj)
 
         template = env.get_template("results.html")
         html = template.render(params)
@@ -159,26 +153,11 @@ class PickerHandler(PickThisPageRequest):
 
         img_obj= ImageObject.get_by_id(int(key_id),
                                        parent=db_parent)
-
-        try:
-            image_url = images.get_serving_url(img_obj.image)
-        except:
-            print "handle this error"
                 
-        challenge = img_obj.challenge
-        permission = img_obj.permission
-        image_width = img_obj.width
-        image_height = img_obj.height
-
         # Write the page.
         template = env.get_template('pickpoint.html')
 
-        params = self.get_base_params(image_url=image_url,
-                                      image_key=key_id,
-                                      challenge=challenge,
-                                      permission=permission,
-                                      image_width=image_width,
-                                      image_height=image_height)
+        params = self.get_base_params(img_obj=img_obj)
         
         html = template.render(params)
 
@@ -204,18 +183,9 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         # Get the thumbnail urls
         img_obj = ImageObject.all().ancestor(db_parent).fetch(1000)
 
-        image_dict = [{"key": i.key().id(),
-                       "title": i.title,
-                       "description": i.description,
-                       "challenge": i.challenge,
-                       "permission": i.permission,
-                       "interpreters": i.interpreters,
-                       "image": images.get_serving_url(i.image)}
-                       for i in img_obj]
-
         template = env.get_template('choose.html')
 
-        params = self.get_base_params(images=image_dict,
+        params = self.get_base_params(images=img_obj,
                                       upload_url=upload_url,
                                       user_id=user_id
                                       )
@@ -277,7 +247,7 @@ class AddImageHandler(PickThisPageRequest):
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
-        image_url = images.get_serving_url(img_obj.image)
+        image_url = img_obj.url
 
         
         template_params = self.get_base_params()

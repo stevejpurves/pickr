@@ -39,12 +39,14 @@
   <div>
     <div class="col-lg-3 col-md-4 col-xs-6 thumb">
       <a class="thumbnail"
-        {% if login_url %} data-toggle="modal" data-target="#signInModel" href="#" {% elif user_id in i['interpreters'] %} href="/results?image_key={{i['key']}}" {% else %} href="/pickr?image_key={{i['key']}}"{% endif %}>
-        <img class="img-responsive" src="{{i['image']}}" alt="" />
+        {% if login_url %} data-toggle="modal" data-target="#signInModel" 
+	 href="#" {% elif user_id in i.interpreters %} 
+	href="/results?image_key={{i.id}}" {% else %} href="/pickr?image_key={{i.id}}"{% endif %}>
+        <img class="img-responsive" src="{{i.url}}" alt="" />
       </a>
       <div class="caption" style="height:140px;">
       	<span class="lead">{{i.title}}</span>
-        {% if user_id in i['interpreters'] %}&nbsp;<span style="color:green;" class="glyphicon glyphicon-ok-sign"></span>{% endif %}
+        {% if user_id in i.interpreters %}&nbsp;<span style="color:green;" class="glyphicon glyphicon-ok-sign"></span>{% endif %}
         <br />
         {{i.description[:100]}}
         {% if i.description | length>100 %}&#8230;{% endif %} <!-- Limit to 100 characters -->
