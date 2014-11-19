@@ -70,6 +70,8 @@ class PickThisPageRequest(webapp2.RequestHandler):
             logout_url = None
             login_url = users.create_login_url('/')
             email_hash = ''
+            nickname = None
+            cred_points = None
 
         params = dict(logout_url=logout_url,
                       login_url=login_url,
