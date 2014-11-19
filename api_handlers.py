@@ -85,6 +85,8 @@ class VoteHandler(webapp2.RequestHandler):
         votes = picks.votes
 
         user = users.get_current_user()
+
+        
         if user:
             user_vote = Vote.all().ancestor(picks).filter("user =",
                                                             user)
@@ -93,7 +95,9 @@ class VoteHandler(webapp2.RequestHandler):
                 user_choice = 0
             else:
                 user_choice = user_vote.value
-                
+
+
+            
         else:
             user_choice = 0
 
@@ -119,7 +123,11 @@ class VoteHandler(webapp2.RequestHandler):
                                     parent=db_parent)
         picks = Picks.all().ancestor(img).order("date").fetch(1000)
 
-        if update_vote > 0:
+        # Prevent self voting
+        if user == picks[index].user:
+            update_vote = 0
+            
+        elif update_vote > 0:
             update_vote = 1
         else:
             update_vote = -1
@@ -179,6 +187,7 @@ class PickHandler(webapp2.RequestHandler):
             data = data.order("-date").fetch(1000)
 
             index = int(self.request.get("pick_index"))
+
 
             self.response.write(data[index].picks)
             return

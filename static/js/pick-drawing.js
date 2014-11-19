@@ -115,7 +115,8 @@ pickDrawingSetup = function(){
         clearPoints();
         $.get('/update_pick?', parameters, function(data)
         {
-           data.forEach(function(item){
+	
+            data.forEach(function(item){
                addPoint({x:item[0], y:item[1]});
 	       
            });
