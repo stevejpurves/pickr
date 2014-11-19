@@ -13,7 +13,7 @@ class Vote(db.Model):
     user = db.UserProperty()
     value = db.IntegerProperty()
     
-class SeismicParent(db.Model):
+class ImageParent(db.Model):
     pass
 
 class Picks(db.Model):

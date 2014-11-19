@@ -1,4 +1,4 @@
-from lib_db import SeismicParent
+from lib_db import ImageParent
 from jinja2 import Environment, FileSystemLoader
 from os.path import dirname, join
 import os
@@ -13,7 +13,7 @@ env = Environment(loader=FileSystemLoader(join(dirname(__file__),
                                                'templates')))
 
 # Data store set up.
-db_parent = SeismicParent.all().get()
+db_parent = ImageParent.all().get()
 if not db_parent:
-    db_parent = SeismicParent()
+    db_parent = ImageParent()
     db_parent.put()

@@ -1,7 +1,7 @@
 pickr
 =====
 
-Web-app for collaborative seismic picking
+Web-app for collaborative image interpretation.
 
 ## Development Environment
 

@@ -164,8 +164,8 @@ class PickHandler(webapp2.RequestHandler):
 
         if self.request.get("user_picks"):
    
-            seismic_obj = Picks.all().ancestor(img_obj)
-            data = seismic_obj.filter("user =", user).get()
+            data_obj = Picks.all().ancestor(img_obj)
+            data = data_obj.filter("user =", user).get()
             
             if data:
                 picks = data.picks
