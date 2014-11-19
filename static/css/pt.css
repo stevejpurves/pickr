@@ -26,9 +26,29 @@ body {
    z-index: 500;
    }
 
-.navbar-text {
+.pull-right .dropdown-menu:after {
+    left: auto;
+    right: 13px;
+}
+.pull-right .dropdown-menu {
+    left: auto;
+    right: 0;
+}
+
+.pt-picked {
+  color: green;
+}
+
+.pt-subtitle {
   font-style: italic;
   color: #cccccc;
+}
+
+.pt-rep {
+  float:right;
+  font-family: 'Nunito', sans-serif;
+  font-size: 120%;
+  color: #000000;
 }
 
 @media (min-width: 768px) {
@@ -39,7 +59,6 @@ body {
   margin-right:0px;
   float:none;
   }
-
 }
 
 .pt-nav {

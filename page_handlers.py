@@ -64,7 +64,7 @@ class PickThisPageRequest(webapp2.RequestHandler):
             logout_url = users.create_logout_url('/')
             login_url = None
             email_hash = hashlib.md5(user.email()).hexdigest()
-
+            nickname = user.nickname()
             cred_points = get_cred(user)
         else:
             logout_url = None
@@ -74,6 +74,7 @@ class PickThisPageRequest(webapp2.RequestHandler):
         params = dict(logout_url=logout_url,
                       login_url=login_url,
                       email_hash=email_hash,
+                      nickname=nickname,
                       cred_points=cred_points)
 
         params.update(kwargs)
@@ -251,7 +252,8 @@ class AddImageHandler(PickThisPageRequest):
 
         
         template_params = self.get_base_params()
-        template_params.update(image_url=image_url,
+        template_params.update(i=img_obj,
+                               image_url=image_url,
                                image_key=image_key)
 
         template = env.get_template("add_image.html")
@@ -282,6 +284,7 @@ class AddImageHandler(PickThisPageRequest):
         img_obj.pickstyle = pickstyle
         img_obj.permission = permission
         img_obj.user = user
+        img_obj.user_id = user.user_id()
 
         # Seems like I have to do this to instantiate properly.
         # I thought that's what default=[] is for.

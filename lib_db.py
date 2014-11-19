@@ -50,7 +50,13 @@ class ImageObject(db.Model):
     permission = db.StringProperty()
     pickstyle = db.StringProperty()
 
+    # This is safer than using a user directly
+    # Because email address can change.
+    user_id = db.StringProperty()
+
+    # Not sure if we need this for backwards compatibility?
     user = db.UserProperty()
+
     name = db.StringProperty() # What is this for? 
                                # Doesn't get populated.
 

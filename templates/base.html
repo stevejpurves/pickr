@@ -39,11 +39,10 @@
       <nav class="navbar navbar-default" role="navigation">
           <strong><a class="navbar-brand pt-title" style="font-family: 'Nunito', sans-serif;" href="/">pick this</a></strong>
           <ul class="nav navbar-nav hidden-xs">
-            <li><p class="navbar-text">social image interpretation</p></li>
+            <li><p class="navbar-text pt-subtitle">social image interpretation</p></li>
           </ul>
           {% if logout_url %}
             <ul class="nav navbar-right pt-nav">
-	      <li><p class="navbar-text">Cred. Rating: {{cred_points}} </p></li>
               <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                   <figure class="pt-avatar">
@@ -51,9 +50,14 @@
                   </figure>
                 </a>
                 <ul class="dropdown-menu" role="menu">
+                  <li>Random text</li>
+                  <li>{{ nickname }}</li>
                   <li><a href="{{ logout_url }}">sign out</a></li>
                 </ul>
               </li>
+            </ul>
+            <ul class="nav navbar-right">
+              <li><p class="navbar-text pt-rep"><a id="popoverOption" href="#" data-content="{{ cred_points }}" rel="popover" data-placement="bottom" data-original-title="Reputation">{{ cred_points }}</a></p></li>
             </ul>
           {% else %}
             <ul class="nav navbar-nav navbar-right pt-nav">
@@ -86,6 +90,11 @@
       </div><!-- End of pt-footer -->
     </div> <!-- End of container -->
   </footer>
+
+  <!-- Little script helps with reputation popover -->
+  <script>
+    $('#popoverOption').popover({ trigger: "hover" });
+  </script>
 
   <!-- Google Analytics -->
   <script>

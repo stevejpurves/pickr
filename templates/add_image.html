@@ -4,27 +4,34 @@
 
 {% block content %}
 
+<head>
+<script src="/static/js/validator.js"></script>
+</head>
+
 <!-- Page Content -->
 <div class="container">
 
-    <h1 class="page-header">Add a new image</h1>
+    <h1 class="page-header">{% if i.title %}Edit{% else %}Add{% endif %} an image</h1>
 
   <form role="form" class="form-horizontal"
-        action="/add_image" method="POST"> 
+        action="/add_image" method="POST"
+        data-toggle="validator"> 
 
         <div class="form-group">
           <label for="title" class="col-sm-2 control-label">Title</label>
           <div class="col-sm-6">
             <input class="form-control" type="text" id="title" 
-		   name="title">
+		               name="title" {% if i.title %}value={{ i.title }}{% endif %}
+                   data-match-error="Please provide a title for the image." required>
           </div>
+          <div class="help-block with-errors"></div>
         </div>
 
         <div class="form-group">
           <label for="description" class="col-sm-2 control-label">Description</label>
           <div class="col-sm-10">
           <textarea class="form-control" rows="2" id="description" 
-		    name = "description" placeholder="Enter a short description"></textarea>
+		    name = "description" placeholder="Enter a short description">{% if i.description %}{{ i.description }}{% endif %}</textarea>
           </div>
         </div>
 
@@ -33,7 +40,7 @@
           <div class="col-sm-10">
           <textarea class="form-control" rows="2" 
 		    name="challenge" id="challenge" 
-		    placeholder="Issue a short challenge"></textarea>
+		    placeholder="Issue a short challenge">{% if i.challenge %}{{ i.challenge }}{% endif %}</textarea>
           </div>
         </div>
 
@@ -41,19 +48,20 @@
           <label for="pickstyle" class="col-sm-2 control-label">Pick style</label>
           <div class="radio col-sm-10">
             <label>
-              <input type="radio" name="pickstyle" id="points" value="points" checked>
-              Pick and count points.
+              <input type="radio" name="pickstyle" id="points" value="points" {% if i.pickstyle == "points" %}checked{% endif%} disabled>
+              Pick and count points. COMING SOON.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="pickstyle" id="line" value="line">
+              <input type="radio" name="pickstyle" id="line" value="line" {% if i.title %}{% if i.pickstyle == "line" %}checked{% endif%}
+              {% else %}checked{% endif %}>
               Pick a line.
             </label>
           </div>
           <div class="radio disabled col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="pickstyle" id="polygon" value="polygon" disabled>
+              <input type="radio" name="pickstyle" id="polygon" value="polygon" {% if i.pickstyle == "polygon" %}checked{% endif%} disabled>
               Pick a polygon. COMING SOON.
             </label>
           </div>
@@ -63,19 +71,22 @@
           <label for="permission" class="col-sm-2 control-label">Permission</label>
           <div class="radio col-sm-10">
             <label>
-              <input type="radio" name="permission" id="cc-by" value="CC-BY" checked>
+              <input type="radio" name="permission" id="cc-by" value="CC-BY" {% if i.title %}{% if i.permission == "CC-BY" %}checked{% endif%}
+              {% else %}checked{% endif %}>
               This is my image and I release it under the terms of <a href="http://bit.ly/cc-by">CC-BY</a>.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="permission" id="limited" value="Copyright. Used with permission">
+              <input type="radio" name="permission" id="limited" 
+                     value="Copyright. Used with permission" {% if i.permission == "limited" %}checked{% endif%}>
               This is my image and I am allowing its use here, but only here.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="permission" id="3rdparty" value="Copyright. Used with permission">
+              <input type="radio" name="permission" id="3rdparty" 
+                     value="Copyright. Used with permission" {% if i.permission == "3rdparty" %}checked{% endif%}>
               This is not my image, but I have permission to share it here.
             </label>
           </div>
@@ -83,14 +94,14 @@
 
       <input type="hidden" name="image_key" value="{{image_key}}">
 
-      <button class="btn btn-default col-sm-offset-2" type="submit" name="submit" value="Submit" id="submit">
+      <button class="btn btn-lg col-sm-offset-2" type="submit" name="submit" value="Submit" id="submit">
         Submit
       </button>
 
   </form>
 
   <div class="col-sm-offset-2" style="margin-top:24px;">
-    <img class="img-responsive img-rounded" src="{{image_url}}" alt="">
+    <img class="img-responsive img-rounded" src={{ i.url }} alt="">
   </div>
 </div><!-- end of container -->
 

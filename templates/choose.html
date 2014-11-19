@@ -46,7 +46,8 @@
       </a>
       <div class="caption" style="height:140px;">
       	<span class="lead">{{i.title}}</span>
-        {% if user_id in i.interpreters %}&nbsp;<span style="color:green;" class="glyphicon glyphicon-ok-sign"></span>{% endif %}
+        {% if user_id == i.user_id %}&nbsp;<a href="/add_image?image_key={{i.id}}" class="glyphicon glyphicon-pencil" title="edit details"></a>{% endif %}
+        {% if user_id in i.interpreters %}&nbsp;<span class="glyphicon glyphicon-ok-sign pt-picked" title="you have interpreted this image"></span>{% endif %}
         <br />
         {{i.description[:100]}}
         {% if i.description | length>100 %}&#8230;{% endif %} <!-- Limit to 100 characters -->
