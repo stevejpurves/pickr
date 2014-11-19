@@ -4,6 +4,7 @@
 
 {% block content %}
 
+
 <!-- Page Content -->
 <div class="container">
 
@@ -35,22 +36,30 @@
   <!-- Build the gallery by looping over the images. -->
   <!-- A little tricky as we're changing the links and adding a badge if the user
        has interpreted that particular image. -->
-  {% for i in images %}
+  {% for img_obj in img_objs %}
   <div>
     <div class="col-lg-3 col-md-4 col-xs-6 thumb">
       <a class="thumbnail"
         {% if login_url %} data-toggle="modal" data-target="#signInModel" 
-	 href="#" {% elif user_id in i.interpreters %} 
-	href="/results?image_key={{i.id}}" {% else %} href="/pickr?image_key={{i.id}}"{% endif %}>
-        <img class="img-responsive" src="{{i.url}}" alt="" />
+	 href="#" {% elif user_id in img_obj.interpreters %} 
+	href="/results?image_key={{img_obj.id}}" {% else %} href="/pickr?image_key={{img_obj.id}}"{% endif %}>
+        <img class="img-responsive" src="{{img_obj.url}}" alt="" />
       </a>
       <div class="caption" style="height:140px;">
-      	<span class="lead">{{i.title}}</span>
-        {% if user_id == i.user_id %}&nbsp;<a href="/add_image?image_key={{i.id}}" class="glyphicon glyphicon-pencil" title="edit details"></a>{% endif %}
-        {% if user_id in i.interpreters %}&nbsp;<span class="glyphicon glyphicon-ok-sign pt-picked" title="you have interpreted this image"></span>{% endif %}
+      	<span class="lead">{{img_obj.title}}</span>
+        {% if user_id == img_obj.user_id %}&nbsp;<a href="/add_image?image_key={{img_obj.id}}" class="glyphicon glyphicon-pencil" title="edit details"></a>{% endif %}
+        <span class="pull-right">
+          <span class="notification-icon">
+            {% if user_id not in img_obj.favouriters %}&nbsp;<span class="glyphicon glyphicon-certificate pt-unfaved" title="you have not starred this image"></span>
+              {% else %}&nbsp;<span class="glyphicon glyphicon-star pt-faved" title="you starred this image"></span>
+            {% endif %}
+            <span class="pt-stars">{{ img_obj.favouriters | length }}</span>
+          </span>
+        <span class="badge {% if user_id in img_obj.interpreters %}pt-counted{% else %}pt-uncounted{% endif %}">{{ img_obj.interpreters | length }}</span>
+        </span>
         <br />
-        {{i.description[:100]}}
-        {% if i.description | length>100 %}&#8230;{% endif %} <!-- Limit to 100 characters -->
+        {{img_obj.description[:100]}}
+        {% if img_obj.description | length>100 %}&#8230;{% endif %} <!-- Limit to 100 characters -->
       </div>
     </div>
   </div>

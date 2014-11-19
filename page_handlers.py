@@ -181,12 +181,12 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
             upload_url = ''
             user_id = ''
 
-        # Get the thumbnail urls
-        img_obj = ImageObject.all().ancestor(db_parent).fetch(1000)
+        # Get the images.
+        img_objs = ImageObject.all().ancestor(db_parent).fetch(1000)
 
         template = env.get_template('choose.html')
 
-        params = self.get_base_params(images=img_obj,
+        params = self.get_base_params(img_objs=img_objs,
                                       upload_url=upload_url,
                                       user_id=user_id
                                       )
@@ -252,7 +252,7 @@ class AddImageHandler(PickThisPageRequest):
 
         
         template_params = self.get_base_params()
-        template_params.update(i=img_obj,
+        template_params.update(img_obj=img_obj,
                                image_url=image_url,
                                image_key=image_key)
 

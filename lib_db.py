@@ -61,6 +61,7 @@ class ImageObject(db.Model):
                                # Doesn't get populated.
 
     interpreters = db.ListProperty(str, default=[])
+    favouriters = db.ListProperty(str, default=[])
 
     @property
     def size(self):
