@@ -50,8 +50,7 @@
                   </figure>
                 </a>
                 <ul class="dropdown-menu" role="menu">
-                  <li>Random text</li>
-                  <li>{{ nickname }}</li>
+                  <li><a class="disabled">{{ nickname }}</a></li> <!-- for some reason I need the <a> tag to format correctly -->
                   <li><a href="{{ logout_url }}">sign out</a></li>
                 </ul>
               </li>

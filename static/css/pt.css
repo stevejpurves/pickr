@@ -130,3 +130,9 @@ body {
 .red {
     color: red;
 }
+
+a.disabled {
+   color:gray;
+   pointer-events: none;
+   cursor: default;
+}
