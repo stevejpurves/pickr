@@ -31,7 +31,7 @@
           <label for="description" class="col-sm-2 control-label">Description</label>
           <div class="col-sm-10">
           <textarea class="form-control" rows="2" id="description" 
-		    name = "description" placeholder="Enter a short description">{% if img_obj.description %}{{ img_obj.description }}{% endif %}</textarea>
+		    name = "description" placeholder="Enter a short description, including details of any license to use the image">{% if img_obj.description %}{{ img_obj.description }}{% endif %}</textarea>
           </div>
         </div>
 
@@ -79,14 +79,21 @@
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
               <input type="radio" name="permission" id="limited" 
-                     value="Copyright. Used with permission" {% if img_obj.permission == "limited" %}checked{% endif%}>
+                     value="Pick This license." {% if img_obj.permission == "Pick This license." %}checked{% endif%}>
               This is my image and I am allowing its use here, but only here.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
+              <input type="radio" name="permission" id="open" 
+                     value="Open license." {% if img_obj.permission == "Open license." %}checked{% endif%}>
+              This is not my image, but it has an open license.
+            </label>
+          </div>
+          <div class="radio col-sm-offset-2 col-sm-10">
+            <label>
               <input type="radio" name="permission" id="3rdparty" 
-                     value="Copyright. Used with permission" {% if img_obj.permission == "3rdparty" %}checked{% endif%}>
+                     value="Used with permission." {% if img_obj.permission == "Used with permission." %}checked{% endif%}>
               This is not my image, but I have permission to share it here.
             </label>
           </div>
