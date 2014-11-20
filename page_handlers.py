@@ -275,6 +275,10 @@ class AddImageHandler(PickThisPageRequest):
         challenge = self.request.get("challenge")
         pickstyle = self.request.get("pickstyle")
         permission = self.request.get("permission")
+        rightsholder = self.request.get("rightsholder")
+
+        if not rightsholder:
+            rightsholder = user.nickname()
 
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
@@ -287,6 +291,7 @@ class AddImageHandler(PickThisPageRequest):
         img_obj.challenge = challenge
         img_obj.pickstyle = pickstyle
         img_obj.permission = permission
+        img_obj.rightsholder = rightsholder
         img_obj.user = user
         img_obj.user_id = user.user_id()
 

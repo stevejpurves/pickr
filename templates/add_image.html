@@ -49,7 +49,7 @@
           <div class="radio col-sm-10">
             <label>
               <input type="radio" name="pickstyle" id="points" value="points" {% if img_obj.pickstyle == "points" %}checked{% endif%} disabled>
-              Pick and count points. COMING SOON.
+              Pick points. COMING SOON.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
@@ -90,6 +90,14 @@
               This is not my image, but I have permission to share it here.
             </label>
           </div>
+
+          <div class="col-sm-offset-2 col-sm-6" style="left:18px; top:2px;">
+            <input class="form-control" type="text" id="rightsholder" 
+                   name="rightsholder" {% if img_obj.rightsholder %}value={{ img_obj.rightsholder }}{% endif %}
+                   placeholder="Please provide the image owner if not you">
+          </div>
+
+
         </div>
 
       <input type="hidden" name="image_key" value="{{image_key}}">

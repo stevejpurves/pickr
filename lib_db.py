@@ -49,6 +49,7 @@ class ImageObject(db.Model):
     challenge = db.StringProperty(default="")
     permission = db.StringProperty(default="")
     pickstyle = db.StringProperty(default="")
+    rightsholder = db.StringProperty(default="")
 
     # This is safer than using a user directly
     # Because email address can change.
