@@ -64,11 +64,6 @@ def get_result_image(img_obj):
         # Make a line of points (called h for horizon).
         hx, hy = regularize(picks[:,0], picks[:,1], px, py)
 
-        # Hacky workaround to avoid problems with hardcoded
-        # image sizes.
-        hx = np.clip(hx, 0, px-1)
-        hy = np.clip(hy, 0, py-1)
-
         # Make line into image.        
         user_image[(hy,hx)] = 1.
 
