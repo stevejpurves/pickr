@@ -44,11 +44,11 @@ class ImageObject(db.Model):
     width = db.IntegerProperty()
     height = db.IntegerProperty()
 
-    title = db.StringProperty()
-    description = db.StringProperty()
-    challenge = db.StringProperty()
-    permission = db.StringProperty()
-    pickstyle = db.StringProperty()
+    title = db.StringProperty(default="")
+    description = db.StringProperty(default="")
+    challenge = db.StringProperty(default="")
+    permission = db.StringProperty(default="")
+    pickstyle = db.StringProperty(default="")
 
     # This is safer than using a user directly
     # Because email address can change.

@@ -42,7 +42,8 @@ def error_catch(func):
 
         try:
             func(self, *args, **kwargs)
-        except:
+        except Exception as e:
+            print e
             self.redirect("/err")
     return call_and_catch
 
@@ -231,12 +232,17 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 
         new_db = ImageObject(description=description,
                              image=output_blob_key,
-                             parent=db_parent)
+                             parent=db_parent,
+                             user=user,
+            user_id=user.user_id())
 
+        new_db.width = new_db.size[0]
+        new_db.height = new_db.size[1]
+        
         new_db.put()
 
         self.redirect('/add_image?image_key=' +
-                      str(new_db.key().id())) 
+                      str(new_db.id))
         
         
 class AddImageHandler(PickThisPageRequest):
@@ -249,13 +255,9 @@ class AddImageHandler(PickThisPageRequest):
 
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
-
-        image_url = img_obj.url
-
         
         template_params = self.get_base_params()
         template_params.update(img_obj=img_obj,
-                               image_url=image_url,
                                image_key=image_key)
 
         template = env.get_template("add_image.html")
