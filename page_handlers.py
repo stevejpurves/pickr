@@ -214,7 +214,7 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         output = StringIO.StringIO()
         im.save(output, format='PNG')
 
-        bucket = '/pickr_bucket/'
+        bucket = '/pick-this'
         output_filename = (bucket +'/2' + str(time.time()))
 
         gcsfile = gcs.open(output_filename, 'w')
@@ -294,10 +294,6 @@ class AddImageHandler(PickThisPageRequest):
         img_obj.rightsholder = rightsholder
         img_obj.user = user
         img_obj.user_id = user.user_id()
-
-        # Seems like I have to do this to instantiate properly.
-        # I thought that's what default=[] is for.
-        #img_obj.interpreters = ['default_user']
 
         img_obj.put()
 
