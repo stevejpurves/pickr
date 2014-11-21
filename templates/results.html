@@ -7,7 +7,7 @@
 <script>
   var count = {{count}};
   var overlay64 = "{{image}}";
-  var image_url = "{{ img_obj.url }}";
+  var image_url = "{{ img_obj.url() }}";
   var image_key = "{{ img_obj.key().id() }}";
   var baseImageWidth = "{{ img_obj.width }}";
   var baseImageHeight = "{{ img_obj.height }}";
@@ -72,6 +72,7 @@
 
     <div id="image-div"> </div>
     <p class="pull-right" style="font-size:80%">Uploaded by: {{img_obj.user.nickname()}} &mdash; Image owner: {{ img_obj.rightsholder }}</p>
+    <p style="font-size:80%">{{ img_obj.width }} &times; {{ img_obj.height }}</p>
     <div class="col-md-offset-2 col-md-8 col-xs-offset-1 col-xs-10" style="top:12px;" id="overlay-slider"></div>
 
 </div><!-- end of container -->

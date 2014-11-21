@@ -75,12 +75,15 @@ class ImageObject(db.Model):
 
         return s # width, height
 
-    @property
-    def url(self):
+    # I think this has to be a method, not property,
+    # if we want to pass in arguments.
+    def url(self, size=0, crop=False):
         """
         Returns a serving url for the image
         """
-        return images.get_serving_url(self.image)
+        return images.get_serving_url(self.image,
+                                      size=size,
+                                      crop=crop)
 
     @property
     def id(self):

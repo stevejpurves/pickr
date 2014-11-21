@@ -14,7 +14,7 @@
     </div>
     <div class="col-md-4 col-sm-6 col-xs-6">
       <div class="pull-right">
-        <form action="{{upload_url}}" method="POST" enctype="multipart/form-data">
+        <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data">
           <div style='height: 0px;width:0px; overflow:hidden;'>
             <input type="submit" name="submit" 
              value="Submit"
@@ -38,18 +38,18 @@
        has interpreted that particular image. -->
   {% for img_obj in img_objs %}
   <div>
-    <div class="col-lg-3 col-md-4 col-xs-6 thumb">
+    <div class="col-lg-3 col-md-4 col-xs-6">
       <a class="thumbnail"
         {% if login_url %} data-toggle="modal" data-target="#signInModel" 
 	 href="#" {% elif user_id in img_obj.interpreters %} 
-	href="/results?image_key={{img_obj.id}}" {% else %} href="/pickr?image_key={{img_obj.id}}"{% endif %}>
-        <img class="img-responsive" src="{{img_obj.url}}" alt="" />
+	href="/results?image_key={{ img_obj.id }}" {% else %} href="/pickr?image_key={{ img_obj.id }}"{% endif %}>
+        <img class="img-responsive" src="{{ img_obj.url(size=384, crop=True) }}"  alt="" />
       </a>
       <div class="caption" style="height:140px;">
       	<span class="lead" title="{{ img_obj.title }}">
           {{img_obj.title[:20]}}{% if img_obj.title | length>20 %}&#8230;{% endif %}
         </span>
-        {% if user_id == img_obj.user_id %}&nbsp;<a href="/add_image?image_key={{img_obj.id}}" class="glyphicon glyphicon-pencil" 
+        {% if user_id == img_obj.user_id %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-pencil" 
              title="edit this image's metadata"></a>{% endif %}
         <span class="pull-right">
           <!-- unlock feature later
