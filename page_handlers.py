@@ -275,10 +275,17 @@ class AddImageHandler(PickThisPageRequest):
         challenge = self.request.get("challenge")
         pickstyle = self.request.get("pickstyle")
         permission = self.request.get("permission")
-        rightsholder = self.request.get("rightsholder")
+        rightsholder1 = self.request.get("rightsholder1")
+        rightsholder2 = self.request.get("rightsholder2")
 
-        if not rightsholder:
-            rightsholder = user.nickname()
+        # This is pretty gross
+        if not rightsholder1:
+            if not rightsholder2:
+                rightsholder = user.nickname()
+            else:
+                rightsholder = rightsholder2
+        else:
+            rightsholder = rightsholder1
 
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)

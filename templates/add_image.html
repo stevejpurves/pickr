@@ -6,6 +6,32 @@
 
 <head>
 <script src="/static/js/validator.js"></script>
+
+<!-- okay, so this is pretty hacky -->
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#cc-by").click(function(){
+                $("#rightsholder1-div").hide();
+                $("#rightsholder2-div").hide();
+        });
+        $("#limited").click(function(){
+                $("#rightsholder1-div").hide();
+                $("#rightsholder2-div").hide();
+        });
+        $("#open").click(function(){
+                $("#rightsholder1-div").show();
+                $("#rightsholder2-div").hide();
+        });
+        $("#3rdparty").click(function(){
+                $("#rightsholder1-div").hide();
+                $("#rightsholder2-div").show();
+        });
+    });
+
+
+
+</script>
+
 </head>
 
 <!-- Page Content -->
@@ -83,6 +109,7 @@
               This is my image and I am allowing its use here, but only here.
             </label>
           </div>
+
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
               <input type="radio" name="permission" id="open" 
@@ -90,6 +117,13 @@
               This is not my image, but it has an open license.
             </label>
           </div>
+          <div id="rightsholder1-div" class="col-sm-offset-2 col-sm-6" style="left:18px; top:2px; display:none;">
+            <input class="form-control" type="text" id="rightsholder1" 
+                   name="rightsholder1" {% if img_obj.rightsholder %}value={{ img_obj.rightsholder }}{% endif %}
+                   placeholder="Please provide the image owner if not you">
+          </div>
+
+
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
               <input type="radio" name="permission" id="3rdparty" 
@@ -98,11 +132,12 @@
             </label>
           </div>
 
-          <div class="col-sm-offset-2 col-sm-6" style="left:18px; top:2px;">
-            <input class="form-control" type="text" id="rightsholder" 
-                   name="rightsholder" {% if img_obj.rightsholder %}value={{ img_obj.rightsholder }}{% endif %}
+          <div id="rightsholder2-div" class="col-sm-offset-2 col-sm-6" style="left:18px; top:2px; display:none;">
+            <input class="form-control" type="text" id="rightsholder2" 
+                   name="rightsholder2" {% if img_obj.rightsholder %}value={{ img_obj.rightsholder }}{% endif %}
                    placeholder="Please provide the image owner if not you">
           </div>
+
 
 
         </div>
