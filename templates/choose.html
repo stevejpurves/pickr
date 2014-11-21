@@ -46,16 +46,23 @@
         <img class="img-responsive" src="{{img_obj.url}}" alt="" />
       </a>
       <div class="caption" style="height:140px;">
-      	<span class="lead">{{img_obj.title}}</span>
-        {% if user_id == img_obj.user_id %}&nbsp;<a href="/add_image?image_key={{img_obj.id}}" class="glyphicon glyphicon-pencil" title="edit details"></a>{% endif %}
+      	<span class="lead" title="{{ img_obj.title }}">
+          {{img_obj.title[:20]}}{% if img_obj.title | length>20 %}&#8230;{% endif %}
+        </span>
+        {% if user_id == img_obj.user_id %}&nbsp;<a href="/add_image?image_key={{img_obj.id}}" class="glyphicon glyphicon-pencil" 
+             title="edit this image's metadata"></a>{% endif %}
         <span class="pull-right">
+          <!-- unlock feature later
           <span class="notification-icon">
-            {% if user_id not in img_obj.favouriters %}&nbsp;<span class="glyphicon glyphicon-certificate pt-unfaved" title="you have not starred this image"></span>
+            {% if user_id not in img_obj.favouriters %}&nbsp;<span class="glyphicon glyphicon-certificate pt-unfaved" 
+                 title="you have not starred this image"></span>
               {% else %}&nbsp;<span class="glyphicon glyphicon-star pt-faved" title="you starred this image"></span>
             {% endif %}
             <span class="pt-stars">{{ img_obj.favouriters | length }}</span>
           </span>
-        <span class="badge {% if user_id in img_obj.interpreters %}pt-counted{% else %}pt-uncounted{% endif %}">{{ img_obj.interpreters | length }}</span>
+          -->
+        <span class="badge {% if user_id in img_obj.interpreters %}pt-counted{% else %}pt-uncounted{% endif %}"
+              title="{{ img_obj.interpreters | length }}{% if img_obj.interpreters | length  == 1 %} person has{% else %} people have{% endif %} interpreted this image">{{ img_obj.interpreters | length }}</span>
         </span>
         <br />
         {{img_obj.description[:100]}}

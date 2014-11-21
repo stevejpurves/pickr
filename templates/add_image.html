@@ -47,7 +47,7 @@
           <label for="title" class="col-sm-2 control-label">Title</label>
           <div class="col-sm-6">
             <input class="form-control" type="text" id="title" 
-		               name="title" {% if img_obj.title %}value={{ img_obj.title }}{% endif %}
+		               name="title" {% if img_obj.title %}value="{{ img_obj.title }}"{% endif %}
                    data-match-error="Please provide a title for the image." required>
           </div>
           <div class="help-block with-errors"></div>
@@ -119,7 +119,7 @@
           </div>
           <div id="rightsholder1-div" class="col-sm-offset-2 col-sm-6" style="left:18px; top:2px; display:none;">
             <input class="form-control" type="text" id="rightsholder1" 
-                   name="rightsholder1" {% if img_obj.rightsholder %}value={{ img_obj.rightsholder }}{% endif %}
+                   name="rightsholder1" {% if img_obj.rightsholder %}value="{{ img_obj.rightsholder }}"{% endif %}
                    placeholder="Please provide the image owner if not you">
           </div>
 
@@ -134,7 +134,7 @@
 
           <div id="rightsholder2-div" class="col-sm-offset-2 col-sm-6" style="left:18px; top:2px; display:none;">
             <input class="form-control" type="text" id="rightsholder2" 
-                   name="rightsholder2" {% if img_obj.rightsholder %}value={{ img_obj.rightsholder }}{% endif %}
+                   name="rightsholder2" {% if img_obj.rightsholder %}value="{{ img_obj.rightsholder }}"{% endif %}
                    placeholder="Please provide the image owner if not you">
           </div>
 
