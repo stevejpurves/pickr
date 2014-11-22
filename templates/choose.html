@@ -43,7 +43,7 @@
         {% if login_url %} data-toggle="modal" data-target="#signInModel" 
 	 href="#" {% elif user_id in img_obj.interpreters %} 
 	href="/results?image_key={{ img_obj.id }}" {% else %} href="/pickr?image_key={{ img_obj.id }}"{% endif %}>
-        <img class="img-responsive" src="{{ img_obj.url(size=384, crop=True) }}"  alt="" />
+        <img class="img-responsive" src="{{ img_obj.url(size=512, crop=True) }}"  alt="" />
       </a>
       <div class="caption" style="height:140px;">
       	<span class="lead" title="{{ img_obj.title }}">
