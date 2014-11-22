@@ -7,8 +7,9 @@ pickDrawingSetup = function(){
     var circles = [];
     var linestrip;    
     
-    // TODO: Hard-coded base image size
     var aspectRatio = baseImageWidth / baseImageHeight;
+    var avgImageSize = (baseImageWidth + baseImageHeight) / 2;
+    var penSize = avgImageSize / 200;
     var resizeScale = 1;
     
     var updatePaperSize = function(){
@@ -21,6 +22,7 @@ pickDrawingSetup = function(){
     var setup = function(elementId)
     {
         pickrElement = $('#' + elementId);
+        penSize = 1 + pickrElement.width() / 400;
         paper = Raphael(elementId);
         updatePaperSize();
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
@@ -36,7 +38,7 @@ pickDrawingSetup = function(){
 
     var addCircle = function(x, y)
     {
-        var radius = 4;
+        var radius = 1 + penSize;
         var circle = paper.circle(x, y, radius);
         circle.attr({
             fill: '#f00',
@@ -77,7 +79,9 @@ pickDrawingSetup = function(){
             path += 'L' + p.x + ',' + p.y; // lineTo
         });
         linestrip = paper.path(path);
-        linestrip.attr({stroke: '#f00'});
+        linestrip.attr({'stroke': '#f00'});
+        linestrip.attr({'stroke-width':penSize});
+        linestrip.attr({'opacity':'0.5'});
     }
     
     var addPoint = function(point){

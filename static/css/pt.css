@@ -142,8 +142,8 @@ body {
   }
 
 .thumbnail{
-    /*width: 300px;*/
-    height: 200px;
+    height: 0px; /* no idea why this works, but it does */
+    padding-bottom:100%;
     overflow: hidden;
 }
 
