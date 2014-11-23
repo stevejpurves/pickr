@@ -2,7 +2,7 @@
 import numpy as np
 import StringIO, json, base64
 
-from lib_db import Picks
+from lib_db import Picks, ImageObject
 
 from google.appengine.api import images
 from google.appengine.ext import blobstore
@@ -107,14 +107,26 @@ def get_result_image(img_obj):
 
 def get_cred(user):
 
+    # Probably need to replace this with a user object some day
+    # Then have methods on the object for changing or getting
+    # reputation, pushing notifications, and so on. See #105.
+
+    # Also should change to 'rep', rather than 'cred'.
+
     all_picks = Picks.all().filter("user =", user).fetch(1000)
+    all_imgs  = ImageObject.all().filter("user =", user).fetch(1000)
 
-    cred_points = 0
+    cred_points = 1 # everyone start with 1
 
+    # Award rep for votes received.
     for picks in all_picks:
         cred_points += picks.votes
 
+    # Award rep for interpretations made.
+    cred_points += 3 * len(all_picks)
+
+    # Award rep for uploading.
+    cred_points += 3 * len(all_imgs)
+
     return cred_points
 
-
-    
