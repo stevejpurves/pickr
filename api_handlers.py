@@ -65,7 +65,31 @@ class CommentHandler(webapp2.RequestHandler):
 
         self.response.write(comment)
 
-      
+
+class ImageHandler(webapp2.RequestHandler):
+
+    @error_catch
+    @authenticate
+    def delete(self,user):
+
+        image_key = self.request.get("image_key")
+
+        image_obj = ImageObject.get_by_id(int(image_key),
+                                          parent=db_parent)
+
+        if image_obj.user == user:
+
+            self.response.headers["Content-Type"] = "application/json"
+            if not Picks.all().ancestor(image_obj).get():
+                image_obj.delete()
+                self.response.write(json.dumps({"success":True}))
+            else:
+                self.response.write(json.dumps({"interpretations":True}))
+            
+        else:
+            self.error(500)
+
+        
 class VoteHandler(webapp2.RequestHandler):
 
     @error_catch

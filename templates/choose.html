@@ -4,6 +4,24 @@
 
 {% block content %}
 
+<script>
+remove_image = function(id){
+
+
+$.ajax("image?image_key=" + id, {type:"DELETE",
+				 success: function(data){
+				   if(data.success){
+				     $('#image-'+id).remove();
+				   }   else if(data.interpretations){
+				     alert("Cannot remove image with interpretations");
+				   }
+				 }}
+ );
+
+};
+
+
+</script>
 
 <!-- Page Content -->
 <div class="container">
@@ -37,7 +55,7 @@
   <!-- A little tricky as we're changing the links and adding a badge if the user
        has interpreted that particular image. -->
   {% for img_obj in img_objs %}
-  <div>
+  <div id="image-{{img_obj.id}}">
     <div class="col-lg-3 col-md-4 col-xs-6">
       <a class="thumbnail"
         {% if login_url %} data-toggle="modal" data-target="#signInModel" 
@@ -51,7 +69,9 @@
         <span class="lead" title="{{ img_obj.title }}">
           {{img_obj.title[:20]}}{% if img_obj.title | length>20 %}&#8230;{% endif %}
         </span>{% if user_id == img_obj.user_id %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-pencil" 
-             title="edit this image's metadata"></a>{% endif %}
+							   title="edit this image's metadata"></a>
+	<button class="glyphicon glyphicon-remove-circle" 
+		onclick='remove_image("{{img_obj.id}}")' title="remove image"></button>{% endif %}
         <span class="pull-right">
           <!-- unlock feature later
           <span class="notification-icon">

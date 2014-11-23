@@ -7,6 +7,7 @@
 <head>
 <script src="/static/js/validator.js"></script>
 
+ 
 <!-- okay, so this is pretty hacky -->
 <script type="text/javascript">
     $(document).ready(function(){
@@ -32,6 +33,19 @@
 
 </script>
 
+<script>
+ var hook = true;
+ window.onbeforeunload = function() {
+   if (hook) {
+     return "Unsubmitted information will be lost"
+
+   }
+ }
+ function unhook() {
+   hook=false;
+ };
+
+</script>
 </head>
 
 <!-- Page Content -->
@@ -144,7 +158,9 @@
 
       <input type="hidden" name="image_key" value="{{image_key}}">
 
-      <button class="btn btn-lg col-sm-offset-2" type="submit" name="submit" value="Submit" id="submit">
+      <button class="btn btn-lg col-sm-offset-2" type="submit" 
+	      name="submit" value="Submit" id="submit"
+	      onClick="unhook()">
         Submit
       </button>
 
