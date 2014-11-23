@@ -68,7 +68,7 @@ $.ajax("image?image_key=" + id, {type:"DELETE",
       <div class="caption" style="height:140px;">
         <span class="lead" title="{{ img_obj.title }}">
           {{img_obj.title[:20]}}{% if img_obj.title | length>20 %}&#8230;{% endif %}
-        </span>{% if user_id == img_obj.user_id %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-pencil" 
+        </span>{% if (user_id == img_obj.user_id) or (admin) %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-pencil" 
 							   title="edit this image's metadata"></a>
 	<button class="glyphicon glyphicon-remove-circle" 
 		onclick='remove_image("{{img_obj.id}}")' title="remove image"></button>{% endif %}

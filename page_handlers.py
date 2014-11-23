@@ -67,6 +67,7 @@ class PickThisPageRequest(webapp2.RequestHandler):
             email_hash = hashlib.md5(user.email()).hexdigest()
             nickname = user.nickname()
             cred_points = get_cred(user)
+            admin = users.is_current_user_admin()
         else:
             logout_url = None
             login_url = users.create_login_url('/')
@@ -78,7 +79,8 @@ class PickThisPageRequest(webapp2.RequestHandler):
                       login_url=login_url,
                       email_hash=email_hash,
                       nickname=nickname,
-                      cred_points=cred_points)
+                      cred_points=cred_points,
+                      admin=admin)
 
         params.update(kwargs)
         return params
@@ -234,7 +236,7 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
                              image=output_blob_key,
                              parent=db_parent,
                              user=user,
-            user_id=user.user_id())
+                             user_id=user.user_id())
 
         new_db.width = new_db.size[0]
         new_db.height = new_db.size[1]
@@ -255,14 +257,21 @@ class AddImageHandler(PickThisPageRequest):
 
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
-        
-        template_params = self.get_base_params()
-        template_params.update(img_obj=img_obj,
-                               image_key=image_key)
 
-        template = env.get_template("add_image.html")
-        html = template.render(template_params)
-        self.response.write(html)
+        if((user == img_obj.user) or
+           (users.is_current_user_admin())):
+
+            template_params = self.get_base_params()
+            template_params.update(img_obj=img_obj,
+                                   image_key=image_key)
+
+            template = env.get_template("add_image.html")
+            html = template.render(template_params)
+            self.response.write(html)
+
+        else:
+            raise Exception
+            
 
     @error_catch
     @authenticate
@@ -290,6 +299,13 @@ class AddImageHandler(PickThisPageRequest):
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
+        
+        if not ((user == img_obj.user) or
+               (users.is_current_user_admin())):
+            raise Exception
+        
+
+        
         img_obj.width = img_obj.size[0]
         img_obj.height = img_obj.size[1]
 
@@ -299,8 +315,7 @@ class AddImageHandler(PickThisPageRequest):
         img_obj.pickstyle = pickstyle
         img_obj.permission = permission
         img_obj.rightsholder = rightsholder
-        img_obj.user = user
-        img_obj.user_id = user.user_id()
+  
 
         img_obj.put()
 
