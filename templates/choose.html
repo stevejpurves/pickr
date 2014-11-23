@@ -4,25 +4,6 @@
 
 {% block content %}
 
-<script>
-remove_image = function(id){
-
-
-$.ajax("image?image_key=" + id, {type:"DELETE",
-				 success: function(data){
-				   if(data.success){
-				     $('#image-'+id).remove();
-				   }   else if(data.interpretations){
-				     alert("Cannot remove image with interpretations");
-				   }
-				 }}
- );
-
-};
-
-
-</script>
-
 <!-- Page Content -->
 <div class="container">
 
@@ -69,9 +50,7 @@ $.ajax("image?image_key=" + id, {type:"DELETE",
         <span class="lead" title="{{ img_obj.title }}">
           {{img_obj.title[:20]}}{% if img_obj.title | length>20 %}&#8230;{% endif %}
         </span>{% if (user_id == img_obj.user_id) or (admin) %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-pencil" 
-							   title="edit this image's metadata"></a>
-	<button class="glyphicon glyphicon-remove-circle" 
-		onclick='remove_image("{{img_obj.id}}")' title="remove image"></button>{% endif %}
+							   title="edit this image's metadata"></a>{% endif %}
         <span class="pull-right">
           <!-- unlock feature later
           <span class="notification-icon">

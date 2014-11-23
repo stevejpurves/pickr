@@ -46,12 +46,36 @@
  };
 
 </script>
+<script>
+remove_image = function(id){
+
+
+$.ajax("image?image_key=" + id, {type:"DELETE",
+         success: function(data){
+           if(data.success){
+             $('#image-'+id).remove();
+             alert("Image has been deleted");
+
+           }   else if(data.interpretations){
+             alert("Cannot remove image with interpretations");
+           }
+         }}
+ );
+
+};
+
+
+</script>
+
 </head>
 
 <!-- Page Content -->
 <div class="container">
 
-    <h1 class="page-header">{% if img_obj.title %}Edit{% else %}Add{% endif %} an image</h1>
+    <h1 class="page-header">{% if img_obj.title %}Edit{% else %}Add{% endif %} an image
+      <button class="btn btn-danger pull-right" 
+              onclick='remove_image("{{img_obj.id}}")'
+              title="remove image">Delete image</button></h1>
 
   <form role="form" class="form-horizontal"
         action="/add_image" method="POST"
