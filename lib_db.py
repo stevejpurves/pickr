@@ -8,6 +8,10 @@ from PIL import Image
 import json
 
 
+class User(db.Model):
+    # Hack to log the number of users who have logged in
+    user_id = db.StringProperty()
+
 class Vote(db.Model):
 
     user = db.UserProperty()

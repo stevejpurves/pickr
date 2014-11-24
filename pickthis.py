@@ -2,7 +2,7 @@
 import numpy as np
 import StringIO, json, base64
 
-from lib_db import Picks, ImageObject
+from lib_db import Picks, ImageObject, User, Vote
 
 from google.appengine.api import images
 from google.appengine.ext import blobstore
@@ -104,6 +104,15 @@ def get_result_image(img_obj):
 
     return base64.b64encode(output.getvalue()), count
 
+def statistics():
+
+    stats = {"user_count": User.all().count(),
+             "image_count": ImageObject.all().count(),
+             "pick_count":  Picks.all().count(),
+             "vote_count": Vote.all().count()}
+
+    return stats
+    
 
 def get_cred(user):
 

@@ -12,9 +12,9 @@ from google.appengine.ext import blobstore
 # For image manipulation
 from PIL import Image
 
-from pickthis import get_result_image, get_cred
+from pickthis import get_result_image, get_cred, statistics
 from constants import local, env, db_parent
-from lib_db import ImageObject, Picks
+from lib_db import ImageObject, Picks, User
 
 # For image serving
 import cloudstorage as gcs
@@ -96,13 +96,24 @@ class MainPage(webapp2.RequestHandler):
         if not user:
             login_url = users.create_login_url('/')
             template = env.get_template("main.html")
-            html = template.render(login_url=login_url)
+            html = template.render(login_url=login_url,
+                                   stats=statistics())
             self.response.out.write(html)
 
         else:
             logout_url = users.create_logout_url('/')
             login_url = None
             email_hash = hashlib.md5(user.email()).hexdigest()
+
+            user_obj = User.all().ancestor(db_parent)
+            user_obj = user_obj.filter("user_id =", user.user_id())
+            user_obj = user_obj.get()
+
+            if not user_obj:
+                user_obj = User(user_id=user.user_id(),
+                                parent=db_parent)
+                user_obj.put()
+            
             self.redirect('/library')
             
 

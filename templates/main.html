@@ -3,7 +3,13 @@
 {% block title %}{% endblock %}
 
 {% block content %}
-      
+
+<script>
+{%for key in stats%}
+var {{key}} = {{stats[key]}}
+{%endfor%}
+</script>
+
 <div class="ribbon-banner">in beta</div>
 
 <div class="container">
