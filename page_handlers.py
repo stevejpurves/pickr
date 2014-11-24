@@ -74,6 +74,7 @@ class PickThisPageRequest(webapp2.RequestHandler):
             email_hash = ''
             nickname = None
             cred_points = None
+            admin = False
 
         params = dict(logout_url=logout_url,
                       login_url=login_url,

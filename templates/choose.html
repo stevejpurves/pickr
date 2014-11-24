@@ -26,7 +26,7 @@
                onclick="$('#file').click()"
                {% if login_url or cred_points<15 %}disabled="disabled"{% endif %}>
             <span class="hidden-xs">Upload a new image</span><span class="visible-xs">Upload new</span>
-          </div><span style="color:lightblue" class="pull-right">{% if cred_points<15 %}You need at least 15 reputation points to upload images.{% endif %}</span> 
+          </div><span style="color:lightblue" class="pull-right">{% if login_url %}{% elif cred_points<15 %}You need at least 15 reputation points to upload images.{% endif %}</span> 
         </form>
       </div>
     </div>
