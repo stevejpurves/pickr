@@ -124,7 +124,7 @@ def get_cred(user):
     # Also should change to 'rep', rather than 'cred'.
 
     all_picks = Picks.all().filter("user =", user).fetch(1000)
-    all_imgs  = ImageObject.all().filter("user =", user).fetch(1000)
+    all_imgs  = ImageObject.all().filter("user =", user).filter("title !=", '').fetch(1000)
 
     cred_points = 1 # everyone start with 1
 
