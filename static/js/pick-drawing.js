@@ -2,6 +2,8 @@ pickDrawingSetup = function(){
     var pickrElement;
     var paper;
     var baseImage;
+    
+    window.ondragstart = function() { return false; } ;
 
     var default_colour = "#f00";
     var accent_colour = "#0000FF";
@@ -27,15 +29,19 @@ pickDrawingSetup = function(){
         pickrElement = $('#' + elementId);
         penSize = 1 + pickrElement.width() / 400;
         paper = Raphael(elementId);
+	
         updatePaperSize();
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
-        baseImage = paper.image(image_url, 0, 0, baseImageWidth, baseImageHeight);
+        baseImage = paper.image(image_url, 0, 0, baseImageWidth, 
+				baseImageHeight);
         $(window).resize(updatePaperSize);        
     }
     
     var addOverlay = function(url)
     {
-        var overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
+        var overlay = paper.image(url, 0, 0, baseImageWidth, 
+				  baseImageHeight);
+	overlay.undrag();
         return overlay.attr({opacity: 0.67});
     }
 
