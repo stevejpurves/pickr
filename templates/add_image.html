@@ -6,7 +6,7 @@
 
 <head>
 <script src="/static/js/validator.js"></script>
-
+<script src="/static/js/bootbox.min.js"></script>
  
 <!-- okay, so this is pretty hacky -->
 <script type="text/javascript">
@@ -28,42 +28,56 @@
                 $("#rightsholder2-div").show();
         });
     });
-
-
-
 </script>
 
+<meta id="this-image" data-id="{{ img_obj.id }}" data-title="{{ img_obj.title }}">
+
 <script>
- var hook = true;
- window.onbeforeunload = function() {
-   if (hook) {
-     return "Unsubmitted information will be lost"
+  var thisImage = $('#this-image').data();
+  var id = thisImage.id
+  
+  var hook = true;
 
-   }
- }
- function unhook() {
-   hook=false;
- };
+  function unhook(){
+    hook = false;
+  };
 
-</script>
-<script>
-remove_image = function(id){
+  function removeImage(){
+    $.ajax('image?image_key=' + id, {
+           type:'DELETE',
+           success: function(data){
+             if(data.success){
+               $('#image-'+id).remove();
+               bootbox.alert('Image has been deleted.', function(){
+                   unhook();
+                   document.location.href = "/library";
+               });
+             };
+            }
+         });
+  };
 
+  function deleteClick(){
+          bootbox.confirm('Are you sure?', function(result){
+            if (result) {
+              removeImage();
+            }
+          });
+  };
 
-$.ajax("image?image_key=" + id, {type:"DELETE",
-         success: function(data){
-           if(data.success){
-             $('#image-'+id).remove();
-             alert("Image has been deleted");
+  if (thisImage.title !== '') {
+    unhook();
+  }
 
-           }   else if(data.interpretations){
-             alert("Cannot remove image with interpretations");
-           }
-         }}
- );
-
-};
-
+  $(window).on('beforeunload', function(e){
+    if (hook) {
+      bootbox.alert('Unsubmitted images will be lost.', function(result){ 
+        if (result) {
+          removeImage();
+        }
+      });
+    }
+  });
 
 </script>
 
@@ -74,8 +88,17 @@ $.ajax("image?image_key=" + id, {type:"DELETE",
 
     <h1 class="page-header">{% if img_obj.title %}Edit{% else %}Add{% endif %} an image
       <button class="btn btn-danger pull-right" 
-              onclick='remove_image("{{img_obj.id}}")'
-              title="remove image">Delete image</button></h1>
+              onclick = "javascript:deleteClick();" 
+              {% if img_obj.interpreters | length != 0 %}disabled{% endif %}
+              title="Permanently delete the image.">
+        {% if img_obj.interpreters | length == 0 %}Delete image{% else %}Image cannot be deleted{% endif %}
+      </button>
+      <span class="hidden-xs" 
+            style="float:right; margin-top:8px; margin-right: 12px;
+                font-size:50%; font-weight:normal;">
+              This image has {{ img_obj.interpreters | length }} interpretations.
+      </span>
+    </h1>
 
   <form role="form" class="form-horizontal"
         action="/add_image" method="POST"
@@ -184,7 +207,7 @@ $.ajax("image?image_key=" + id, {type:"DELETE",
 
       <button class="btn btn-lg col-sm-offset-2" type="submit" 
 	      name="submit" value="Submit" id="submit"
-	      onClick="unhook()">
+	      onClick="javascript:unhook();">
         Submit
       </button>
 
