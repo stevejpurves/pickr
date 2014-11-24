@@ -69,7 +69,8 @@ def get_result_image(img_obj):
 
         # Dilate this image.
         n = np.ceil(py / 400.).astype(int) # The radius of the disk structuring element
-        dilated_image = dilate(user_image.astype(int), B = sedisk(r=n) )
+        dilated_image = dilate(user_image.astype(int),
+                               B=sedisk(r=n))
 
         # Add it to the running summed image.
         heatmap_image += dilated_image
@@ -137,5 +138,5 @@ def get_cred(user):
     # Award rep for uploading.
     cred_points += 3 * len(all_imgs)
 
-    return cred_points
+    return cred_points 
 

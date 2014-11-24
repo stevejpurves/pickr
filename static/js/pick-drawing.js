@@ -3,6 +3,9 @@ pickDrawingSetup = function(){
     var paper;
     var baseImage;
 
+    var default_colour = "#f00";
+    var accent_colour = "#0000FF";
+
     var points = [];
     var circles = [];
     var linestrip;    
@@ -36,12 +39,12 @@ pickDrawingSetup = function(){
         return overlay.attr({opacity: 0.67});
     }
 
-    var addCircle = function(x, y)
+    var addCircle = function(x, y, colour)
     {
         var radius = 1 + penSize;
         var circle = paper.circle(x, y, radius);
         circle.attr({
-            fill: '#f00',
+            fill: colour,
             stroke: '#fff',
             opacity: 0.5
         });
@@ -64,7 +67,7 @@ pickDrawingSetup = function(){
         circles = [];   
     }
     
-    var connectTheDots = function() // Lalalalala
+    var connectTheDots = function(colour) // Lalalalala
     {
         if (!!linestrip)
             linestrip.remove();
@@ -79,15 +82,15 @@ pickDrawingSetup = function(){
             path += 'L' + p.x + ',' + p.y; // lineTo
         });
         linestrip = paper.path(path);
-        linestrip.attr({'stroke': '#f00'});
+        linestrip.attr({'stroke': colour});
         linestrip.attr({'stroke-width':penSize});
         linestrip.attr({'opacity':'0.5'});
     }
     
-    var addPoint = function(point){
-        addCircle(point.x, point.y);
+    var addPoint = function(point, colour){
+        addCircle(point.x, point.y, colour);
         points.push(point);
-        connectTheDots();
+        connectTheDots(colour);
     }
     
     var clickPoint = function(point){
@@ -97,7 +100,7 @@ pickDrawingSetup = function(){
             y: Math.round(point.y / resizeScale)
         };
         $.post('/update_pick', data, 
-            function(){addPoint(data)});
+            function(){addPoint(data,default_colour )});
     }
 
     var removePoint = function(point){
@@ -105,13 +108,13 @@ pickDrawingSetup = function(){
         points = _.reject(points, function(p){
             return p.x === point.x && p.y === point.y;
         });
-        connectTheDots();
+        connectTheDots(default_colour);
     }
     
     var clearPoints = function(point){
         clearCircles();
         points = [];
-        connectTheDots();
+        connectTheDots(default_colour);
     }
     
     var loadPoints = function(parameters)
@@ -120,8 +123,14 @@ pickDrawingSetup = function(){
         $.get('/update_pick?', parameters, function(data)
         {
 	
-            data.forEach(function(item){
-               addPoint({x:item[0], y:item[1]});
+	    if (data.owner){
+		colour = accent_colour;
+	    } else {
+		colour = default_colour;
+	    };
+
+            data.data.forEach(function(item){
+               addPoint({x:item[0], y:item[1]}, colour);
 	       
            });
         }, 'json');

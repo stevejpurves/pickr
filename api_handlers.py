@@ -212,9 +212,18 @@ class PickHandler(webapp2.RequestHandler):
 
             user = self.request.get("user")
             data = Picks.all().ancestor(img_obj)
+
+            if (img_obj.user.user_id == users.User(user).user_id):
+                owner = True
+            else:
+                owner = False
+            
             data = data.filter("user =", users.User(user)).get()
 
-            self.response.write(data.picks)
+            output = {"data": json.loads(data.picks), "owner": owner}
+
+            self.response.headers["Content-Type"] = "application/json"
+            self.response.write(json.dumps(output))
             return
 
     @error_catch
