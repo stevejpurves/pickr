@@ -65,16 +65,31 @@
 
     <p><span class='pt'>pick this</span> is open source software. You can find it <a href="https://github.com/ben-bougher/pickr">on GitHub</a>. The software is written in Python and JavaScript, and uses the <a href="http://jinja.pocoo.org/docs/dev/">Jinja2</a> templating engine and the <a href="http://getbootstrap.com/">Bootstrap</a> HTML/CSS/JS framework. The drawing is handled by <a href="http://raphaeljs.com/">Raphaël</a>. The web app you are using is running on <a href="https://cloud.google.com/appengine/">Google Cloud Platform</a>.</p>
 
-<!-- not needed for now...
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="panel-title">Technology</h3>
+        <h3 class="panel-title">Site statistics</h3>
       </div>
       <div class="panel-body">
-        So you want the geeky details? <span class='pt'>pick this</span> is open source. You can find it <a href="https://github.com/ben-bougher/pickr">on GitHub</a>. The software is written in Python and JavaScript, and uses the Jinja2 templating engine and Twitter's Bootstrap CSS/JS framework. The drawing is handled by <a href="http://raphaeljs.com/">Raphaël</a>. The web app you are using is running on <a href="https://cloud.google.com/appengine/">Google Cloud Platform</a>.
+        <ul class="list-group">
+          <li class="list-group-item">
+            <span class="badge">{{ stats['user_count'] }}</span>
+            Users
+          </li>
+          <li class="list-group-item">
+            <span class="badge">{{ stats['image_count'] }}</span>
+            Images
+          </li>
+          <li class="list-group-item">
+            <span class="badge">{{ stats['pick_count'] }}</span>
+            Interpretations
+          </li>
+          <li class="list-group-item">
+            <span class="badge">{{ stats['vote_count'] }}</span>
+            Votes cast
+          </li>
+        </ul>
       </div>
     </div>
--->
 
   </div>
 
