@@ -36,12 +36,6 @@
   var thisImage = $('#this-image').data();
   var id = thisImage.id
   
-  var hook = true;
-
-  function unhook(){
-    hook = false;
-  };
-
   function removeImage(){
     $.ajax('image?image_key=' + id, {
            type:'DELETE',
@@ -49,35 +43,28 @@
              if(data.success){
                $('#image-'+id).remove();
                bootbox.alert('Image has been deleted.', function(){
-                   unhook();
-                   document.location.href = "/library";
+                  $(window).off('beforeunload');
+                  document.location.href = "/library";
                });
              };
             }
          });
   };
 
-  function deleteClick(){
-          bootbox.confirm('Are you sure?', function(result){
-            if (result) {
-              removeImage();
-            }
+  function confirmDelete(){
+          bootbox.confirm('Image will be deleted. Are you sure?', function(result){
+            if (result){
+               console.log('Result is true');
+               removeImage();
+             }
           });
   };
 
-  if (thisImage.title !== '') {
-    unhook();
-  }
+  $(window).on('beforeunload', confirmDelete);
 
-  $(window).on('beforeunload', function(e){
-    if (hook) {
-      bootbox.alert('Unsubmitted images will be lost.', function(result){ 
-        if (result) {
-          removeImage();
-        }
-      });
-    }
-  });
+  if (thisImage.title !== '') {
+    $(window).off('beforeunload');
+  }
 
 </script>
 
@@ -88,7 +75,7 @@
 
     <h1 class="page-header">{% if img_obj.title %}Edit{% else %}Add{% endif %} an image
       <button class="btn btn-danger pull-right" 
-              onclick = "javascript:deleteClick();" 
+              onclick = "javascript:confirmDelete();" 
               {% if img_obj.interpreters | length != 0 %}disabled{% endif %}
               title="Permanently delete the image.">
         {% if img_obj.interpreters | length == 0 %}Delete image{% else %}Image cannot be deleted{% endif %}
