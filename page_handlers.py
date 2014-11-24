@@ -149,7 +149,8 @@ class AboutHandler(PickThisPageRequest):
     def get(self):
         template_params = self.get_base_params()
         template = env.get_template('about.html')
-        html = template.render(template_params)
+        html = template.render(template_params,
+                               stats=statistics())
         self.response.write(html)
 
 
