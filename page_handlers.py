@@ -204,8 +204,18 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
             upload_url = ''
             user_id = ''
 
-        # Get the images.
-        img_objs = ImageObject.all().ancestor(db_parent).fetch(1000)
+        # Get the images. 
+        # We need to delete images without titles. 
+        # I would rather do this in add_image.html
+        # but it seems you can't trigger deletion
+        # with $(window).on(beforeunload)...
+        # https://developer.mozilla.org/en-US/docs/WindowEventHandlers.onbeforeunload
+        if users.is_current_user_admin():
+            # Then see everything.
+            img_objs = ImageObject.all().ancestor(db_parent).fetch(1000)
+        else:
+            # Then omit aborted uploads.
+            img_objs = ImageObject.all().ancestor(db_parent).filter("title !=", '').fetch(1000)
 
         template = env.get_template('choose.html')
 

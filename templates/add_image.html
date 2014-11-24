@@ -52,15 +52,18 @@
   };
 
   function confirmDelete(){
+          console.log('got to confirmDelete')
           bootbox.confirm('Image will be deleted. Are you sure?', function(result){
             if (result){
-               console.log('Result is true');
+               console.log('delete confirmed');
                removeImage();
              }
           });
   };
 
-  $(window).on('beforeunload', confirmDelete);
+  $(window).on('beforeunload', function(e){
+    return "The image will be deleted. Are you sure?"
+  });
 
   if (thisImage.title !== '') {
     $(window).off('beforeunload');
@@ -76,9 +79,9 @@
     <h1 class="page-header">{% if img_obj.title %}Edit{% else %}Add{% endif %} an image
       <button class="btn btn-danger pull-right" 
               onclick = "javascript:confirmDelete();" 
-              {% if img_obj.interpreters | length != 0 %}disabled{% endif %}
+              {% if admin %}{% elif img_obj.interpreters | length != 0 %}disabled{% endif %}
               title="Permanently delete the image.">
-        {% if img_obj.interpreters | length == 0 %}Delete image{% else %}Image cannot be deleted{% endif %}
+        {% if (admin) or (img_obj.interpreters | length == 0) %}Delete image{% else %}Image cannot be deleted{% endif %}
       </button>
       <span class="hidden-xs" 
             style="float:right; margin-top:8px; margin-right: 12px;

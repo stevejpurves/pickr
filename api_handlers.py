@@ -81,11 +81,19 @@ class ImageHandler(webapp2.RequestHandler):
             (users.is_current_user_admin())):
 
             self.response.headers["Content-Type"] = "application/json"
+
             if not Picks.all().ancestor(image_obj).get():
+                # Then there are no intepretations, so anyone can delete.
                 image_obj.delete()
                 self.response.write(json.dumps({"success":True}))
             else:
-                self.response.write(json.dumps({"interpretations":True}))
+                # There are interpretations.
+                if users.is_current_user_admin():
+                    # Then you can delete all the same.
+                    image_obj.delete()
+                    self.response.write(json.dumps({"success":True}))
+                else:
+                    self.response.write(json.dumps({"interpretations":True}))
             
         else:
             self.error(500)
