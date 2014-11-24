@@ -1,9 +1,13 @@
 $(function() {
     var interpretationCount = count;
+    var pickUsers = users;
     var current = 0;
+    var currentUser = current_user;
+
     pickDrawing.setup('image-div');
     //var overlay64 = 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
-    var overlay = pickDrawing.addOverlay('data:image/png;base64,' + overlay64);
+    var overlay = pickDrawing.addOverlay('data:image/png;base64,' + 
+					 overlay64);
     
     var updateVoteCount = function(voteCount)
     {
@@ -27,17 +31,17 @@ $(function() {
 
 
    
-     var loadPicks = function()
+     var loadPicks = function(user)
     {
 
 
 	    
-	$.get('/vote', {index: current,
+	$.get('/vote', {user: user,
 			image_key: image_key}, 
 	      updateVoteCount);
 
 	pickDrawing.load({
-           pick_index: current,
+            user: currentUser,
 	    image_key: image_key
         });
         
@@ -47,20 +51,22 @@ $(function() {
         if (current <= 0)
             return;
         --current;
-        loadPicks();
+	currentUser = pickUsers[current];
+        loadPicks(currentUser);
     });
 
     $('#next-button').click(function(){
         if (current >= interpretationCount - 1)
             return;
         ++current;
-        loadPicks();
+	currentUser = pickUsers[current];
+        loadPicks(currentUser);
     });
     
     var castVote = function(v)
     {
        $.post('/vote',{
-           index: current,
+           user: currentUser,
 	   image_key: image_key,
            vote: v
        },
@@ -81,7 +87,7 @@ $(function() {
             overlay.animate({opacity: ui.value / 100});
         }});
 
-loadPicks();
+loadPicks(currentUser);
 });
 
 

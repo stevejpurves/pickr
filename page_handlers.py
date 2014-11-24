@@ -14,7 +14,7 @@ from PIL import Image
 
 from pickthis import get_result_image, get_cred
 from constants import local, env, db_parent
-from lib_db import ImageObject
+from lib_db import ImageObject, Picks
 
 # For image serving
 import cloudstorage as gcs
@@ -54,7 +54,7 @@ class ErrorHandler(webapp2.RequestHandler):
 
         self.response.write(html)
         
-# Make a basic PageRequest class to handle the params we always need...
+# Make a basic PageRequest class to handle the params we always need..
 class PickThisPageRequest(webapp2.RequestHandler):
     
     def get_base_params(self, **kwargs):
@@ -117,9 +117,14 @@ class ResultsHandler(PickThisPageRequest):
 
         image, count = get_result_image(img_obj)
 
+        picks = Picks.all().ancestor(img_obj).fetch(1000)
+        pick_users = [p.user for p in picks]
+
         params = self.get_base_params(count=count,
                                       image=image,
-                                      img_obj=img_obj)
+                                      img_obj=img_obj,
+                                      user=users.get_current_user(),
+                                      users=pick_users)
 
         template = env.get_template("results.html")
         html = template.render(params)

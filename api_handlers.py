@@ -55,7 +55,7 @@ class CommentHandler(webapp2.RequestHandler):
         index = int(self.request.get("index"))
         comment = int(self.request.get("comment"))
 
-        data = ImageObject.all().ancestor(db_parent).sort("-date")
+        data = ImageObject.all().ancestor(db_parent).sort("date")
         data = data.fetch(1000)[index]
         comments = data.comments
         comments.append(comment)
@@ -99,13 +99,15 @@ class VoteHandler(webapp2.RequestHandler):
         self.response.headers["Content-Type"] = "application/json"
         
 
-        index = int(self.request.get("index"))
+        owner = self.request.get("user")
         image_key = int(self.request.get("image_key"))
 
     
         img = ImageObject.get_by_id(image_key, parent=db_parent)
-        picks = Picks.all().ancestor(img).order("date").fetch(1000)
-        picks = picks[index]
+        picks = Picks.all().ancestor(img)
+
+        print owner
+        picks = picks.filter("user =", users.User(owner)).get()
 
         votes = picks.votes
 
@@ -139,17 +141,18 @@ class VoteHandler(webapp2.RequestHandler):
 
         self.response.headers["Content-Type"] = "application/json"
 
-        index = int(self.request.get("index"))
+        owner = self.request.get("user")
         update_vote = int(self.request.get("vote"))
         img_key = int(self.request.get("image_key"))
         user = users.get_current_user()
 
         img = ImageObject.get_by_id(img_key,
                                     parent=db_parent)
-        picks = Picks.all().ancestor(img).order("date").fetch(1000)
+        picks = Picks.all().ancestor(img)
+        picks = picks.filter("user =",users.User(owner)).get()
 
         # Prevent self voting
-        if user == picks[index].user:
+        if user == picks.user:
             update_vote = 0
             
         elif update_vote > 0:
@@ -157,11 +160,10 @@ class VoteHandler(webapp2.RequestHandler):
         else:
             update_vote = -1
 
-        vote = Vote.all().ancestor(picks[index]).filter("user =",
-                                                        user).get()
+        vote = Vote.all().ancestor(picks).filter("user =",user).get()
         if vote is None:
             vote = Vote(user=user, value=update_vote,
-                        parent=picks[index])
+                        parent=picks)
         else:
             # reset if they try to set to the same vote
             if vote.value == update_vote:
@@ -171,7 +173,7 @@ class VoteHandler(webapp2.RequestHandler):
 
         vote.put()
         
-        data = {"votes": picks[index].votes,
+        data = {"votes": picks.votes,
                 "user_choice": vote.value}
         
         self.response.write(json.dumps(data))
@@ -206,15 +208,13 @@ class PickHandler(webapp2.RequestHandler):
             self.response.write(data)
             return
 
-        if self.request.get("pick_index"):
+        if self.request.get("user"):
 
+            user = self.request.get("user")
             data = Picks.all().ancestor(img_obj)
-            data = data.order("-date").fetch(1000)
+            data = data.filter("user =", users.User(user)).get()
 
-            index = int(self.request.get("pick_index"))
-
-
-            self.response.write(data[index].picks)
+            self.response.write(data.picks)
             return
 
     @error_catch

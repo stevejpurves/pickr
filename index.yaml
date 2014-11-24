@@ -20,3 +20,9 @@ indexes:
   properties:
   - name: date
     direction: desc
+
+- kind: Picks
+  ancestor: yes
+  properties:
+  - name: user
+  - name: date
