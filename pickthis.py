@@ -12,24 +12,24 @@ from PIL import Image
 from mmorph import dilate, sedisk
 
 
-
-def regularize(xarr, yarr, px, py):
+def regularize(x_in, y_in, px, py):
     """
     For line interpretations.
     Connect the dots of each interpretation.
     
     """
-    horx = np.arange(np.amin(xarr), np.amax(xarr)+1)
-    hory = np.interp(horx, xarr, yarr)
-    return horx.astype(int), hory.astype(int)
+    x_out = np.arange(np.amin(x_in), np.amax(x_in)+1)
+    y_out = np.interp(x_out, x_in, y_in)
+    return x_out.astype(int), y_out.astype(int)
 
     
-def normalize(arr, newmax):
+def normalize(a, newmax):
     """
-    Normalize the values of an array to some new max.
+    Normalize the values of an
+    array a to some new max.
     
     """
-    return (float(newmax) * arr) / np.amax(arr)
+    return (float(newmax) * a) / np.amax(a)
 
 
 def get_result_image(img_obj):
@@ -46,29 +46,28 @@ def get_result_image(img_obj):
     data = Picks.all().ancestor(img_obj).fetch(1000)
     
     # Get the dimensions.
-    #px, py = img_obj.size # This gets the image from the blobstore
-    px, py = img_obj.width, img_obj.height # This doesn't 
+    w, h = img_obj.width, img_obj.height # This doesn't 
 
     # Make an 'empty' image for all the results. 
-    heatmap_image = np.zeros((py,px))
+    heatmap_image = np.zeros((h, w))
 
     # Now loop over the interpretations and sum into that empty image.
     for user in data:
 
         # Make a new image for this interpretation.
-        user_image = np.zeros((py,px))
+        user_image = np.zeros((h, w))
 
         # Get the points.
         picks = np.array(json.loads(user.picks))
 
-        # Make a line of points (called h for horizon).
-        hx, hy = regularize(picks[:,0], picks[:,1], px, py)
+        # Make a line of points.
+        x, y = regularize(picks[:,0], picks[:,1], w, h)
 
         # Make line into image.        
-        user_image[(hy,hx)] = 1.
+        user_image[(y, x)] = 1.
 
         # Dilate this image.
-        n = np.ceil(py / 400.).astype(int) # The radius of the disk structuring element
+        n = np.ceil(h / 400.).astype(int) # The radius of the disk structuring element
         dilated_image = dilate(user_image.astype(int),
                                B=sedisk(r=n))
 
@@ -93,8 +92,8 @@ def get_result_image(img_obj):
     a[heatmap_image==0] = 0 
 
     # Make the 4-channel image from an array.
-    x = np.dstack([r, g, b, a])
-    im_out = Image.fromarray(x.astype('uint8'), 'RGBA')
+    im = np.dstack([r, g, b, a])
+    im_out = Image.fromarray(im.astype('uint8'), 'RGBA')
 
     # Save out into file-like.
     output = StringIO.StringIO()
@@ -121,22 +120,20 @@ def get_cred(user):
     # Then have methods on the object for changing or getting
     # reputation, pushing notifications, and so on. See #105.
 
-    # Also should change to 'rep', rather than 'cred'.
-
     all_picks = Picks.all().filter("user =", user).fetch(1000)
     all_imgs  = ImageObject.all().filter("user =", user).filter("title !=", '').fetch(1000)
 
-    cred_points = 1 # everyone start with 1
+    rep = 1 # everyone start with 1
 
     # Award rep for votes received.
     for picks in all_picks:
-        cred_points += picks.votes
+        rep += picks.votes
 
     # Award rep for interpretations made.
-    cred_points += 3 * len(all_picks)
+    rep += 3 * len(all_picks)
 
     # Award rep for uploading.
-    cred_points += 3 * len(all_imgs)
+    rep += 3 * len(all_imgs)
 
-    return cred_points 
+    return rep
 

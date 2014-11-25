@@ -11,6 +11,11 @@ indexes:
 # your application using appcfg.py.
 
 - kind: ImageObject
+  properties:
+  - name: user
+  - name: title
+
+- kind: ImageObject
   ancestor: yes
   properties:
   - name: title

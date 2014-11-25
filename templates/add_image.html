@@ -65,8 +65,12 @@
     return "The image will be deleted. Are you sure?"
   });
 
-  if (thisImage.title !== '') {
+  function unhook(){
     $(window).off('beforeunload');
+  };
+
+  if (thisImage.title !== '') {
+    unhook();
   }
 
 </script>
