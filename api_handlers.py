@@ -77,7 +77,7 @@ class ImageHandler(webapp2.RequestHandler):
         image_obj = ImageObject.get_by_id(int(image_key),
                                           parent=db_parent)
 
-        if ((image_obj.user == user) or
+        if ((image_obj.user_id == user.user_id()) or
             (users.is_current_user_admin())):
 
             self.response.headers["Content-Type"] = "application/json"

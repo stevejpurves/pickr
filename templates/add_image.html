@@ -53,7 +53,7 @@
 
   function confirmDelete(){
           console.log('got to confirmDelete')
-          bootbox.confirm('Image will be deleted. Are you sure?', function(result){
+          bootbox.confirm('Image will be deleted.', function(result){
             if (result){
                console.log('delete confirmed');
                removeImage();
