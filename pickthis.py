@@ -60,6 +60,9 @@ def get_result_image(img_obj):
         # Get the points.
         picks = np.array(json.loads(user.picks))
 
+        # Sort on x values.
+        picks = picks[picks[:,0].argsort()]
+
         # Make a line of points.
         x, y = regularize(picks[:,0], picks[:,1], w, h)
 
