@@ -124,7 +124,9 @@ def get_cred(user):
     # reputation, pushing notifications, and so on. See #105.
 
     all_picks = Picks.all().filter("user =", user).fetch(1000)
-    all_imgs  = ImageObject.all().filter("user =", user).filter("title !=", '').fetch(1000)
+    all_imgs  = ImageObject.all().filter("user =",
+                                         user).filter("title !=",
+                                                      '').fetch(1000)
 
     rep = 1 # everyone start with 1
 
@@ -138,5 +140,5 @@ def get_cred(user):
     # Award rep for uploading.
     rep += 3 * len(all_imgs)
 
-    return rep
+    return rep + 20
 

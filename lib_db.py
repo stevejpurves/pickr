@@ -1,6 +1,7 @@
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
 from google.appengine.api import images
+from google.appengine.api import users
 
 from PIL import Image
 
@@ -14,7 +15,7 @@ class User(db.Model):
 
 class Vote(db.Model):
 
-    user = db.UserProperty()
+    user_id = db.StringProperty()
     value = db.IntegerProperty()
     
 class ImageParent(db.Model):
@@ -22,7 +23,7 @@ class ImageParent(db.Model):
 
 class Picks(db.Model):
 
-    user = db.UserProperty()
+    user_id = db.StringProperty()
     comments = db.StringListProperty()
     date = db.DateTimeProperty(auto_now_add=True)
     picks = db.BlobProperty()
@@ -59,9 +60,6 @@ class ImageObject(db.Model):
     # Because email address can change.
     user_id = db.StringProperty()
 
-    # Not sure if we need this for backwards compatibility?
-    user = db.UserProperty()
-
     name = db.StringProperty() # What is this for? 
                                # Doesn't get populated.
 
@@ -94,3 +92,11 @@ class ImageObject(db.Model):
 
         return self.key().id()
     
+
+    @property
+    def nickname(self):
+
+        user = users.User(_user_id=self.user_id)
+        return user.nickname()
+    
+        

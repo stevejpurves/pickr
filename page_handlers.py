@@ -130,12 +130,12 @@ class ResultsHandler(PickThisPageRequest):
         image, count = get_result_image(img_obj)
 
         picks = Picks.all().ancestor(img_obj).fetch(1000)
-        pick_users = [p.user for p in picks]
+        pick_users = [p.user_id for p in picks]
 
         params = self.get_base_params(count=count,
                                       image=image,
                                       img_obj=img_obj,
-                                      user=users.get_current_user(),
+                                      user=users.get_current_user().user_id(),
                                       users=pick_users)
 
         template = env.get_template("results.html")
@@ -263,7 +263,6 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         new_db = ImageObject(description=description,
                              image=output_blob_key,
                              parent=db_parent,
-                             user=user,
                              user_id=user.user_id())
 
         new_db.width = new_db.size[0]
@@ -286,7 +285,7 @@ class AddImageHandler(PickThisPageRequest):
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
-        if((user == img_obj.user) or
+        if((user.user_id() == img_obj.user_id) or
            (users.is_current_user_admin())):
 
             template_params = self.get_base_params()
@@ -328,7 +327,7 @@ class AddImageHandler(PickThisPageRequest):
                                         parent=db_parent)
 
         
-        if not ((user == img_obj.user) or
+        if not ((user.user_id() == img_obj.user_id) or
                (users.is_current_user_admin())):
             raise Exception
         
