@@ -30,12 +30,17 @@
     });
 </script>
 
-<meta id="this-image" data-id="{{ img_obj.id }}" data-title="{{ img_obj.title }}">
+<!-- This is a trick to get Jinja vars into JS -->
+<meta id="this-image" 
+      data-id="{{ img_obj.id }}"
+      data-title="{{ img_obj.title }}">
 
 <script>
   var thisImage = $('#this-image').data();
   var id = thisImage.id
+  var title = thisImage.title
   
+  // This actually deletes things.
   function removeImage(){
     $.ajax('image?image_key=' + id, {
            type:'DELETE',
@@ -51,6 +56,8 @@
          });
   };
 
+  // This just checks if the user really wants
+  // to delete the image.
   function confirmDelete(){
           console.log('got to confirmDelete')
           bootbox.confirm('Image will be deleted.', function(result){
@@ -62,14 +69,17 @@
   };
 
   $(window).on('beforeunload', function(e){
-    return "The image will be deleted. Are you sure?"
+    // Can't do anything useful here.
+    // Firefox ignores even this text anyway.
+    return "The image will be deleted."
   });
 
   function unhook(){
     $(window).off('beforeunload');
   };
 
-  if (thisImage.title !== '') {
+  if (title !== '') {
+    // Then we're editing, not adding.
     unhook();
   }
 
