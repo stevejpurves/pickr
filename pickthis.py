@@ -46,7 +46,8 @@ def get_result_image(img_obj):
     data = Picks.all().ancestor(img_obj).fetch(1000)
     
     # Get the dimensions.
-    w, h = img_obj.width, img_obj.height # This doesn't 
+    w, h = img_obj.width, img_obj.height
+    avg = (w + h) / 2.
 
     # Make an 'empty' image for all the results. 
     heatmap_image = np.zeros((h, w))
@@ -63,14 +64,19 @@ def get_result_image(img_obj):
         # Sort on x values.
         picks = picks[picks[:,0].argsort()]
 
-        # Make a line of points.
-        x, y = regularize(picks[:,0], picks[:,1], w, h)
+        # Deal with the points, and set the
+        # radius of the disk structuring element.
+        if img_obj.pickstyle == 'lines':
+            x, y = regularize(picks[:,0], picks[:,1], w, h)
+            n = np.ceil(avg / 300.).astype(int) 
+        else:
+            x, y = picks[:,0], picks[:,1]
+            n = np.ceil(avg / 150.).astype(int) # The radius of the disk structuring element
 
         # Make line into image.        
         user_image[(y, x)] = 1.
 
         # Dilate this image.
-        n = np.ceil(h / 400.).astype(int) # The radius of the disk structuring element
         dilated_image = dilate(user_image.astype(int),
                                B=sedisk(r=n))
 

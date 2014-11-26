@@ -1,3 +1,10 @@
+// Globals defined in pickpoint.html...
+// image_url = "{{ img_obj.url(size=1200) }}";
+// image_key = "{{ img_obj.id }}";
+// baseImageWidth = "{{ img_obj.width }}";
+// baseImageHeight = "{{ img_obj.height }}";
+// pickstyle = "{{ img_obj.pickstyle }}";
+
 pickDrawingSetup = function(){
     var pickrElement;
     var paper;
@@ -5,7 +12,7 @@ pickDrawingSetup = function(){
     
     window.ondragstart = function() { return false; } ;
 
-    var default_colour = "#f00";
+    var default_colour = "#FF0000";
     var accent_colour = "#0000FF";
 
     var points = [];
@@ -96,7 +103,9 @@ pickDrawingSetup = function(){
     var addPoint = function(point, colour){
         addCircle(point.x, point.y, colour);
         points.push(point);
-        connectTheDots(colour);
+        if (pickstyle === 'lines'){
+            connectTheDots(colour);
+        }
     }
     
     var clickPoint = function(point){
@@ -106,7 +115,7 @@ pickDrawingSetup = function(){
             y: Math.round(point.y / resizeScale)
         };
         $.post('/update_pick', data, 
-            function(){addPoint(data,default_colour )});
+            function(){addPoint(data, default_colour )});
     }
 
     var removePoint = function(point){
@@ -114,13 +123,17 @@ pickDrawingSetup = function(){
         points = _.reject(points, function(p){
             return p.x === point.x && p.y === point.y;
         });
-        connectTheDots(default_colour);
+        if (pickstyle === 'lines'){
+            connectTheDots(default_colour);
+        }
     }
     
     var clearPoints = function(point){
         clearCircles();
         points = [];
-        connectTheDots(default_colour);
+        if (pickstyle === 'lines'){
+            connectTheDots(default_colour);
+        }
     }
     
     var loadPoints = function(parameters)

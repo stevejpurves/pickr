@@ -30,7 +30,10 @@
     });
 </script>
 
-<!-- This is a trick to get Jinja vars into JS -->
+<!-- This is a trick to get Jinja vars into JS
+     Supposedly it's good to separate the script
+     from the page. -->
+
 <meta id="this-image" 
       data-id="{{ img_obj.id }}"
       data-title="{{ img_obj.title }}">
@@ -139,20 +142,20 @@
           <label for="pickstyle" class="col-sm-2 control-label">Pick style</label>
           <div class="radio col-sm-10">
             <label>
-              <input type="radio" name="pickstyle" id="points" value="points" {% if img_obj.pickstyle == "points" %}checked{% endif%} disabled>
-              Pick points. COMING SOON.
+              <input type="radio" name="pickstyle" id="points" value="points" {% if img_obj.pickstyle == "points" %}checked{% endif%}>
+              Pick points.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="pickstyle" id="line" value="line" {% if img_obj.title %}{% if img_obj.pickstyle == "line" %}checked{% endif%}
+              <input type="radio" name="pickstyle" id="lines" value="lines" {% if img_obj.title %}{% if img_obj.pickstyle == "lines" %}checked{% endif%}
               {% else %}checked{% endif %}>
               Pick a line.
             </label>
           </div>
           <div class="radio disabled col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="pickstyle" id="polygon" value="polygon" {% if img_obj.pickstyle == "polygon" %}checked{% endif%} disabled>
+              <input type="radio" name="pickstyle" id="polygons" value="polygons" {% if img_obj.pickstyle == "polygons" %}checked{% endif%} disabled>
               Pick a polygon. COMING SOON.
             </label>
           </div>
