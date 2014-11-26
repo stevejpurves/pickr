@@ -142,10 +142,10 @@ pickDrawingSetup = function(){
         clearPoints();
         $.get('/update_pick?', parameters, function(data)
         {
-    	    if (data.owner) {
-    		    colour = owner_colour;
-    	    } else if (data.current) {
-                colour = current_colour;
+    	    if (data.current) {
+    		    colour = current_colour;
+    	    } else if (data.owner) {
+                colour = owner_colour;
             } else {
     		    colour = default_colour;
     	    }

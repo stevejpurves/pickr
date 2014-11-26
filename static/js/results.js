@@ -25,17 +25,11 @@ $(function() {
 	    document.getElementById("thumbs-up").style.color = "grey";
 	document.getElementById("thumbs-down").style.color = "grey";
     };
-
-
 };
-
-
    
      var loadPicks = function(user)
     {
-
-
-	    
+  
 	$.get('/vote', {user: user,
 			image_key: image_key}, 
 	      updateVoteCount);

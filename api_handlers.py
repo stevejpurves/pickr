@@ -221,17 +221,14 @@ class PickHandler(webapp2.RequestHandler):
             user_id = self.request.get("user")
             data = Picks.all().ancestor(img_obj)
 
-            # If current user is owner, they show
-            # as 'current' (green line)
+            # Might as well set owner user 
+            # AND current user flags. Display logic
+            # is in pick-drawing.js
+            owner, current = False, False
             if (user.user_id() == user_id):
-                owner = False
                 current = True
-            elif (img_obj.user_id == user_id):
+            if (img_obj.user_id == user_id):
                 owner = True
-                current = False
-            else:
-                owner = False
-                current = False
             
             data = data.filter("user_id =", user_id).get()
 
