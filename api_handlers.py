@@ -221,15 +221,23 @@ class PickHandler(webapp2.RequestHandler):
             user_id = self.request.get("user")
             data = Picks.all().ancestor(img_obj)
 
-            if (img_obj.user_id == user_id):
+            # If current user is owner, they show
+            # as 'current' (green line)
+            if (user.user_id() == user_id):
+                owner = False
+                current = True
+            elif (img_obj.user_id == user_id):
                 owner = True
+                current = False
             else:
                 owner = False
+                current = False
             
             data = data.filter("user_id =", user_id).get()
 
             output = {"data": json.loads(data.picks),
-                      "owner": owner}
+                      "owner": owner,
+                      "current": current}
 
             self.response.headers["Content-Type"] = "application/json"
             self.response.write(json.dumps(output))

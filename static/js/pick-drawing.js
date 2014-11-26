@@ -12,8 +12,9 @@ pickDrawingSetup = function(){
     
     window.ondragstart = function() { return false; } ;
 
-    var default_colour = "#FF0000";
-    var accent_colour = "#0000FF";
+    var owner_colour = "#0000FF";   // Image owner
+    var current_colour = "#00DD00"; // Current user
+    var default_colour = "#FF0000"; // Everyone else
 
     var points = [];
     var circles = [];
@@ -42,7 +43,7 @@ pickDrawingSetup = function(){
         baseImage = paper.image(image_url, 0, 0, baseImageWidth, 
 				baseImageHeight);
         $(window).resize(updatePaperSize);        
-    }
+    };
     
     var addOverlay = function(url)
     {
@@ -50,7 +51,7 @@ pickDrawingSetup = function(){
 				  baseImageHeight);
 	overlay.undrag();
         return overlay.attr({opacity: 0.67});
-    }
+    };
 
     var addCircle = function(x, y, colour)
     {
@@ -62,7 +63,7 @@ pickDrawingSetup = function(){
             opacity: 0.5
         });
         circles.push(circle);
-    }
+    };
     
     var removeCircle = function(x, y)
     {
@@ -72,13 +73,13 @@ pickDrawingSetup = function(){
         circle.remove();
         var index = circles.indexOf(circle);
         circles.splice(index, 1);
-    }
+    };
     
     var clearCircles = function()
     {
         circles.forEach(function(c){c.remove();});
         circles = [];   
-    }
+    };
     
     var connectTheDots = function(colour) // Lalalalala
     {
@@ -98,7 +99,7 @@ pickDrawingSetup = function(){
         linestrip.attr({'stroke': colour});
         linestrip.attr({'stroke-width':penSize});
         linestrip.attr({'opacity':'0.5'});
-    }
+    };
     
     var addPoint = function(point, colour){
         addCircle(point.x, point.y, colour);
@@ -106,7 +107,7 @@ pickDrawingSetup = function(){
         if (pickstyle === 'lines'){
             connectTheDots(colour);
         }
-    }
+    };
     
     var clickPoint = function(point){
         var data = { 
@@ -116,7 +117,7 @@ pickDrawingSetup = function(){
         };
         $.post('/update_pick', data, 
             function(){addPoint(data, default_colour )});
-    }
+    };
 
     var removePoint = function(point){
         removeCircle(point.x, point.y);
@@ -126,7 +127,7 @@ pickDrawingSetup = function(){
         if (pickstyle === 'lines'){
             connectTheDots(default_colour);
         }
-    }
+    };
     
     var clearPoints = function(point){
         clearCircles();
@@ -134,26 +135,26 @@ pickDrawingSetup = function(){
         if (pickstyle === 'lines'){
             connectTheDots(default_colour);
         }
-    }
+    };
     
     var loadPoints = function(parameters)
     {
         clearPoints();
         $.get('/update_pick?', parameters, function(data)
         {
-	
-	    if (data.owner){
-		colour = accent_colour;
-	    } else {
-		colour = default_colour;
-	    };
+    	    if (data.owner) {
+    		    colour = owner_colour;
+    	    } else if (data.current) {
+                colour = current_colour;
+            } else {
+    		    colour = default_colour;
+    	    }
 
             data.data.forEach(function(item){
                addPoint({x:item[0], y:item[1]}, colour);
-	       
-           });
+               });
         }, 'json');
-    }
+    };
     
     return {
         setup: setup,
