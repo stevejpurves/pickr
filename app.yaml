@@ -1,4 +1,4 @@
-application: seismic-picker
+application: pick-this
 version: "dev"
 runtime: python27
 api_version: 1
