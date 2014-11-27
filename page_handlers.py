@@ -131,6 +131,7 @@ class ResultsHandler(PickThisPageRequest):
     @error_catch
     def get(self):
 
+        user_id = users.get_current_user().user_id()
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
@@ -139,12 +140,14 @@ class ResultsHandler(PickThisPageRequest):
 
         picks = Picks.all().ancestor(img_obj).fetch(1000)
         pick_users = [p.user_id for p in picks]
+        owner_user = img_obj.user_id
 
         params = self.get_base_params(count=count,
                                       image=image,
                                       img_obj=img_obj,
-                                      user=users.get_current_user().user_id(),
-                                      users=pick_users)
+                                      user_id=user_id,
+                                      owner_user=owner_user,
+                                      pick_users=pick_users)
 
         template = env.get_template("results.html")
         html = template.render(params)

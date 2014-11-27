@@ -37,19 +37,19 @@ pickDrawingSetup = function(){
         pickrElement = $('#' + elementId);
         penSize = 1 + pickrElement.width() / 400;
         paper = Raphael(elementId);
-	
+  
         updatePaperSize();
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
         baseImage = paper.image(image_url, 0, 0, baseImageWidth, 
-				baseImageHeight);
+        baseImageHeight);
         $(window).resize(updatePaperSize);        
     };
     
     var addOverlay = function(url)
     {
         var overlay = paper.image(url, 0, 0, baseImageWidth, 
-				  baseImageHeight);
-	overlay.undrag();
+          baseImageHeight);
+  overlay.undrag();
         return overlay.attr({opacity: 0.67});
     };
 
@@ -111,7 +111,7 @@ pickDrawingSetup = function(){
     
     var clickPoint = function(point){
         var data = { 
-	    image_key:image_key,
+      image_key:image_key,
             x: Math.round(point.x / resizeScale),
             y: Math.round(point.y / resizeScale)
         };
@@ -129,30 +129,35 @@ pickDrawingSetup = function(){
         }
     };
     
-    var clearPoints = function(point){
+    var clearPoints = function(){
         clearCircles();
         points = [];
+
+        // Not sure why we connect after clearing...?
         if (pickstyle === 'lines'){
             connectTheDots(default_colour);
         }
     };
     
-    var loadPoints = function(parameters)
-    {
+    var loadPoints = function(parameters){
         clearPoints();
-        $.get('/update_pick?', parameters, function(data)
-        {
-    	    if (data.current) {
-    		    colour = current_colour;
-    	    } else if (data.owner) {
-                colour = owner_colour;
-            } else {
-    		    colour = default_colour;
-    	    }
-
+        $.get('/update_pick?', parameters, function(data){
+          if (data.current) {
+            data.user_data.forEach(function(item){
+              addPoint({x:item[0], y:item[1]},
+              current_colour);
+            });
+          } else if (data.owner) {
+            data.owner_data.forEach(function(item){
+              addPoint({x:item[0], y:item[1]},
+              owner_colour);
+            });
+          } else {
             data.data.forEach(function(item){
-               addPoint({x:item[0], y:item[1]}, colour);
-               });
+              addPoint({x:item[0], y:item[1]},
+              default_colour);
+            });
+          }
         }, 'json');
     };
     

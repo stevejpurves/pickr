@@ -189,13 +189,19 @@ class PickHandler(webapp2.RequestHandler):
 
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
-                                        parent=db_parent)
+                                        parent=db_parent
+                                        )
+
+        data = Picks.all().ancestor(img_obj)
+
+        if self.request.get("all"):
+            self.response.write(data)
+            return
 
         if self.request.get("user_picks"):
             # Write out the picks belonging to the
             # requesting user.
 
-            data = Picks.all().ancestor(img_obj)
             data = data.filter("user_id =", user_id).get()
             
             if data:
@@ -206,22 +212,10 @@ class PickHandler(webapp2.RequestHandler):
             self.response.write(picks)
             return
         
-        if self.request.get("all"):
-            # Write out the picks for all users. 
-
-            data = Picks.all().ancestor(img_obj).fetch(1000)
-            picks = [i.picks for i in data]
-
-            self.response.write(data)
-            return
-
         if self.request.get("user"):
             # Write out the picks for a specific user,
             # along with some flags to decide on 
             # display colour (set in pick-drawing.js).
-
-            # Get all the picks.
-            data = Picks.all().ancestor(img_obj)
 
             # Filter to those belonging to the requested
             # 'other' user.
@@ -235,6 +229,24 @@ class PickHandler(webapp2.RequestHandler):
             owner_data = data.filter("user_id =", owner_id).get()
             user_data = data.filter("user_id =", user_id).get()
 
+            # Deal with getting None
+            if other_data:
+                other_data = json.loads(other_data.picks)
+            else:
+                other_data = json.loads('[]')
+
+            if owner_data:
+                owner_data = json.loads(owner_data.picks)
+            else:
+                owner_data = json.loads('[]')
+
+            # There should always be user data
+            # But maybe not for admins...
+            if user_data: 
+                user_data = json.loads(user_data.picks)
+            else:
+                user_data = json.loads('[]')
+
             # Might as well set owner user 
             # AND current user flags. Display logic
             # is in pick-drawing.js
@@ -244,11 +256,12 @@ class PickHandler(webapp2.RequestHandler):
             if (img_obj.user_id == pick_user_id):
                 owner = True
 
-            output = {"data": json.loads(other_data.picks),
-                      "owner_data": json.loads(owner_data.picks),
-                      "user_data": json.loads(user_data.picks),
+            output = {"data": other_data,
+                      "owner_data": owner_data,
+                      "user_data": user_data,
                       "owner": owner,
-                      "current": current}
+                      "current": current
+                      }
 
             self.response.headers["Content-Type"] = "application/json"
             self.response.write(json.dumps(output))
