@@ -192,28 +192,48 @@ class PickHandler(webapp2.RequestHandler):
                                         parent=db_parent)
 
         if self.request.get("user_picks"):
-   
-            data_obj = Picks.all().ancestor(img_obj)
-            data = data_obj.filter("user_id =", user_id).get()
+            # Write out the picks belonging to the
+            # requesting user.
+
+            data = Picks.all().ancestor(img_obj)
+            data = data.filter("user_id =", user_id).get()
             
             if data:
                 picks = data.picks
             else:
                 picks = json.dumps([])
+
             self.response.write(picks)
             return
         
         if self.request.get("all"):
-            data = Picks.all().ancestor(img_obj).fetch(1000)
+            # Write out the picks for all users. 
 
+            data = Picks.all().ancestor(img_obj).fetch(1000)
             picks = [i.picks for i in data]
+
             self.response.write(data)
             return
 
         if self.request.get("user"):
+            # Write out the picks for a specific user,
+            # along with some flags to decide on 
+            # display colour (set in pick-drawing.js).
 
-            pick_user_id = self.request.get("user")
+            # Get all the picks.
             data = Picks.all().ancestor(img_obj)
+
+            # Filter to those belonging to the requested
+            # 'other' user.
+            pick_user_id = self.request.get("user")
+            other_data = data.filter("user_id =", pick_user_id).get()
+
+            # We need to extract the data owner and current user's
+            # picks an package them separately, to display them
+            # separately in results.html.
+            owner_id = img_obj.user_id
+            owner_data = data.filter("user_id =", owner_id).get()
+            user_data = data.filter("user_id =", user_id).get()
 
             # Might as well set owner user 
             # AND current user flags. Display logic
@@ -223,10 +243,10 @@ class PickHandler(webapp2.RequestHandler):
                 current = True
             if (img_obj.user_id == pick_user_id):
                 owner = True
-            
-            data = data.filter("user_id =", pick_user_id).get()
 
-            output = {"data": json.loads(data.picks),
+            output = {"data": json.loads(other_data.picks),
+                      "owner_data": json.loads(owner_data.picks),
+                      "user_data": json.loads(user_data.picks),
                       "owner": owner,
                       "current": current}
 
