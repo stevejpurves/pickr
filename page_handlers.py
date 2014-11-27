@@ -140,7 +140,14 @@ class ResultsHandler(PickThisPageRequest):
 
         picks = Picks.all().ancestor(img_obj).fetch(1000)
         pick_users = [p.user_id for p in picks]
+
         owner_user = img_obj.user_id
+
+        # Filter out the owner and current user
+        if user_id in pick_users: pick_users.remove(user_id) 
+        if owner_user in pick_users: pick_users.remove(owner_user) 
+
+        print user_id, owner_user, pick_users
 
         params = self.get_base_params(count=count,
                                       image=image,

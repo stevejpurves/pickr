@@ -1,9 +1,5 @@
 $(function() {
 
-    // I set these in results.html instead
-    //var current = 0;  // An index for stepping over the list
-    //var currentUser = currentUser;
-
     // From results.html
     // var interpretationCount = {{ count }}; // The number of interpretations on this image.
     // var pickUsers = [];   // A list
@@ -12,9 +8,9 @@ $(function() {
     // var ownerUser = "{{ owner_user }}";
     // var currentUser = "{{ user_id }}"; // Start with this one
     // var userID = "{{ user_id }}";
-    console.log("++  My ID  ++" + userID);
-    console.log("++  Owner  ++" + ownerUser);
-    console.log("++ Current ++" + currentUser);
+
+    var current = 0;  // An index for stepping over the list
+    var currentUser = pickUsers[current];
 
     pickDrawing.setup('image-div');
     var overlay = pickDrawing.addOverlay('data:image/png;base64,' + 
@@ -57,17 +53,41 @@ $(function() {
         $(this).button('toggle');
         if ($(this).hasClass('active')){
           loadPicks(userID);
+          $('#owner-up-vote-button').addClass('disabled');
+          $('#owner-down-vote-button').addClass('disabled');
+          $('#up-vote-button').addClass('disabled');
+          $('#down-vote-button').addClass('disabled');
+          $('#next-button').addClass('disabled');
+          $('#previous-button').addClass('disabled');
         } else {
           pickDrawing.clear(); // Bah, deletes everything!
+        }
+        if ($('#owner-button').hasClass('active')){
+          $('#owner-button').button('toggle');
+        }
+        if ($('#everyone-button').hasClass('active')){
+          $('#everyone-button').button('toggle');
         }
     });
 
     $('#owner-button').on('click', function(){
         $(this).button('toggle');
         if ($(this).hasClass('active')){
+          $('#owner-up-vote-button').removeClass('disabled');
+          $('#owner-down-vote-button').removeClass('disabled');
+          $('#up-vote-button').addClass('disabled');
+          $('#down-vote-button').addClass('disabled');
+          $('#next-button').addClass('disabled');
+          $('#previous-button').addClass('disabled');
           loadPicks(ownerUser);
         } else {
           pickDrawing.clear(); // Bah, deletes everything!
+        }
+        if ($('#me-button').hasClass('active')){
+          $('#me-button').button('toggle');
+        }
+        if ($('#everyone-button').hasClass('active')){
+          $('#everyone-button').button('toggle');
         }
     });
 
@@ -78,15 +98,30 @@ $(function() {
         $(this).button('toggle');
         if ($(this).hasClass('active')){
           loadPicks(currentUser);
+          $('#owner-up-vote-button').addClass('disabled');
+          $('#owner-down-vote-button').addClass('disabled');
+          $('#up-vote-button').removeClass('disabled');
+          $('#down-vote-button').removeClass('disabled');
+          $('#next-button').removeClass('disabled');
+          $('#previous-button').removeClass('disabled');
+
         } else {
           pickDrawing.clear(); // Bah, deletes everything!
+        }
+        if ($('#owner-button').hasClass('active')){
+          $('#owner-button').button('toggle');
+        }
+        if ($('#me-button').hasClass('active')){
+          $('#me-button').button('toggle');
         }
     });
 
     $('#previous-button').on('click', function(){
         if (current <= 0){
+          $('#previous-button').addClass('disabled');
           return;
         } else {
+          $('#next-button').removeClass('disabled');
           --current;
         }
         currentUser = pickUsers[current];
@@ -94,9 +129,11 @@ $(function() {
     });
 
     $('#next-button').on('click', function(){
-        if (current >= interpretationCount - 1){
+        if (current >= userCount - 1){
+          $('#next-button').addClass('disabled');
           return;
         } else {
+          $('#previous-button').removeClass('disabled');
           ++current;
         }
         currentUser = pickUsers[current];
@@ -125,6 +162,6 @@ $(function() {
             overlay.animate({opacity: ui.value / 100});
         }});
 
-  loadPicks(currentUser);
+  loadPicks(userID);
 
 });

@@ -41,3 +41,9 @@ indexes:
   properties:
   - name: user
   - name: date
+
+- kind: Picks
+  ancestor: yes
+  properties:
+  - name: user_id
+  - name: user_id

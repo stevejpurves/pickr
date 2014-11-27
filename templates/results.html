@@ -7,20 +7,19 @@
 <script>
 
   var interpretationCount = {{ count }}; // The number of interpretations on this image.
-  var pickUsers = [];   // A list
-  var current = 0;  // An index for stepping over the list
-
+  var userCount = {{ pick_users | length }} // Not including owner or self
+  
   var ownerUser = "{{ owner_user }}";
-  var currentUser = "{{ user_id }}"; // Start with this one
   var userID = "{{ user_id }}";      // This one won't change
 
   // Loop over pick_users and populate the users list
   // Question: Can't we just use pick_users directly?
+  var pickUsers = [];   // A list
   {% for pick_owner in pick_users %}
-    pickUsers.push("{{pick_owner}}");
+    pickUsers.push("{{ pick_owner }}");
   {% endfor %}
 
-  var overlay64 = "{{image}}";
+  var overlay64 = "{{ image }}";
   var image_url = "{{ img_obj.url(size=1200) }}";
   var image_key = "{{ img_obj.key().id() }}";
   var baseImageWidth = "{{ img_obj.width }}";
@@ -53,7 +52,7 @@
       <button type="button" id="me-button" class="btn btn-success btn-lrg active" style="height:59px;">
         My pick
       </button>
-      <button type="button" class="btn btn-success btn-lrg" disabled style="height:59px; width:4em;">
+      <button type="button" class="btn btn-default btn-lrg" disabled style="height:59px; width:4em;">
         <span id="my-vote-count" style="font-size:150%; font-weight:bold; line-height:-8px">
         </span><!-- count updated by results.js -->
       </button>
@@ -67,10 +66,10 @@
         Uploader's pick
       </button>
       <div class="btn-group btn-group-vertical" role="group">
-      <button type="button" class="btn btn-default btn-sm" title="Upvote" {% if user_id == img_obj.user_id %}disabled{% endif %}><span class="glyphicon glyphicon-thumbs-up grey" id="owner-thumbs-up"></span></button>
-      <button type="button" class="btn btn-default btn-sm" title="Downvote" {% if user_id == img_obj.user_id %}disabled{% endif %}><span class="glyphicon glyphicon-thumbs-down grey" id="owner-thumbs-down"></span></button>
+      <button type="button" id="owner-up-vote-button" class="btn btn-default btn-sm disabled" title="Upvote" {% if user_id == img_obj.user_id %}disabled{% endif %}><span class="glyphicon glyphicon-thumbs-up grey" id="owner-thumbs-up"></span></button>
+      <button type="button" id="owner-down-vote-button" class="btn btn-default btn-sm disabled" title="Downvote" {% if user_id == img_obj.user_id %}disabled{% endif %}><span class="glyphicon glyphicon-thumbs-down grey" id="owner-thumbs-down"></span></button>
       </div>
-      <button type="button" class="btn btn-primary btn-lrg" disabled style="height:59px; width:4em;">
+      <button type="button" class="btn btn-default btn-lrg" disabled style="height:59px; width:4em;">
         <span id="owner-vote-count" style="font-size:150%; font-weight:bold; line-height:-8px">
         </span><!-- count updated by results.js -->
       </button>
@@ -78,21 +77,21 @@
 
     <!-- EVERYONE ELSE -->
     <div class="btn-group" role="group" style="margin-left:16px;">
-      <button type="button" id="previous-button" class="btn btn-danger btn-lrg" style="height:59px;">
+      <button type="button" id="previous-button" class="btn btn-danger btn-lrg disabled" style="height:59px;">
           <span class="glyphicon glyphicon-chevron-left">
       </button>
       <button type="button" id="everyone-button" class="btn btn-danger btn-lrg" style="height:59px;">
         Everyone else
       </button>
       <div class="btn-group btn-group-vertical" role="group">
-        <button type="button" id="up-vote-button" class="btn btn-default btn-sm" title="Upvote"><span class="glyphicon glyphicon-thumbs-up grey" id="thumbs-up"></span></button>
-        <button type="button" id="down-vote-button" class="btn btn-default btn-sm" title="Downvote"><span class="glyphicon glyphicon-thumbs-down grey" id="thumbs-down"></span></button>
+        <button type="button" id="up-vote-button" class="btn btn-default btn-sm disabled" title="Upvote"><span class="glyphicon glyphicon-thumbs-up grey" id="thumbs-up"></span></button>
+        <button type="button" id="down-vote-button" class="btn btn-default btn-sm disabled" title="Downvote"><span class="glyphicon glyphicon-thumbs-down grey" id="thumbs-down"></span></button>
       </div>
-      <button type="button" class="btn btn-danger btn-lrg" disabled style="height:59px; width:4em;">
+      <button type="button" class="btn btn-default btn-lrg" disabled style="height:59px; width:4em;">
         <span id="vote-count" style="font-size:150%; font-weight:bold; line-height:-8px">
         </span><!-- count updated by results.js -->
       </button>
-      <button type="button" id="next-button" class="btn btn-danger btn-lrg" style="height:59px;">
+      <button type="button" id="next-button" class="btn btn-danger btn-lrg disabled" style="height:59px;">
           <span class="glyphicon glyphicon-chevron-right">
       </button>
     </div> <!-- end of EVERYONE ELSE buttons -->

@@ -192,9 +192,8 @@ class PickHandler(webapp2.RequestHandler):
                                         parent=db_parent
                                         )
 
-        data = Picks.all().ancestor(img_obj)
-
         if self.request.get("all"):
+            data = Picks.all().ancestor(img_obj)
             self.response.write(data)
             return
 
@@ -202,6 +201,7 @@ class PickHandler(webapp2.RequestHandler):
             # Write out the picks belonging to the
             # requesting user.
 
+            data = Picks.all().ancestor(img_obj)
             data = data.filter("user_id =", user_id).get()
             
             if data:
@@ -217,17 +217,17 @@ class PickHandler(webapp2.RequestHandler):
             # along with some flags to decide on 
             # display colour (set in pick-drawing.js).
 
-            # Filter to those belonging to the requested
-            # 'other' user.
-            pick_user_id = self.request.get("user")
-            other_data = data.filter("user_id =", pick_user_id).get()
+            # Filter out current user's first...
+            user_data = Picks.all().ancestor(img_obj).filter("user_id =", user_id).get()
 
-            # We need to extract the data owner and current user's
-            # picks an package them separately, to display them
-            # separately in results.html.
+            # Now get the owner's...
             owner_id = img_obj.user_id
-            owner_data = data.filter("user_id =", owner_id).get()
-            user_data = data.filter("user_id =", user_id).get()
+            owner_data = Picks.all().ancestor(img_obj).filter("user_id =", owner_id).get()
+
+            # Finally get everyone else's.
+            pick_user_id = self.request.get("user")
+            other_data = Picks.all().ancestor(img_obj).filter("user_id =", pick_user_id).get()
+
 
             # Deal with getting None
             if other_data:
@@ -250,10 +250,11 @@ class PickHandler(webapp2.RequestHandler):
             # Might as well set owner user 
             # AND current user flags. Display logic
             # is in pick-drawing.js
+            # Should no longer need to do this...
             owner, current = False, False
             if (user_id == pick_user_id):
                 current = True
-            if (img_obj.user_id == pick_user_id):
+            if (owner_id == pick_user_id):
                 owner = True
 
             output = {"data": other_data,
