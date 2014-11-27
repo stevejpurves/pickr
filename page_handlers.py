@@ -12,7 +12,7 @@ from google.appengine.ext import blobstore
 # For image manipulation
 from PIL import Image
 
-from pickthis import get_result_image, get_cred, statistics
+from pickthis import get_result_image, statistics
 from constants import local, env, db_parent
 from lib_db import ImageObject, Picks, User
 
@@ -30,7 +30,7 @@ def authenticate(func):
             self.redirect('/')
             return
         else:
-            return func(self, user,*args, **kwargs)
+            return func(self, user.user_id(),*args, **kwargs)
     return authenticate_and_call
 
 
@@ -59,14 +59,20 @@ class PickThisPageRequest(webapp2.RequestHandler):
     
     def get_base_params(self, **kwargs):
 
-        user = users.get_current_user()
+        g_user = users.get_current_user()
         
-        if user:
+        if g_user:
+
+            user = User.all().filter("user_id =", g_user.user_id())
+            user = user.get()
+
+        
             logout_url = users.create_logout_url('/')
             login_url = None
-            email_hash = hashlib.md5(user.email()).hexdigest()
-            nickname = user.nickname()
-            cred_points = get_cred(user)
+            email_hash = hashlib.md5(user.email).hexdigest()
+            nickname = user.nickname
+
+            cred_points = user.cred()
             admin = users.is_current_user_admin()
         else:
             logout_url = None
@@ -92,9 +98,9 @@ class MainPage(webapp2.RequestHandler):
     @error_catch
     def get(self):
 
-        user = users.get_current_user()
+        g_user = users.get_current_user()
 
-        if not user:
+        if not g_user:
             login_url = users.create_login_url('/')
             template = env.get_template("main.html")
             html = template.render(login_url=login_url,
@@ -104,15 +110,17 @@ class MainPage(webapp2.RequestHandler):
         else:
             logout_url = users.create_logout_url('/')
             login_url = None
-            email_hash = hashlib.md5(user.email()).hexdigest()
+            email_hash = hashlib.md5(g_user.email()).hexdigest()
 
             user_obj = User.all().ancestor(db_parent)
-            user_obj = user_obj.filter("user_id =", user.user_id())
+            user_obj = user_obj.filter("user_id =", g_user.user_id())
             user_obj = user_obj.get()
 
             if not user_obj:
-                user_obj = User(user_id=user.user_id(),
-                                parent=db_parent)
+                user_obj = User(user_id=g_user.user_id(),
+                                nickname=g_user.nickname(),
+                                parent=db_parent,
+                                email=g_user.email())
                 user_obj.put()
             
             self.redirect('/library')
@@ -167,7 +175,7 @@ class PickerHandler(PickThisPageRequest):
 
     @error_catch
     @authenticate
-    def get(self, user, id=None):
+    def get(self, user_id, id=None):
 
         if id:
             key_id = id
@@ -219,6 +227,8 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 
         template = env.get_template('choose.html')
 
+
+        print "SAJDKLAJLKAS"
         params = self.get_base_params(img_objs=img_objs,
                                       upload_url=upload_url,
                                       user_id=user_id
@@ -278,14 +288,14 @@ class AddImageHandler(PickThisPageRequest):
 
     @error_catch
     @authenticate
-    def get(self, user):
+    def get(self, user_id):
 
         image_key = self.request.get("image_key")
 
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
-        if((user.user_id() == img_obj.user_id) or
+        if((user_id == img_obj.user_id) or
            (users.is_current_user_admin())):
 
             template_params = self.get_base_params()
@@ -302,8 +312,11 @@ class AddImageHandler(PickThisPageRequest):
 
     @error_catch
     @authenticate
-    def post(self, user):
+    def post(self, user_id):
 
+
+        user = User.all().filter("user_id =", user_id).get()
+        
         image_key = self.request.get("image_key")
 
         title = self.request.get("title")
@@ -317,7 +330,7 @@ class AddImageHandler(PickThisPageRequest):
         # This is pretty gross
         if not rightsholder1:
             if not rightsholder2:
-                rightsholder = user.nickname()
+                rightsholder = user.nickname
             else:
                 rightsholder = rightsholder2
         else:
@@ -327,7 +340,7 @@ class AddImageHandler(PickThisPageRequest):
                                         parent=db_parent)
 
         
-        if not ((user.user_id() == img_obj.user_id) or
+        if not ((user_id == img_obj.user_id) or
                (users.is_current_user_admin())):
             raise Exception
         

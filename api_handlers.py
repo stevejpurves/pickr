@@ -18,7 +18,7 @@ def authenticate(func):
             raise Exception
             return
         else:
-            return func(self, user,*args, **kwargs)
+            return func(self, user.user_id(),*args, **kwargs)
     return authenticate_and_call
 
 def error_catch(func):
@@ -50,7 +50,7 @@ class CommentHandler(webapp2.RequestHandler):
 
     @error_catch
     @authenticate
-    def post(self, user):
+    def post(self, user_id):
 
         index = int(self.request.get("index"))
         comment = int(self.request.get("comment"))
@@ -70,14 +70,14 @@ class ImageHandler(webapp2.RequestHandler):
 
     @error_catch
     @authenticate
-    def delete(self,user):
+    def delete(self,user_id):
 
         image_key = self.request.get("image_key")
 
         image_obj = ImageObject.get_by_id(int(image_key),
                                           parent=db_parent)
 
-        if ((image_obj.user_id == user.user_id()) or
+        if ((image_obj.user_id == user_id) or
             (users.is_current_user_admin())):
 
             self.response.headers["Content-Type"] = "application/json"
@@ -102,7 +102,8 @@ class ImageHandler(webapp2.RequestHandler):
 class VoteHandler(webapp2.RequestHandler):
 
     @error_catch
-    def get(self):
+    @authenticate
+    def get(self, user_id):
 
         self.response.headers["Content-Type"] = "application/json"
         
@@ -118,22 +119,14 @@ class VoteHandler(webapp2.RequestHandler):
 
         votes = picks.votes
 
-        user = users.get_current_user()
-
-        
-        if user:
-            user_vote = Vote.all().ancestor(picks).filter("user_id =",
-                                                         user.user_id())
-            user_vote = user_vote.get()
-            if not user_vote:
-                user_choice = 0
-            else:
-                user_choice = user_vote.value
-
-
-            
-        else:
+    
+        user_vote = Vote.all().ancestor(picks).filter("user_id =",
+                                                      user_id)
+        user_vote = user_vote.get()
+        if not user_vote:
             user_choice = 0
+        else:
+            user_choice = user_vote.value
 
         data = {"votes": votes,
                 "user_choice": user_choice}
@@ -144,7 +137,7 @@ class VoteHandler(webapp2.RequestHandler):
 
     @error_catch
     @authenticate
-    def post(self, user):
+    def post(self, user_id):
 
         self.response.headers["Content-Type"] = "application/json"
 
@@ -159,7 +152,7 @@ class VoteHandler(webapp2.RequestHandler):
         picks = picks.filter("user_id =", owner_id).get()
 
         # Prevent self voting
-        if user.user_id() == picks.user_id:
+        if user_id == picks.user_id:
             update_vote = 0
             
         elif update_vote > 0:
@@ -168,9 +161,9 @@ class VoteHandler(webapp2.RequestHandler):
             update_vote = -1
 
         vote = Vote.all().ancestor(picks).filter("user_id =",
-                                                 user.user_id()).get()
+                                                 user_id).get()
         if vote is None:
-            vote = Vote(user_id=user.user_id(), value=update_vote,
+            vote = Vote(user_id=user_id, value=update_vote,
                         parent=picks)
         else:
             # reset if they try to set to the same vote
@@ -189,10 +182,11 @@ class VoteHandler(webapp2.RequestHandler):
 
 class PickHandler(webapp2.RequestHandler):
 
+    
     @error_catch
-    def get(self):
+    @authenticate
+    def get(self, user_id):
 
-        user = users.get_current_user()
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
@@ -200,7 +194,7 @@ class PickHandler(webapp2.RequestHandler):
         if self.request.get("user_picks"):
    
             data_obj = Picks.all().ancestor(img_obj)
-            data = data_obj.filter("user_id =", user.user_id()).get()
+            data = data_obj.filter("user_id =", user_id).get()
             
             if data:
                 picks = data.picks
@@ -218,19 +212,19 @@ class PickHandler(webapp2.RequestHandler):
 
         if self.request.get("user"):
 
-            user_id = self.request.get("user")
+            pick_user_id = self.request.get("user")
             data = Picks.all().ancestor(img_obj)
 
             # Might as well set owner user 
             # AND current user flags. Display logic
             # is in pick-drawing.js
             owner, current = False, False
-            if (user.user_id() == user_id):
+            if (user_id == pick_user_id):
                 current = True
-            if (img_obj.user_id == user_id):
+            if (img_obj.user_id == pick_user_id):
                 owner = True
             
-            data = data.filter("user_id =", user_id).get()
+            data = data.filter("user_id =", pick_user_id).get()
 
             output = {"data": json.loads(data.picks),
                       "owner": owner,
@@ -242,7 +236,7 @@ class PickHandler(webapp2.RequestHandler):
 
     @error_catch
     @authenticate
-    def post(self, user):
+    def post(self, user_id):
 
         point = (int(self.request.get("x")),
                  int(self.request.get("y")))
@@ -253,13 +247,13 @@ class PickHandler(webapp2.RequestHandler):
                                           parent=db_parent)
         
         picks = Picks.all().ancestor(img_obj)
-        picks = picks.filter("user_id =", user.user_id()).get()
+        picks = picks.filter("user_id =", user_id).get()
 
         if not picks:
             # Then the user has not picked
             # this image before so start
             # some picks for this user.
-            picks = Picks(user_id=user.user_id(),
+            picks = Picks(user_id=user_id,
                           picks=json.dumps([point]).encode(),
                           parent=img_obj)
             picks.put()
@@ -270,7 +264,7 @@ class PickHandler(webapp2.RequestHandler):
 
             # Note this is redundant with having img_obj as the
             # parent. Might get out of sync...
-            img_obj.interpreters.append(user.user_id())
+            img_obj.interpreters.append(user_id)
             img_obj.put()
 
         else:
@@ -284,16 +278,15 @@ class PickHandler(webapp2.RequestHandler):
 
     @error_catch
     @authenticate
-    def delete(self, user):
+    def delete(self, user_id):
 
-        user = users.get_current_user()
         image_key = self.request.get("image_key")
 
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
         data = Picks.all().ancestor(img_obj).filter("user_id =",
-                                                    user.user_id())
+                                                    user_id)
         data = data.get()
 
         points = json.loads(data.picks)
@@ -306,7 +299,7 @@ class PickHandler(webapp2.RequestHandler):
             # interpreters of this image.
 
             # Note this is redundant and might get out of sync.
-            img_obj.interpreters.remove(user.user_id())
+            img_obj.interpreters.remove(user_id)
             img_obj.put()
             
         elif self.request.get("undo"):

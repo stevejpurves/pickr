@@ -10,8 +10,36 @@ import json
 
 
 class User(db.Model):
+
     # Hack to log the number of users who have logged in
     user_id = db.StringProperty()
+    nickname = db.StringProperty()
+    email = db.EmailProperty()
+    
+    def cred(self):
+
+        all_picks = Picks.all().filter("user_id =",
+                                       self.user_id).fetch(1000)
+        all_imgs  = \
+          ImageObject.all().filter("user_id =",
+                                    self.user_id).filter("title !=",
+                                                      '').fetch(1000)
+
+        
+
+        rep = 1 # everyone start with 1
+
+        # Award rep for votes received.
+        for picks in all_picks:
+            rep += picks.votes
+
+        # Award rep for interpretations made.
+        rep += 3 * len(all_picks)
+
+        # Award rep for uploading.
+        rep += 3 * len(all_imgs)
+
+        return rep + 20
 
 class Vote(db.Model):
 
@@ -96,7 +124,8 @@ class ImageObject(db.Model):
     @property
     def nickname(self):
 
-        user = users.User(_user_id=self.user_id)
-        return user.nickname()
+        user = User.all().filter("user_id =",
+                                 self.user_id).get()
+        return user.nickname
     
         

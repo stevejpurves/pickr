@@ -123,28 +123,6 @@ def statistics():
     return stats
     
 
-def get_cred(user):
 
-    # Probably need to replace this with a user object some day
-    # Then have methods on the object for changing or getting
-    # reputation, pushing notifications, and so on. See #105.
-
-    all_picks = Picks.all().filter("user =", user).fetch(1000)
-    all_imgs  = ImageObject.all().filter("user =",
-                                         user).filter("title !=",
-                                                      '').fetch(1000)
-
-    rep = 1 # everyone start with 1
-
-    # Award rep for votes received.
-    for picks in all_picks:
-        rep += picks.votes
-
-    # Award rep for interpretations made.
-    rep += 3 * len(all_picks)
-
-    # Award rep for uploading.
-    rep += 3 * len(all_imgs)
-
-    return rep + 20
+ 
 
