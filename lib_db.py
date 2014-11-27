@@ -84,15 +84,22 @@ class ImageObject(db.Model):
     pickstyle = db.StringProperty(default="")
     rightsholder = db.StringProperty(default="")
 
+    favouriters = db.ListProperty(str, default=[])
+
     # This is safer than using a user directly
     # Because email address can change.
     user_id = db.StringProperty()
 
-    name = db.StringProperty() # What is this for? 
-                               # Doesn't get populated.
+    @property
+    def interpreters(self):
+        """
+        Returns a list of user_ids that have
+        interpreted this image.
+        """
+        picks = Picks.all().ancestor(self)
+        user_ids = [p.user_id for p in picks]
 
-    interpreters = db.ListProperty(str, default=[])
-    favouriters = db.ListProperty(str, default=[])
+        return user_ids
 
     @property
     def size(self):

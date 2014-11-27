@@ -237,8 +237,6 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 
         template = env.get_template('choose.html')
 
-
-        print "SAJDKLAJLKAS"
         params = self.get_base_params(img_objs=img_objs,
                                       upload_url=upload_url,
                                       user_id=user_id

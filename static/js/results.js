@@ -1,12 +1,10 @@
 $(function() {
 
     // From results.html
+    // =================
     // var interpretationCount = {{ count }}; // The number of interpretations on this image.
     // var pickUsers = [];   // A list
-    // var current = 0;  // An index for stepping over the list
-
     // var ownerUser = "{{ owner_user }}";
-    // var currentUser = "{{ user_id }}"; // Start with this one
     // var userID = "{{ user_id }}";
 
     var current = 0;  // An index for stepping over the list
