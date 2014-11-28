@@ -19,7 +19,7 @@ $(function() {
         if ($('#me-button').hasClass('active')){
           // Only need to do this once
           $('#my-vote-count').text(parseInt(voteCount["votes"]));
-          $('#vote-count').text('');
+          $('#vote-count').text('–');
         } else if ($('#everyone-button').hasClass('active')){
           $('#vote-count').text(parseInt(voteCount["votes"]));
           // Update the button to reflect users current choice
@@ -37,7 +37,7 @@ $(function() {
         } else {
           // User voted on the owner's interpretation
           $('#owner-vote-count').text(parseInt(voteCount["votes"]));
-          $('#vote-count').text('');
+          $('#vote-count').text('–');
           // Update the button to reflect users current choice
           var user_choice = voteCount["user_choice"];
           document.getElementById("thumbs-up").style.color = "grey";
@@ -103,6 +103,8 @@ $(function() {
           loadPicks(ownerUser);
         } else {
           pickDrawing.clear(); // Bah, deletes everything!
+          $('#owner-up-vote-button').addClass('disabled');
+          $('#owner-down-vote-button').addClass('disabled');
         }
         if ($('#me-button').hasClass('active')){
           $('#me-button').button('toggle');
@@ -124,10 +126,11 @@ $(function() {
           $('#up-vote-button').removeClass('disabled');
           $('#down-vote-button').removeClass('disabled');
           $('#next-button').removeClass('disabled');
-          //$('#previous-button').removeClass('disabled');
-
+          // Leave previous-button alone
         } else {
           pickDrawing.clear(); // Bah, deletes everything!
+          $('#up-vote-button').addClass('disabled');
+          $('#down-vote-button').addClass('disabled');
         }
         if ($('#owner-button').hasClass('active')){
           $('#owner-button').button('toggle');
