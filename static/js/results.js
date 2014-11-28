@@ -19,6 +19,7 @@ $(function() {
         if ($('#me-button').hasClass('active')){
           // Only need to do this once
           $('#my-vote-count').text(parseInt(voteCount["votes"]));
+          $('#vote-count').text('');
         } else if ($('#everyone-button').hasClass('active')){
           $('#vote-count').text(parseInt(voteCount["votes"]));
           // Update the button to reflect users current choice
@@ -36,8 +37,11 @@ $(function() {
         } else {
           // User voted on the owner's interpretation
           $('#owner-vote-count').text(parseInt(voteCount["votes"]));
+          $('#vote-count').text('');
           // Update the button to reflect users current choice
           var user_choice = voteCount["user_choice"];
+          document.getElementById("thumbs-up").style.color = "grey";
+          document.getElementById("thumbs-down").style.color = "grey";
           if (user_choice == 1){
               document.getElementById("owner-thumbs-up").style.color = "green";
               document.getElementById("owner-thumbs-down").style.color = "grey";
@@ -120,7 +124,7 @@ $(function() {
           $('#up-vote-button').removeClass('disabled');
           $('#down-vote-button').removeClass('disabled');
           $('#next-button').removeClass('disabled');
-          $('#previous-button').removeClass('disabled');
+          //$('#previous-button').removeClass('disabled');
 
         } else {
           pickDrawing.clear(); // Bah, deletes everything!
@@ -134,24 +138,20 @@ $(function() {
     });
 
     $('#previous-button').on('click', function(){
-        if (current <= 0){
+        $('#next-button').removeClass('disabled');
+        --current;
+        if (current === 0){
           $('#previous-button').addClass('disabled');
-          return;
-        } else {
-          $('#next-button').removeClass('disabled');
-          --current;
         }
         currentUser = pickUsers[current];
         loadPicks(currentUser);
     });
 
     $('#next-button').on('click', function(){
-        if (current >= userCount - 1){
+        $('#previous-button').removeClass('disabled');
+        ++current;
+        if (current === userCount - 1){
           $('#next-button').addClass('disabled');
-          return;
-        } else {
-          $('#previous-button').removeClass('disabled');
-          ++current;
         }
         currentUser = pickUsers[current];
         loadPicks(currentUser);
