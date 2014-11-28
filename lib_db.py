@@ -43,7 +43,10 @@ class User(db.Model):
 
 class Vote(db.Model):
 
+    # The user_id of the vote caster
     user_id = db.StringProperty()
+
+    # +1 or -1
     value = db.IntegerProperty()
     
 class ImageParent(db.Model):

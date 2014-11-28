@@ -12,7 +12,7 @@ pickDrawingSetup = function(){
     
     window.ondragstart = function() { return false; } ;
 
-    var owner_colour = "#0000FF";   // Image owner
+    var owner_colour   = "#0000FF"; // Image owner
     var current_colour = "#00DD00"; // Current user
     var default_colour = "#FF0000"; // Everyone else
 

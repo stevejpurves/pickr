@@ -104,84 +104,135 @@ class VoteHandler(webapp2.RequestHandler):
     @error_catch
     @authenticate
     def get(self, user_id):
+        """ 
+        Request the total number of votes for a particular
+        interpreter's interpretation for a given image, and
+        the value of the current user's choice.
 
+        E.g. user_id: kwinkunks
+             user: test@example.com (interpreter)
+             image_key: Brazil.png
+             (of course we provide keys, not plain text)
+
+             result:  {"votes": 12,
+                       "user_choice": -1
+                       }
+
+             So the test@example.com's pick on that image
+             has 12 votes total, and kwinkunks voted -1.
+ 
+        """
         self.response.headers["Content-Type"] = "application/json"
         
-
-        owner_id = self.request.get("user")
+        interpreter_id = self.request.get("user")
         image_key = int(self.request.get("image_key"))
 
-    
+        # Get the image, and then its picks.
+        # Then filter back to the requested
+        # interpreter's pick.
         img = ImageObject.get_by_id(image_key, parent=db_parent)
         picks = Picks.all().ancestor(img)
+        pick = picks.filter("user_id =", interpreter_id).get()
 
-        picks = picks.filter("user_id =", owner_id).get()
-
-        votes = picks.votes
-
+        # Get the total votes for this pick.
+        votes = pick.votes
     
-        user_vote = Vote.all().ancestor(picks).filter("user_id =",
-                                                      user_id)
-        user_vote = user_vote.get()
+        # Get all the votes for this pick, 
+        # then filter back to this user's votes.
+        user_votes = Vote.all().ancestor(pick)
+        user_vote = user_votes.filter("user_id =",user_id).get()
+
+        # Figure out what this user voted.
         if not user_vote:
             user_choice = 0
         else:
             user_choice = user_vote.value
 
+        # Build a dict to send back.
         data = {"votes": votes,
                 "user_choice": user_choice}
     
-        
         self.response.write(json.dumps(data))
         
 
     @error_catch
     @authenticate
     def post(self, user_id):
+        """ 
+        Post a change to the total number of votes for a
+        particular interpretation for a given
+        image, and the value of the current user's choice.
+
+        E.g. user_id: kwinkunks
+             user: test@example.com (interpreter)
+             image_key: Brazil.png
+             vote:-1
+             (of course we provide keys, not plain text)
+
+             result:  {"votes": 12,
+                       "user_choice": -1
+                       }
+
+             So kwinkunks voted -1 on the test@example.com's
+             pick on that image, and it now has 12 votes total.
+ 
+        """
 
         self.response.headers["Content-Type"] = "application/json"
 
-        owner_id = self.request.get("user")
+        interpreter_id = self.request.get("user")
         update_vote = int(self.request.get("vote"))
         img_key = int(self.request.get("image_key"))
         user = users.get_current_user()
 
         img = ImageObject.get_by_id(img_key,
                                     parent=db_parent)
+
+        # Get the image's picks, then filter
+        # down to the specified interpreter's pick.
         picks = Picks.all().ancestor(img)
-        picks = picks.filter("user_id =", owner_id).get()
+        pick = picks.filter("user_id =", interpreter_id).get()
 
-        # Prevent self voting
-        if user_id == picks.user_id:
-            update_vote = 0
-            
+        # Check if this user is the interpreter; 
+        # if not, set a vote value.
+        if user_id == interpreter_id:
+            update_vote = 0   # A self-vote, not allowed
         elif update_vote > 0:
-            update_vote = 1
+            update_vote = 1   # An upvote
         else:
-            update_vote = -1
+            update_vote = -1  # A downvote
 
-        vote = Vote.all().ancestor(picks).filter("user_id =",
-                                                 user_id).get()
+        # Get all the votes for this pick, 
+        # then filter to this user's vote.
+        votes = Vote.all().ancestor(pick)
+        vote = votes.filter("user_id =", user_id).get()
+
+        # If this is their first vote, make a new
+        # Vote object.
         if vote is None:
-            vote = Vote(user_id=user_id, value=update_vote,
-                        parent=picks)
+            vote = Vote(user_id=user_id,
+                        value=update_vote,
+                        parent=pick
+                       )
         else:
+            # We are updating the existing vote;
             # reset if they try to set to the same vote
             if vote.value == update_vote:
                 vote.value = 0
             else:
                 vote.value = update_vote
 
+        # Write the vote object to the db.
         vote.put()
         
-        data = {"votes": picks.votes,
+        # Build the dict to send back.
+        data = {"votes": pick.votes,
                 "user_choice": vote.value}
         
         self.response.write(json.dumps(data))
  
 
 class PickHandler(webapp2.RequestHandler):
-
     
     @error_catch
     @authenticate

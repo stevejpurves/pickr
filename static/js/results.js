@@ -2,7 +2,7 @@ $(function() {
 
     // From results.html
     // =================
-    // var interpretationCount = {{ count }}; // The number of interpretations on this image.
+    // var interpretationCount = {{ count }}; 
     // var pickUsers = [];   // A list
     // var ownerUser = "{{ owner_user }}";
     // var userID = "{{ user_id }}";
@@ -16,19 +16,38 @@ $(function() {
     
     var updateVoteCount = function(voteCount){
         // Set the element text to the vote count
-        $('#vote-count').text(parseInt(voteCount["votes"]));
-
-        // Update the button to reflect users current choice
-        var user_choice = voteCount["user_choice"];
-        if (user_choice == 1){
-            document.getElementById("thumbs-up").style.color = "green";
-            document.getElementById("thumbs-down").style.color = "grey";
-        } else if (user_choice ==-1){
-            document.getElementById("thumbs-up").style.color = "grey";
-            document.getElementById("thumbs-down").style.color = "red";
+        if ($('#me-button').hasClass('active')){
+          // Only need to do this once
+          $('#my-vote-count').text(parseInt(voteCount["votes"]));
+        } else if ($('#everyone-button').hasClass('active')){
+          $('#vote-count').text(parseInt(voteCount["votes"]));
+          // Update the button to reflect users current choice
+          var user_choice = voteCount["user_choice"];
+          if (user_choice == 1){
+              document.getElementById("thumbs-up").style.color = "green";
+              document.getElementById("thumbs-down").style.color = "grey";
+          } else if (user_choice ==-1){
+              document.getElementById("thumbs-up").style.color = "grey";
+              document.getElementById("thumbs-down").style.color = "red";
+          } else {
+              document.getElementById("thumbs-up").style.color = "grey";
+              document.getElementById("thumbs-down").style.color = "grey";
+          } // end of inner if
         } else {
-            document.getElementById("thumbs-up").style.color = "grey";
-            document.getElementById("thumbs-down").style.color = "grey";
+          // User voted on the owner's interpretation
+          $('#owner-vote-count').text(parseInt(voteCount["votes"]));
+          // Update the button to reflect users current choice
+          var user_choice = voteCount["user_choice"];
+          if (user_choice == 1){
+              document.getElementById("owner-thumbs-up").style.color = "green";
+              document.getElementById("owner-thumbs-down").style.color = "grey";
+          } else if (user_choice ==-1){
+              document.getElementById("owner-thumbs-up").style.color = "grey";
+              document.getElementById("owner-thumbs-down").style.color = "red";
+          } else {
+              document.getElementById("owner-thumbs-up").style.color = "grey";
+              document.getElementById("owner-thumbs-down").style.color = "grey";
+          } // end of inner if
         }
     };
    
@@ -40,7 +59,7 @@ $(function() {
 
       // This loads the picks for 'currentUser' who is not the 
       // currently-logged-in user, but the one in the pick
-      // review cycle. 
+      // review cycle - the interpreter of the current pick.
       pickDrawing.load({user:user,
                         image_key: image_key
                         });
@@ -138,20 +157,28 @@ $(function() {
         loadPicks(currentUser);
     });
     
-    var castVote = function(v){
+    var castVote = function(v, u){
        $.post('/vote',{
-           user: currentUser,
+           user: u,
            image_key: image_key,
            vote: v
        }, updateVoteCount);
     };
     
     $('#up-vote-button').on('click', function(){
-        castVote(1);
+        castVote(1, currentUser);
     });
 
     $('#down-vote-button').on('click', function(){
-        castVote(-1);
+        castVote(-1, currentUser);
+    });
+    
+    $('#owner-up-vote-button').on('click', function(){
+        castVote(1, ownerUser);
+    });
+
+    $('#owner-down-vote-button').on('click', function(){
+        castVote(-1, ownerUser);
     });
     
     $( "#overlay-slider" )
