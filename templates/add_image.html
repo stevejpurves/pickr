@@ -142,14 +142,14 @@
           <label for="pickstyle" class="col-sm-2 control-label">Pick style</label>
           <div class="radio col-sm-10">
             <label>
-              <input type="radio" name="pickstyle" id="points" value="points" {% if img_obj.pickstyle == "points" %}checked{% endif%}>
+              <input type="radio" name="pickstyle" id="points" value="points" {% if img_obj.pickstyle == "points" %}checked{% endif%} {% if img_obj.title %}disabled{% endif%}>
               Pick points.
             </label>
           </div>
           <div class="radio col-sm-offset-2 col-sm-10">
             <label>
               <input type="radio" name="pickstyle" id="lines" value="lines" {% if img_obj.title %}{% if img_obj.pickstyle == "lines" %}checked{% endif%}
-              {% else %}checked{% endif %}>
+              {% else %}checked{% endif %} {% if img_obj.title %}disabled{% endif%}>
               Pick a line.
             </label>
           </div>

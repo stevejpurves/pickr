@@ -55,7 +55,6 @@ class ImageParent(db.Model):
 class Picks(db.Model):
 
     user_id = db.StringProperty()
-    comments = db.StringListProperty()
     date = db.DateTimeProperty(auto_now_add=True)
     picks = db.BlobProperty()
 
@@ -72,7 +71,7 @@ class Picks(db.Model):
 
         return total
         
-    
+
 class ImageObject(db.Model):
 
     image = blobstore.BlobReferenceProperty()

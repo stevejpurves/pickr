@@ -49,8 +49,8 @@
       <div class="caption" style="height:140px;">
         <span class="lead" title="{{ img_obj.title }}">
           {{img_obj.title[:20]}}{% if img_obj.title | length>20 %}&#8230;{% endif %}
-        </span>{% if (user_id == img_obj.user_id) or (admin) %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-pencil" 
-							   title="edit this image's metadata"></a>{% endif %}
+        </span>{% if (user_id == img_obj.user_id) or (admin) %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-cog" 
+							   title="Change image settings"></a>{% endif %}
         <span class="pull-right">
           <!-- unlock feature later
           <span class="notification-icon">
