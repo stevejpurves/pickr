@@ -72,6 +72,15 @@ class Picks(db.Model):
         return total
         
 
+class Comment(db.Model):
+
+    # Parent should be ImageObject
+
+    text = db.TextProperty(required=True)
+    user_id = db.StringProperty()
+    datetime = db.DateTimeProperty(auto_now_add=True)
+
+
 class ImageObject(db.Model):
 
     image = blobstore.BlobReferenceProperty()

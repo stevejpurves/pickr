@@ -132,6 +132,21 @@
       <p><strong>Reference</strong> &nbsp;&nbsp; Pickthis.io user {{ img_obj.nickname }}. {{ img_obj.title }}, image no. <a href="http://pickthis.io/{{ img_obj.id }}">{{ img_obj.id }}</a>. Permission: {{ img_obj.rightsholder.strip(' .!?') }}, {{ img_obj.permission.strip(' .!?') }}.</p>
     </div><!-- End of well -->
 
+    <!-- Comments form -->
+    <h4>Comments</h4>
+    <ul class="list-group">
+      {% for comment in comments %}
+      <li class="list-group-item">
+      {{ comment.text }}
+      </li>
+      {% endfor %}
+    </ul>
+    <form role="form" action="/comment" method="POST">
+      <div class="form-group">
+        <textarea id="text" class="form-control" rows="3" placeholder="Add a comment"></textarea>
+      </div>
+      <button type="submit" class="btn btn-default">Add</button>
+    </form>
  
 </div><!-- end of container -->
 

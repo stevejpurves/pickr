@@ -1,4 +1,5 @@
 import webapp2
+import traceback
 from lib_db import ImageObject, Picks, Vote
 
 from constants import db_parent
@@ -31,6 +32,7 @@ def error_catch(func):
             func(self, *args, **kwargs)
         except Exception as e:
             print e
+            print traceback.format_exc()
             self.error(500)
             
     return call_and_catch
@@ -38,32 +40,69 @@ def error_catch(func):
 
 class CommentHandler(webapp2.RequestHandler):
 
-    @error_catch
-    def get(self):
+#     @error_catch
+#     def get(self):
 
-        index = int(self.request.get("index"))
+#         index = int(self.request.get("index"))
 
-        data = ImageObject.all().ancestor(db_parent).sort("-date")
-        data = data.fetch(1000)[index]
+#         data = ImageObject.all().ancestor(db_parent).sort("-date")
+#         data = data.fetch(1000)[index]
 
-        self.response.write(json.dumps(data.comments))
+#         self.response.write(json.dumps(data.comments))
+
+#     @error_catch
+#     @authenticate
+#     def post(self, user_id):
+
+#         index = int(self.request.get("index"))
+#         comment = int(self.request.get("comment"))
+
+#         data = ImageObject.all().ancestor(db_parent).sort("date")
+#         data = data.fetch(1000)[index]
+#         comments = data.comments
+#         comments.append(comment)
+
+#         data.comments = comments
+#         data.put()
+
+#         self.response.write(comment)
 
     @error_catch
     @authenticate
     def post(self, user_id):
+        
+        """
+        Users can comment on images, from a simple form on the page.
+        Should be no need to handle with a new bit of API, just
+        post to this page. 
 
-        index = int(self.request.get("index"))
-        comment = int(self.request.get("comment"))
+        """
 
-        data = ImageObject.all().ancestor(db_parent).sort("date")
-        data = data.fetch(1000)[index]
-        comments = data.comments
-        comments.append(comment)
+        # DEBUG
+        print "+++ STARTING COMMENT for USER {0} +++".format(user_id) 
 
-        data.comments = comments
-        data.put()
+        image_key = self.request.get("image_key")
 
-        self.response.write(comment)
+        # DEBUG
+        print "+++ IMAGE key is {0} +++".format(image_key)
+        # THIS DOESN'T WORK
+        
+        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
+
+        text = cgi.escape(self.request.get("text"))
+
+        comment = Comment(text=text,
+                          user_id=user_id,
+                          parent=img_obj
+                          )
+
+        # comment.datetime is set automatically
+
+        comment.put()
+
+        self.response.write(json.dumps({"success":True}))
+
+        # HOW TO REDRAW PAGE WITH COMMENT?
 
 
 class ImageHandler(webapp2.RequestHandler):

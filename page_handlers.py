@@ -2,6 +2,7 @@ import webapp2
 import hashlib
 import StringIO
 import time
+import cgi
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
@@ -15,6 +16,7 @@ from PIL import Image
 from pickthis import get_result_image, statistics
 from constants import local, env, db_parent
 from lib_db import ImageObject, Picks, User
+from lib_db import Comment
 
 # For image serving
 import cloudstorage as gcs
@@ -135,26 +137,30 @@ class ResultsHandler(PickThisPageRequest):
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
-
-        image, count = get_result_image(img_obj)
+        
+        # DO THE MAGIC!
+        image = get_result_image(img_obj)
 
         picks = Picks.all().ancestor(img_obj).fetch(1000)
         pick_users = [p.user_id for p in picks]
+        count = len(pick_users)
 
         owner_user = img_obj.user_id
-
+        
         # Filter out the owner and current user
         if user_id in pick_users: pick_users.remove(user_id) 
         if owner_user in pick_users: pick_users.remove(owner_user) 
 
-        print user_id, owner_user, pick_users
+        # Get a list of comment strings, if any.
+        comments = Comment.all().ancestor(img_obj).order('datetime').fetch(1000)
 
         params = self.get_base_params(count=count,
                                       image=image,
                                       img_obj=img_obj,
                                       user_id=user_id,
                                       owner_user=owner_user,
-                                      pick_users=pick_users)
+                                      pick_users=pick_users, 
+                                      comments=comments)
 
         template = env.get_template("results.html")
         html = template.render(params)
@@ -248,8 +254,7 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
     @error_catch
     def post(self):
 
-        user = users.get_current_user()
-
+        user_id = users.get_current_user().user_id()
 
         upload_files = self.get_uploads()
         blob_info = upload_files[0]
@@ -281,7 +286,8 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         new_db = ImageObject(description=description,
                              image=output_blob_key,
                              parent=db_parent,
-                             user_id=user.user_id())
+                             user_id=user_id
+                             )
 
         new_db.width = new_db.size[0]
         new_db.height = new_db.size[1]
@@ -322,18 +328,17 @@ class AddImageHandler(PickThisPageRequest):
     @authenticate
     def post(self, user_id):
 
-
         user = User.all().filter("user_id =", user_id).get()
         
         image_key = self.request.get("image_key")
 
-        title = self.request.get("title")
-        description = self.request.get("description")
-        challenge = self.request.get("challenge")
+        title = cgi.escape(self.request.get("title"))
+        description = cgi.escape(self.request.get("description"))
+        challenge = cgi.escape(self.request.get("challenge"))
         pickstyle = self.request.get("pickstyle")
         permission = self.request.get("permission")
-        rightsholder1 = self.request.get("rightsholder1")
-        rightsholder2 = self.request.get("rightsholder2")
+        rightsholder1 = cgi.escape(self.request.get("rightsholder1"))
+        rightsholder2 = cgi.escape(self.request.get("rightsholder2"))
 
         # This is pretty gross
         if not rightsholder1:

@@ -108,10 +108,7 @@ def get_result_image(img_obj):
     output = StringIO.StringIO()
     im_out.save(output, 'png')
     
-    # We also need to know the number of interpretations.
-    count = len(data)
-
-    return base64.b64encode(output.getvalue()), count
+    return base64.b64encode(output.getvalue())
 
 def statistics():
 
