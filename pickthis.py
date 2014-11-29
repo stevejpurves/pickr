@@ -12,14 +12,30 @@ from PIL import Image
 from mmorph import dilate, sedisk
 
 
-def regularize(x_in, y_in, px, py):
+def interpolate(x_in, y_in):
     """
     For line interpretations.
     Connect the dots of each interpretation.
     
     """
-    x_out = np.arange(np.amin(x_in), np.amax(x_in)+1)
-    y_out = np.interp(x_out, x_in, y_in)
+
+    # Check difference in x and in y, so we can
+    # interpolate in the direction with the most range
+
+    x_range = np.arange(np.amin(x_in), np.amax(x_in)+1)
+    y_range = np.arange(np.amin(y_in), np.amax(y_in)+1)
+
+    # x_out = x_range
+    # y_out = np.interp(x_out, x_in, y_in)
+
+
+    if x_range.size >= y_range.size:
+        x_out = x_range
+        y_out = np.interp(x_out, x_in, y_in)
+    else:
+        y_out = y_range
+        x_out = np.interp(y_out, y_in, x_in)
+
     return x_out.astype(int), y_out.astype(int)
 
     
@@ -62,19 +78,51 @@ def get_result_image(img_obj):
         picks = np.array(json.loads(user.picks))
 
         # Sort on x values.
-        picks = picks[picks[:,0].argsort()]
+        #picks = picks[picks[:,0].argsort()]
+
+        print "+++ SHAPE +++", picks.shape
 
         # Deal with the points, and set the
         # radius of the disk structuring element.
         if img_obj.pickstyle == 'lines':
-            x, y = regularize(picks[:,0], picks[:,1], w, h)
+            for i in range(picks.shape[0] - 1):
+
+                xpair = picks[i:i+2,0]
+
+                if xpair[0] > xpair[1]:
+                    xpair = xpair[xpair[:].argsort()]
+                    xrev = True
+                else:
+                    xrev = False
+
+                ypair = picks[i:i+2,1]
+
+                if ypair[0] > ypair[1]:
+                    ypair = ypair[ypair[:].argsort()]
+                    yrev = True
+                else:
+                    yrev = False
+
+                # Do the interpolation
+                x, y = interpolate(xpair, ypair)
+
+                if xrev: # then need to unreverse...
+                    x = x[::-1]
+                if yrev: # then need to unreverse...
+                    y = y[::-1]
+
+                # Build up the image
+                user_image[(y, x)] = 1.
+            
             n = np.ceil(avg / 300.).astype(int) 
         else:
             x, y = picks[:,0], picks[:,1]
+            user_image[(y, x)] = 1.
+
             n = np.ceil(avg / 150.).astype(int) # The radius of the disk structuring element
 
         # Make line into image.        
-        user_image[(y, x)] = 1.
+        #user_image[(y, x)] = 1.
 
         # Dilate this image.
         dilated_image = dilate(user_image.astype(int),

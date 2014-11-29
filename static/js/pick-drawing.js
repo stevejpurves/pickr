@@ -81,15 +81,14 @@ pickDrawingSetup = function(){
         circles = [];   
     };
     
-    var connectTheDots = function(colour) // Lalalalala
-    {
+    var connectTheDots = function(colour){
         if (!!linestrip)
             linestrip.remove();
         if (points.length === 0)
             return;
-        points.sort(function(a,b){ 
-            return parseInt(a.x) - parseInt(b.x); 
-            });
+        // points.sort(function(a,b){ 
+        //     return parseInt(a.x) - parseInt(b.x); 
+        //     });
         var path = '';
         path += 'M' + points[0].x + ',' + points[0].y; // moveTo
         points.forEach(function(p){

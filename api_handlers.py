@@ -381,14 +381,6 @@ class PickHandler(webapp2.RequestHandler):
                           picks=json.dumps([point]).encode(),
                           parent=img_obj)
             picks.put()
-            
-            # In this case we also need to 
-            # make a note of this user
-            # interpreting this image.
-
-            # Note this is redundant with having img_obj as the
-            # parent. Might get out of sync...
-            img_obj.interpreters.append(user_id)
             img_obj.put()
 
         else:
@@ -418,12 +410,6 @@ class PickHandler(webapp2.RequestHandler):
         if self.request.get("clear"):
             data.delete()
             value = []
-
-            # Also remove the user from the list of 
-            # interpreters of this image.
-
-            # Note this is redundant and might get out of sync.
-            img_obj.interpreters.remove(user_id)
             img_obj.put()
             
         elif self.request.get("undo"):
