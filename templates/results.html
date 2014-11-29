@@ -83,7 +83,7 @@
           <span class="glyphicon glyphicon-chevron-left">
       </button>
       <button type="button" id="everyone-button" class="btn btn-danger btn-lrg" style="height:59px;">
-        Everyone else ({{ pick_users | length }})
+        Everyone else<br /><span id="interp-no">1</span> of {{ pick_users | length }}
       </button>
       <div class="btn-group btn-group-vertical" role="group">
         <button type="button" id="up-vote-button" class="btn btn-default btn-sm disabled" title="Upvote"><span class="glyphicon glyphicon-thumbs-up grey" id="thumbs-up"></span></button>

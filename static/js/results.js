@@ -13,7 +13,11 @@ $(function() {
     pickDrawing.setup('image-div');
     var overlay = pickDrawing.addOverlay('data:image/png;base64,' + 
            overlay64);
-    
+
+    var updateInterpNo = function(n){
+      $('#interp-no').text(parseInt(n+1));
+    };
+
     var updateVoteCount = function(voteCount){
         // Set the element text to the vote count
         if ($('#me-button').hasClass('active')){
@@ -148,6 +152,7 @@ $(function() {
         }
         currentUser = pickUsers[current];
         loadPicks(currentUser);
+        updateInterpNo(current);
     });
 
     $('#next-button').on('click', function(){
@@ -158,6 +163,7 @@ $(function() {
         }
         currentUser = pickUsers[current];
         loadPicks(currentUser);
+        updateInterpNo(current);
     });
     
     var castVote = function(v, u){
