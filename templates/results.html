@@ -90,18 +90,28 @@
       <button type="button" id="everyone-button"
           class="btn btn-danger btn-lrg"
           style="height:59px;" title="Toggle everyone elses's interpretations">
-        Everyone else<br /><span id="interp-no">1</span> of {{ pick_users | length }}
+        Everyone else<br />
+	<span id="interp-no">
+	  {% if pick_users %}1{% else %}0{% endif %}
+	</span> of {{ pick_users | length }}
       </button>
       <div class="btn-group btn-group-vertical" role="group">
-        <button type="button" id="up-vote-button" class="btn btn-default btn-sm disabled" title="Upvote"><span class="glyphicon glyphicon-thumbs-up grey" id="thumbs-up"></span></button>
-        <button type="button" id="down-vote-button" class="btn btn-default btn-sm disabled" title="Downvote"><span class="glyphicon glyphicon-thumbs-down grey" id="thumbs-down"></span></button>
+        <button type="button" id="up-vote-button" class="btn btn-default btn-sm disabled" title="Upvote">
+	  <span class="glyphicon glyphicon-thumbs-up grey" id="thumbs-up"></span></button>
+        <button type="button" id="down-vote-button" 
+		class="btn btn-default btn-sm disabled" 
+		title="Downvote">
+	  <span class="glyphicon glyphicon-thumbs-down grey" 
+		id="thumbs-down">
+	    
+	  </span></button>
       </div>
       <button type="button" class="btn btn-default btn-lrg" disabled style="height:59px; width:4em;">
         <span id="vote-count" style="font-size:150%; font-weight:bold; line-height:-8px">
         –</span><!-- count updated by results.js --><br /><span style="font-size:67%;">votes</span>
       </button>
       <button type="button" id="next-button" class="btn btn-danger btn-lrg disabled" style="height:59px;">
-          <span class="glyphicon glyphicon-chevron-right">
+        <span class="glyphicon glyphicon-chevron-right">
       </button>
     </div> <!-- end of EVERYONE ELSE buttons -->
 
@@ -150,7 +160,10 @@
     </ul>
     <form role="form" action="/comment" method="POST">
       <div class="form-group">
-        <textarea id="text" class="form-control" rows="3" placeholder="Add a comment"></textarea>
+	<input type="hidden" value="{{img_obj.key().id()}}"
+	       name="image_key">
+        <textarea name="text" id="text" class="form-control" rows="3" 
+		  placeholder="Add a comment"></textarea>
       </div>
       <button type="submit" class="btn btn-default">Add</button>
     </form>

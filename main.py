@@ -19,6 +19,7 @@ app = webapp2.WSGIApplication([
     ('/comment', CommentHandler),
     ('/vote', VoteHandler),
     ('/image', ImageHandler),
+    ('BlobURL', BlobURLHandler),
     ('/err', ErrorHandler),
     ('/.*', ErrorHandler)],
     debug=True)
