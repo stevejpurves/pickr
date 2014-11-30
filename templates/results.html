@@ -153,9 +153,8 @@
     <h4>Comments</h4>
     <ul class="list-group">
       {% for comment in comments %}
-      <li class="list-group-item">
-      {{ comment.text }}
-      </li>
+      <li class="list-group-item"><strong>{{ comment.nickname }}</strong><br />
+      {{ comment.text }}</li>
       {% endfor %}
     </ul>
     <form role="form" action="/comment" method="POST">

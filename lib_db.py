@@ -80,6 +80,13 @@ class Comment(db.Model):
     user_id = db.StringProperty()
     datetime = db.DateTimeProperty(auto_now_add=True)
 
+    @property
+    def nickname(self):
+
+        user = User.all().filter("user_id =",
+                                 self.user_id).get()
+        return user.nickname
+    
 
 class ImageObject(db.Model):
 
