@@ -142,7 +142,21 @@ pickDrawingSetup = function(){
     };
     
     var loadPoints = function(parameters){
+        // Functioon gets called from results.js
+        // like so:
+        //   pickDrawing.load({
+        //       user:user,
+        //       image_key:image_key
+        //       });
+
+        // This is the reason we can't have
+        // multiplt users' picks at once, 
+        // because clearPoints() has not
+        // concept of who points 'belong' to.
         clearPoints();
+
+        // Would it be better to send back the user
+        // owner in the JSON payload?
         $.get('/update_pick?', parameters, function(data){
           if (data.current) {
             data.user_data.forEach(function(item){
