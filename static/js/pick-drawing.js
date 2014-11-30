@@ -94,6 +94,9 @@ pickDrawingSetup = function(){
         points.forEach(function(p){
             path += 'L' + p.x + ',' + p.y; // lineTo
         });
+        if (pickstyle === "polygons"){
+          path += "Z"; // closed line
+        }
         linestrip = paper.path(path);
         linestrip.attr({'stroke': colour});
         linestrip.attr({'stroke-width':penSize});
@@ -103,7 +106,7 @@ pickDrawingSetup = function(){
     var addPoint = function(point, colour){
         addCircle(point.x, point.y, colour);
         points.push(point);
-        if (pickstyle === 'lines'){
+        if (pickstyle === 'lines' || pickstyle === 'polygons'){
             connectTheDots(colour);
         }
     };
@@ -123,7 +126,7 @@ pickDrawingSetup = function(){
         points = _.reject(points, function(p){
             return p.x === point.x && p.y === point.y;
         });
-        if (pickstyle === 'lines'){
+        if (pickstyle === 'lines' || pickstyle === 'polygons'){
             connectTheDots(default_colour);
         }
     };
@@ -133,7 +136,7 @@ pickDrawingSetup = function(){
         points = [];
 
         // Not sure why we connect after clearing...?
-        if (pickstyle === 'lines'){
+        if (pickstyle === 'lines' || pickstyle === 'polygons'){
             connectTheDots(default_colour);
         }
     };

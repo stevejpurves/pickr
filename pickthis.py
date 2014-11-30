@@ -77,14 +77,19 @@ def get_result_image(img_obj):
         # Get the points.
         picks = np.array(json.loads(user.picks))
 
+        print picks
+
+        if img_obj.pickstyle == 'polygons':
+            picks = np.append(picks, picks[0]).reshape(picks.shape[0]+1, picks.shape[1])
+
         # Sort on x values.
         #picks = picks[picks[:,0].argsort()]
 
-        print "+++ SHAPE +++", picks.shape
+        # This needs refactoring!
 
         # Deal with the points, and set the
         # radius of the disk structuring element.
-        if img_obj.pickstyle == 'lines':
+        if img_obj.pickstyle != 'points':
             for i in range(picks.shape[0] - 1):
 
                 xpair = picks[i:i+2,0]
@@ -96,6 +101,9 @@ def get_result_image(img_obj):
                     xrev = False
 
                 ypair = picks[i:i+2,1]
+
+                print " ++ IN THE LOOP ++ "
+                print xpair, ypair
 
                 if ypair[0] > ypair[1]:
                     ypair = ypair[ypair[:].argsort()]
@@ -115,6 +123,7 @@ def get_result_image(img_obj):
                 user_image[(y, x)] = 1.
             
             n = np.ceil(avg / 300.).astype(int) 
+
         else:
             x, y = picks[:,0], picks[:,1]
             user_image[(y, x)] = 1.

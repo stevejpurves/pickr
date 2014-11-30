@@ -153,10 +153,10 @@
               Pick a line.
             </label>
           </div>
-          <div class="radio disabled col-sm-offset-2 col-sm-10">
+          <div class="radio col-sm-offset-2 col-sm-10">
             <label>
-              <input type="radio" name="pickstyle" id="polygons" value="polygons" {% if img_obj.pickstyle == "polygons" %}checked{% endif%} disabled>
-              Pick a polygon. COMING SOON.
+              <input type="radio" name="pickstyle" id="polygons" value="polygons" {% if img_obj.pickstyle == "polygons" %}checked{% endif%} {% if img_obj.title %}disabled{% endif%}>
+              Pick a polygon.
             </label>
           </div>
         </div>
