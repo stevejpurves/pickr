@@ -1,6 +1,8 @@
 import webapp2
 import traceback
-from lib_db import ImageObject, Picks, Vote
+import cgi
+
+from lib_db import ImageObject, Picks, Vote, Comment
 
 from constants import db_parent
 
@@ -40,32 +42,6 @@ def error_catch(func):
 
 class CommentHandler(webapp2.RequestHandler):
 
-#     @error_catch
-#     def get(self):
-
-#         index = int(self.request.get("index"))
-
-#         data = ImageObject.all().ancestor(db_parent).sort("-date")
-#         data = data.fetch(1000)[index]
-
-#         self.response.write(json.dumps(data.comments))
-
-#     @error_catch
-#     @authenticate
-#     def post(self, user_id):
-
-#         index = int(self.request.get("index"))
-#         comment = int(self.request.get("comment"))
-
-#         data = ImageObject.all().ancestor(db_parent).sort("date")
-#         data = data.fetch(1000)[index]
-#         comments = data.comments
-#         comments.append(comment)
-
-#         data.comments = comments
-#         data.put()
-
-#         self.response.write(comment)
 
     @error_catch
     @authenticate
@@ -78,14 +54,10 @@ class CommentHandler(webapp2.RequestHandler):
 
         """
 
-        # DEBUG
-        print "+++ STARTING COMMENT for USER {0} +++".format(user_id) 
 
         image_key = self.request.get("image_key")
 
-        # DEBUG
-        print "+++ IMAGE key is {0} +++".format(image_key)
-        # THIS DOESN'T WORK
+ 
         
         img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
 
@@ -93,17 +65,17 @@ class CommentHandler(webapp2.RequestHandler):
 
         comment = Comment(text=text,
                           user_id=user_id,
-                          parent=img_obj
-                          )
+                          parent=img_obj)
 
         # comment.datetime is set automatically
 
         comment.put()
 
-        self.response.write(json.dumps({"success":True}))
+        # This is fine for now, but we be using AJAX calls and
+        # rendering the comments in the browser
+        self.redirect('/results?image_key='+ str(image_key))
 
-        # HOW TO REDRAW PAGE WITH COMMENT?
-
+ 
 
 class ImageHandler(webapp2.RequestHandler):
 

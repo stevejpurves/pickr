@@ -150,7 +150,10 @@
     </ul>
     <form role="form" action="/comment" method="POST">
       <div class="form-group">
-        <textarea id="text" class="form-control" rows="3" placeholder="Add a comment"></textarea>
+	<input type="hidden" value="{{img_obj.key().id()}}"
+	       name="image_key">
+        <textarea name="text" id="text" class="form-control" rows="3" 
+		  placeholder="Add a comment"></textarea>
       </div>
       <button type="submit" class="btn btn-default">Add</button>
     </form>
