@@ -9,6 +9,8 @@ from constants import db_parent
 import json
 
 from google.appengine.api import users
+from google.appengine.ext.webapp import blobstore_handlers
+from google.appengine.ext import blobstore
 
 def authenticate(func):
     """
@@ -392,3 +394,15 @@ class PickHandler(webapp2.RequestHandler):
             data.put()
                  
         self.response.write(json.dumps(value))
+
+
+class BlobURLHandler(blobstore_handlers.BlobstoreUploadHandler):
+
+    @error_catch
+    @authenticate
+    def get(self, user_id):
+
+        
+        upload_url = blobstore.create_upload_url('/upload')
+
+        self.response.write(upload_url)

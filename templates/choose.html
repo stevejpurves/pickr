@@ -4,6 +4,16 @@
 
 {% block content %}
 
+<script>
+updateURL = function(){
+
+  $.get("/BlobURL", function (data){
+    $("#submit").attr('action', data);
+    $("#submit").click();
+  }
+ }
+
+</script>
 <!-- Page Content -->
 <div class="container">
 
@@ -13,20 +23,23 @@
     </div>
     <div class="col-md-4 col-sm-6 col-xs-6">
       <div class="pull-right">
-        <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ upload_url }}" method="POST" 
+	      enctype="multipart/form-data" id="upload-form">
           <div style='height: 0px;width:0px; overflow:hidden;'>
             <input type="submit" name="submit" 
-             value="Submit"
-             id="submit" >
+		   value="Submit"
+		   id="submit" >
             <input id="file" type="file" name="file" 
-             onchange="$('#submit').click()"/>
+		   onchange="$('#submit').click()"/>
           </div>
           <div class="btn btn-info btn-lg btn-block" 
                id="upload_btn" 
                onclick="$('#file').click()"
                {% if admin %}{% elif login_url or cred_points<15 %}disabled="disabled"{% endif %}>
-            <span class="hidden-xs">Upload a new image</span><span class="visible-xs">Upload new</span>
-          </div><span style="color:lightblue" class="pull-right">{% if (login_url or admin) %}{% elif cred_points<15 %}You need at least 15 reputation points to upload images.{% endif %}</span> 
+            <span class="hidden-xs">Upload a new image</span>
+	    <span class="visible-xs">Upload new</span>
+          </div><span style="color:lightblue" class="pull-right">
+	    {% if (login_url or admin) %}{% elif cred_points<15 %}You need at least 15 reputation points to upload images.{% endif %}</span> 
         </form>
       </div>
     </div>
