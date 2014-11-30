@@ -122,6 +122,8 @@ $(function() {
         // Toggles everyone else's interpretations
         // Then you can step over these with the 
         // previous-button and next-button
+
+	if(userCount > 0){
         $(this).button('toggle');
         if ($(this).hasClass('active')){
           loadPicks(currentUser);
@@ -142,17 +144,21 @@ $(function() {
         if ($('#me-button').hasClass('active')){
           $('#me-button').button('toggle');
         }
+	}
     });
 
     $('#previous-button').on('click', function(){
-        $('#next-button').removeClass('disabled');
-        --current;
-        if (current === 0){
-          $('#previous-button').addClass('disabled');
-        }
-        currentUser = pickUsers[current];
-        loadPicks(currentUser);
-        updateInterpNo(current);
+
+
+            $('#next-button').removeClass('disabled');
+            --current;
+            if (current === 0){
+		$('#previous-button').addClass('disabled');
+            }
+            currentUser = pickUsers[current];
+            loadPicks(currentUser);
+            updateInterpNo(current);
+	
     });
 
     $('#next-button').on('click', function(){

@@ -72,7 +72,8 @@ class CommentHandler(webapp2.RequestHandler):
         comment.put()
 
         # This is fine for now, but we be using AJAX calls and
-        # rendering the comments in the browser
+        # rendering the comments in the browser. Or if we are doing
+        # it this way, we should move the code to just post to results
         self.redirect('/results?image_key='+ str(image_key))
 
  
