@@ -49,10 +49,13 @@
 
     <!-- MY PICK - start with this only -->
     <div class="btn-group" role="group" style="margin-left:16px;">
-      <button type="button" id="me-button" class="btn btn-success btn-lrg active" style="height:59px;">
+      <button type="button" id="me-button"
+          class="btn btn-success btn-lrg active"
+          style="height:59px;" title="Toggle my interpretation">
         My pick
       </button>
-      <button type="button" class="btn btn-default btn-lrg" disabled style="height:59px; width:4em;">
+      <button type="button" class="btn btn-default btn-lrg"
+          disabled style="height:59px; width:4em;">
         <span id="my-vote-count" style="font-size:150%; font-weight:bold; line-height:-8px">
         </span><!-- count updated by results.js --><br /><span style="font-size:67%;">votes</span>
       </button>
@@ -62,7 +65,9 @@
     <!-- disable this button if no owner interpretation 
          or if the current user is the owner -->
     <div class="btn-group" role="group" style="margin-left:16px;">
-      <button type="button" id="owner-button" class="btn btn-primary btn-lrg" style="height:59px;" {% if user_id == img_obj.user_id %}disabled{% endif %}>
+      <button type="button" id="owner-button" class="btn btn-primary btn-lrg"
+          style="height:59px;" title="Toggle the uploader's interpretation"
+          {% if user_id == img_obj.user_id %}disabled{% endif %}>
         Uploader's pick
       </button>
       <div class="btn-group btn-group-vertical" role="group">
@@ -82,7 +87,9 @@
       <button type="button" id="previous-button" class="btn btn-danger btn-lrg disabled" style="height:59px;">
           <span class="glyphicon glyphicon-chevron-left">
       </button>
-      <button type="button" id="everyone-button" class="btn btn-danger btn-lrg" style="height:59px;">
+      <button type="button" id="everyone-button"
+          class="btn btn-danger btn-lrg"
+          style="height:59px;" title="Toggle everyone elses's interpretations">
         Everyone else<br /><span id="interp-no">1</span> of {{ pick_users | length }}
       </button>
       <div class="btn-group btn-group-vertical" role="group">
