@@ -131,8 +131,10 @@ $(function() {
           $('#owner-down-vote-button').addClass('disabled');
           $('#up-vote-button').removeClass('disabled');
           $('#down-vote-button').removeClass('disabled');
-          $('#next-button').removeClass('disabled');
-          // Leave previous-button alone
+
+	    if(userCount > 1){
+		$('#next-button').removeClass('disabled');
+            } // Leave previous-button alone
         } else {
           pickDrawing.clear(); // Bah, deletes everything!
           $('#up-vote-button').addClass('disabled');
@@ -163,8 +165,9 @@ $(function() {
 
     $('#next-button').on('click', function(){
         $('#previous-button').removeClass('disabled');
+
         ++current;
-        if (current === userCount - 1){
+        if (current == (userCount -1)){
           $('#next-button').addClass('disabled');
         }
         currentUser = pickUsers[current];
