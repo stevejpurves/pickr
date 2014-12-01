@@ -16,6 +16,7 @@ class User(db.Model):
     nickname = db.StringProperty()
     email = db.EmailProperty()
     
+    @property
     def cred(self):
 
         all_picks = Picks.all().filter("user_id =",
