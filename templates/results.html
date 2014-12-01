@@ -140,6 +140,8 @@
           {% endif %}
           <span class="pt-stars">{{ img_obj.favouriters | length }}</span>
         </span>-->
+        {% if (user_id == img_obj.user_id) or (admin) %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-cog" 
+             title="Change image settings"></a>{% endif %}&nbsp;&nbsp;
         <span class="badge {% if user_id in img_obj.interpreters %}pt-counted{% else %}pt-uncounted{% endif %}"
               title="{{ img_obj.interpreters | length }}{% if img_obj.interpreters | length  == 1 %} person has{% else %} people have{% endif %} interpreted this image">
           {{ img_obj.interpreters | length }}

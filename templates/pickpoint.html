@@ -26,13 +26,18 @@
     </div>
     <div class="col-md-4 col-sm-6 col-xs-6">
       <div class="btn-toolbar pull-right">
+        <button type="button" 
+          class="btn btn-default"
+          data-toggle="modal" data-target="#help-modal">
+            Help
+        </button>
         <button id="undo-button" type="button" 
-		class="btn btn-primary">
-          Undo
+          class="btn btn-primary">
+            Undo
         </button>
         <button id="clear-button" type="button" 
-		class="btn btn-primary">
-          Clear
+		      class="btn btn-primary">
+            Clear
         </button>
       </div>
     </div>
@@ -75,5 +80,24 @@
 
 
 </div><!-- end of main container -->
+
+<div class="modal fade" id="help-modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Quick help</h4>
+      </div>
+      <div class="modal-body">
+        <p>Click on the image to add new points. When you are satisfied with your interpretation, hit <strong>Submit</strong>. Then you will get to see everyone else's interpretations.</p>
+        {% if img_obj.pickstyle != "points" %}<p>In this case, the uploader is asking you to pick {{ img_obj.pickstyle }}, so the points will join to form a {{ img_obj.pickstyle[:-1] }}.</p>{% endif %}
+        <p>Use the <strong>Undo</strong> and <strong>Clear</strong> buttons if you need them.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 {% endblock %}
