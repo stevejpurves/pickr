@@ -48,7 +48,7 @@ def normalize(a, newmax):
     return (float(newmax) * a) / np.amax(a)
 
 
-def get_result_image(img_obj):
+def get_result_image(img_obj, opacity_scalar=None):
     """
     Takes an image, gets its interpretations, and makes a
     new image that shows all the interpretations concatenated.
@@ -67,9 +67,20 @@ def get_result_image(img_obj):
 
     # Make an 'empty' image for all the results. 
     heatmap_image = np.zeros((h, w))
+    alpha_image = np.ones_like(heatmap_image)
+
+    # get total number of votes on this challenge
+    total_votes = 0
+    top_vote = 0
+    for user in data:
+        total_votes += user.votes
+        if user.votes > top_vote:
+            top_vote = user.votes
 
     # Now loop over the interpretations and sum into that empty image.
     for user in data:
+        # get the number of votes this interpretation has
+        nvotes = user.votes
 
         # Make a new image for this interpretation.
         user_image = np.zeros((h, w))
@@ -130,30 +141,34 @@ def get_result_image(img_obj):
 
             n = np.ceil(avg / 150.).astype(int) # The radius of the disk structuring element
 
-        # Make line into image.        
-        #user_image[(y, x)] = 1.
-
         # Dilate this image.
         dilated_image = dilate(user_image.astype(int),
                                B=sedisk(r=n))
 
-        # Add it to the running summed image.
         heatmap_image += dilated_image
+       
+        # Add it to the running summed image.
+        if opacity_scalar == 'votes':
+            if nvotes > -5:
+                alpha_image += dilated_image * (nvotes + 5) / (top_vote + 5)
+        elif opacity_scalar == 'rep':
+            # Do something else
+            pass
+        else:
+            pass
 
     # Normalize the heatmap from 0-255 for making an image.
     # More muted version: Subtract 1 first to normalize to
     # the non-zero data only.
     heatmap_norm = normalize(heatmap_image, 255)
-    
+    alpha_norm = normalize(alpha_image, 255)
+
     # Make the RGB channels.
     r = np.clip((2 * heatmap_norm), 0, 255)
     g = np.clip(((3 * heatmap_norm) - 255), 0, 255)
     b = np.clip(((3 * heatmap_norm) - 510), 0, 255)
+    a = alpha_norm
 
-    # Make the A (opacity) channel, setting all the non-picked areas
-    # to transparent.
-    opacity = 1.0
-    a = opacity * 255 * np.ones_like(heatmap_norm)
     # Set everything corresponding to zero data to transparent.
     a[heatmap_image==0] = 0 
 
