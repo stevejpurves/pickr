@@ -64,7 +64,8 @@ updateURL = function(){
           {{img_obj.title[:20]}}{% if img_obj.title | length>20 %}&#8230;{% endif %}
         </span>
         <img src="/static/img/icon-{{ img_obj.pickstyle }}.png" 
-             style="width:24px; margin-top:-8px" />
+             style="width:24px; margin-top:-8px" 
+             title="Pick this image using {{ img_obj.pickstyle }}" />
         {% if (user_id == img_obj.user_id) or (admin) %}&nbsp;<a href="/add_image?image_key={{ img_obj.id }}" class="glyphicon glyphicon-cog" 
 							   title="Change image settings"></a>{% endif %}
         <span class="pull-right">
