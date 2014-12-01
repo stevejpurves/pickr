@@ -74,8 +74,9 @@ class PickThisPageRequest(webapp2.RequestHandler):
             email_hash = hashlib.md5(user.email).hexdigest()
             nickname = user.nickname
 
-            cred_points = user.cred()
+            cred_points = user.cred
             admin = users.is_current_user_admin()
+
         else:
             logout_url = None
             login_url = users.create_login_url('/')
@@ -357,6 +358,10 @@ class AddImageHandler(PickThisPageRequest):
                (users.is_current_user_admin())):
             raise Exception
         
+        # Don't change the pickstyle if already set.
+        if img_obj.pickstyle:
+            if pickstyle != img_obj.pickstyle:
+                pickstyle = img_obj.pickstyle
 
         
         img_obj.width = img_obj.size[0]
