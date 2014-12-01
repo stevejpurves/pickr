@@ -41,8 +41,6 @@
   <div id="image-div">
     <!-- image goes here -->
   </div>
-  <p class="pull-right" style="font-size:80%">
-    Uploaded by: {{ img_obj.nickname }} &mdash; Image owner: {{ img_obj.rightsholder }}</p>
 
   <!-- div for big green button at bottom -->
   <div class="col-md-offset-2 col-md-8" style="margin-bottom:24px; margin-top:24px;">
@@ -51,7 +49,31 @@
       I'm all done... Submit!
     </button>
   </div>
-    
+
+    <!-- Metadata -->
+    <div class="well" style="clear:both;">
+      <p><span style="font-size:150%; font-weight:bold;">{{ img_obj.title }}</span>&nbsp;&nbsp; 
+        <span class="pull-right" style="font-size:80%; font-weight:normal;">
+          {{ img_obj.width }} &times; {{ img_obj.height }} &nbsp;•&nbsp; Uploaded by {{ img_obj.nickname }}
+        </span>
+        <!--<span class="notification-icon">
+          {% if user_id not in img_obj.favouriters %}&nbsp;<span class="glyphicon glyphicon-certificate pt-unfaved" 
+               title="you have not starred this image"></span>
+            {% else %}&nbsp;<span class="glyphicon glyphicon-star pt-faved" title="you starred this image"></span>
+          {% endif %}
+          <span class="pt-stars">{{ img_obj.favouriters | length }}</span>
+        </span>-->
+        <span class="badge {% if user_id in img_obj.interpreters %}pt-counted{% else %}pt-uncounted{% endif %}"
+              title="{{ img_obj.interpreters | length }}{% if img_obj.interpreters | length  == 1 %} person has{% else %} people have{% endif %} interpreted this image">
+          {{ img_obj.interpreters | length }}
+        </span>
+      </p>
+      <p style="font-style:italic;">{{ img_obj.challenge }}</p>
+      <p>{{ img_obj.description }}</p>
+      <p><strong>Reference</strong> &nbsp;&nbsp; Pickthis.io user {{ img_obj.nickname }}. {{ img_obj.title }}, image no. <a href="http://pickthis.io/{{ img_obj.id }}">{{ img_obj.id }}</a>. Permission: {{ img_obj.rightsholder.strip(' .!?') }}, {{ img_obj.permission.strip(' .!?') }}.</p>
+    </div><!-- End of well -->
+
+
 </div><!-- end of main container -->
 
 {% endblock %}
