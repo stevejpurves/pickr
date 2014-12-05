@@ -40,7 +40,7 @@ class User(db.Model):
         # Award rep for uploading.
         rep += 3 * len(all_imgs)
 
-        return rep + 20
+        return rep
 
 class Vote(db.Model):
 
