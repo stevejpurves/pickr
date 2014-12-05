@@ -6,13 +6,11 @@
 
 <script>
 updateURL = function(){
-
   $.get("/BlobURL", function (data){
     $("#submit").attr('action', data);
     $("#submit").click();
-  }
- }
-
+    });
+}
 </script>
 <!-- Page Content -->
 <div class="container">
