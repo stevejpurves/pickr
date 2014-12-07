@@ -196,6 +196,8 @@ class PickerHandler(PickThisPageRequest):
 
         if id:
             key_id = id
+            if key_id == 'hohoho':
+                key_id = '5156048109305856'
         else:
             key_id = self.request.get("image_key")
 
@@ -367,9 +369,9 @@ class AddImageHandler(PickThisPageRequest):
         img_obj.width = img_obj.size[0]
         img_obj.height = img_obj.size[1]
 
-        img_obj.title = title.capitalize()
-        img_obj.description = description.capitalize()
-        img_obj.challenge = challenge.capitalize()
+        img_obj.title = title
+        img_obj.description = description
+        img_obj.challenge = challenge
         img_obj.pickstyle = pickstyle
         img_obj.permission = permission
         img_obj.rightsholder = rightsholder
