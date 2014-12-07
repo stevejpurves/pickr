@@ -8,6 +8,7 @@ from api_handlers import *
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     (r'/([0-9]+)$', PickerHandler),
+    (r'/(hohoho)$', PickerHandler),
     ('/upload', LibraryHandler),
     ('/library', LibraryHandler),
     ('/add_image', AddImageHandler),
