@@ -197,7 +197,7 @@ class PickerHandler(PickThisPageRequest):
         if id:
             key_id = id
             if key_id.lower() == 'hohoho':
-                key_id = '5156048109305856'
+                key_id = '5668600916475904'
         else:
             key_id = self.request.get("image_key")
 
