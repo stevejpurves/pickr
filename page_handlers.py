@@ -3,6 +3,7 @@ import hashlib
 import StringIO
 import time
 import cgi
+import re
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
@@ -195,9 +196,13 @@ class PickerHandler(PickThisPageRequest):
     def get(self, user_id, id=None):
 
         if id:
-            key_id = id
-            if key_id.lower() == 'hohoho':
-                key_id = '5668600916475904'
+            if re.search(r"[0-9]+$", id):
+                # Then it's a raw id
+                key_id = id
+            else:
+                # It's a short URL (or a mistake)
+                target = ImageObject.all().ancestor(db_parent).filter("shorturl =", id).get()
+                key_id = target.id
         else:
             key_id = self.request.get("image_key")
 
@@ -336,6 +341,7 @@ class AddImageHandler(PickThisPageRequest):
         image_key = self.request.get("image_key")
 
         title = cgi.escape(self.request.get("title"))
+        shorturl = cgi.escape(self.request.get("shorturl"))
         description = cgi.escape(self.request.get("description"))
         challenge = cgi.escape(self.request.get("challenge"))
         pickstyle = self.request.get("pickstyle")
@@ -355,21 +361,23 @@ class AddImageHandler(PickThisPageRequest):
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
-        
         if not ((user_id == img_obj.user_id) or
                (users.is_current_user_admin())):
             raise Exception
         
         # Don't change the pickstyle if already set.
         if img_obj.pickstyle:
-            if pickstyle != img_obj.pickstyle:
-                pickstyle = img_obj.pickstyle
+            pickstyle = img_obj.pickstyle
 
-        
+        # Don't change the short URL if already set.
+        if img_obj.shorturl:
+            shorturl = img_obj.shorturl
+
         img_obj.width = img_obj.size[0]
         img_obj.height = img_obj.size[1]
 
         img_obj.title = title
+        img_obj.shorturl = shorturl
         img_obj.description = description
         img_obj.challenge = challenge
         img_obj.pickstyle = pickstyle

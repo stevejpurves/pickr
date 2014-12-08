@@ -97,6 +97,7 @@ class ImageObject(db.Model):
     height = db.IntegerProperty()
 
     title = db.StringProperty(default="")
+    shorturl = db.StringProperty()
     description = db.StringProperty(default="")
     challenge = db.StringProperty(default="")
     permission = db.StringProperty(default="")

@@ -7,14 +7,11 @@ from api_handlers import *
 # This is the app.  
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    (r'/([0-9]+)$', PickerHandler),
-    (r'/(hohoho)$', PickerHandler),
     ('/upload', LibraryHandler),
     ('/library', LibraryHandler),
     ('/add_image', AddImageHandler),
     ('/about', AboutHandler),
     ('/update_pick', PickHandler),
-    ('/pickr', PickerHandler),
     ('/terms', TermsHandler),
     ('/results', ResultsHandler),
     ('/comment', CommentHandler),
@@ -22,5 +19,8 @@ app = webapp2.WSGIApplication([
     ('/image', ImageHandler),
     ('BlobURL', BlobURLHandler),
     ('/err', ErrorHandler),
+    ('/pickr', PickerHandler),
+    (r'/([0-9]+)$', PickerHandler), # An image ID
+    (r'/([-_a-zA-Z0-9]+)$', PickerHandler), # A short URL
     ('/.*', ErrorHandler)],
     debug=True)
