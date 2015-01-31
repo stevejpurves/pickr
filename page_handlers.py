@@ -9,18 +9,17 @@ from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
 
-
-
-# For image manipulation
+# For image manipulation.
 from PIL import Image
 
 from pickthis import get_result_image, statistics
-from constants import local, env, db_parent
+from constants import env, db_parent
 from lib_db import ImageObject, Picks, User
 from lib_db import Comment
 
 # For image serving
 import cloudstorage as gcs
+
 
 def authenticate(func):
     """
@@ -33,7 +32,7 @@ def authenticate(func):
             self.redirect('/')
             return
         else:
-            return func(self, user.user_id(),*args, **kwargs)
+            return func(self, user.user_id(), *args, **kwargs)
     return authenticate_and_call
 
 
@@ -50,26 +49,27 @@ def error_catch(func):
             self.redirect("/err")
     return call_and_catch
 
+
 class ErrorHandler(webapp2.RequestHandler):
     def get(self):
         template = env.get_template("404.html")
         html = template.render()
 
         self.response.write(html)
-        
+
+
 # Make a basic PageRequest class to handle the params we always need..
 class PickThisPageRequest(webapp2.RequestHandler):
-    
+
     def get_base_params(self, **kwargs):
 
         g_user = users.get_current_user()
-        
+
         if g_user:
 
             user = User.all().filter("user_id =", g_user.user_id())
             user = user.get()
 
-        
             logout_url = users.create_logout_url('/')
             login_url = None
             email_hash = hashlib.md5(user.email).hexdigest()
@@ -126,9 +126,9 @@ class MainPage(webapp2.RequestHandler):
                                 parent=db_parent,
                                 email=g_user.email())
                 user_obj.put()
-            
+
             self.redirect('/library')
-            
+
 
 class ResultsHandler(PickThisPageRequest):
 
@@ -139,7 +139,7 @@ class ResultsHandler(PickThisPageRequest):
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
-        
+
         # DO THE MAGIC!
         image = get_result_image(img_obj)
 
@@ -148,21 +148,23 @@ class ResultsHandler(PickThisPageRequest):
         count = len(pick_users)
 
         owner_user = img_obj.user_id
-        
+
         # Filter out the owner and current user
-        if user_id in pick_users: pick_users.remove(user_id) 
-        if owner_user in pick_users: pick_users.remove(owner_user) 
+        if user_id in pick_users:
+            pick_users.remove(user_id)
+        if owner_user in pick_users:
+            pick_users.remove(owner_user)
 
         # Get a list of comment strings, if any.
-        comments = Comment.all().ancestor(img_obj).order('datetime').fetch(1000)
+        cmts = Comment.all().ancestor(img_obj).order('datetime').fetch(1000)
 
         params = self.get_base_params(count=count,
                                       image=image,
                                       img_obj=img_obj,
                                       user_id=user_id,
                                       owner_user=owner_user,
-                                      pick_users=pick_users, 
-                                      comments=comments)
+                                      pick_users=pick_users,
+                                      comments=cmts)
 
         template = env.get_template("results.html")
         html = template.render(params)
@@ -201,27 +203,27 @@ class PickerHandler(PickThisPageRequest):
                 key_id = id
             else:
                 # It's a short URL (or a mistake)
-                target = ImageObject.all().ancestor(db_parent).filter("shorturl =", id).get()
+                f = "shorturl ="
+                target = ImageObject.all().ancestor(db_parent).filter(f, id).get()
                 key_id = target.id
         else:
             key_id = self.request.get("image_key")
 
+        img_obj = ImageObject.get_by_id(int(key_id),
+                                        parent=db_parent)
 
-        img_obj= ImageObject.get_by_id(int(key_id),
-                                       parent=db_parent)
-                
         # Write the page.
         template = env.get_template('pickpoint.html')
 
         params = self.get_base_params(img_obj=img_obj)
-        
+
         html = template.render(params)
 
-
         self.response.write(html)
-     
+
+
 class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
-                    PickThisPageRequest):
+                     PickThisPageRequest):
 
     @error_catch
     def get(self):
@@ -236,8 +238,8 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
             upload_url = ''
             user_id = ''
 
-        # Get the images. 
-        # We need to delete images without titles. 
+        # Get the images.
+        # We need to delete images without titles.
         # I would rather do this in add_image.html
         # but it seems you can't trigger deletion
         # with $(window).on(beforeunload)...
@@ -276,7 +278,7 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         im.save(output, format='PNG')
 
         bucket = '/pick-this'
-        output_filename = (bucket +'/2' + str(time.time()))
+        output_filename = (bucket + '/2' + str(time.time()))
 
         gcsfile = gcs.open(output_filename, 'w')
         gcsfile.write(output.getvalue())
@@ -299,13 +301,13 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
 
         new_db.width = new_db.size[0]
         new_db.height = new_db.size[1]
-        
+
         new_db.put()
 
         self.redirect('/add_image?image_key=' +
                       str(new_db.id))
-        
-        
+
+
 class AddImageHandler(PickThisPageRequest):
 
     @error_catch
@@ -330,14 +332,13 @@ class AddImageHandler(PickThisPageRequest):
 
         else:
             raise Exception
-            
 
     @error_catch
     @authenticate
     def post(self, user_id):
 
         user = User.all().filter("user_id =", user_id).get()
-        
+
         image_key = self.request.get("image_key")
 
         title = cgi.escape(self.request.get("title"))
@@ -362,9 +363,9 @@ class AddImageHandler(PickThisPageRequest):
                                         parent=db_parent)
 
         if not ((user_id == img_obj.user_id) or
-               (users.is_current_user_admin())):
+                (users.is_current_user_admin())):
             raise Exception
-        
+
         # Don't change the pickstyle if already set.
         if img_obj.pickstyle:
             pickstyle = img_obj.pickstyle
@@ -383,7 +384,6 @@ class AddImageHandler(PickThisPageRequest):
         img_obj.pickstyle = pickstyle
         img_obj.permission = permission
         img_obj.rightsholder = rightsholder
-  
 
         img_obj.put()
 
