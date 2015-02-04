@@ -16,6 +16,7 @@ Requires Google App Engine and Python
     sudo pip install PIL --allow-external PIL --allow-unverified PIL
     
 See <http://stackoverflow.com/a/21243133/483776>
+For freetype build errors see <http://stackoverflow.com/questions/20325473/error-installing-python-image-library-using-pip-on-mac-os-x-10-9>
     
 
 ## Local Testing
