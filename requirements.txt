@@ -1,0 +1,2 @@
+PIL --allow-external PIL --allow-unverified PIL
+numpy
