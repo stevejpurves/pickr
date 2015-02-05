@@ -47,9 +47,8 @@ pickDrawingSetup = function(){
     
     var addOverlay = function(url)
     {
-        var overlay = paper.image(url, 0, 0, baseImageWidth, 
-          baseImageHeight);
-  overlay.undrag();
+        var overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
+        overlay.undrag();
         return overlay.attr({opacity: 0.67});
     };
 
@@ -111,14 +110,16 @@ pickDrawingSetup = function(){
         }
     };
     
+    var server_update_pick = function(data, cb) {
+        $.post('/update_pick', data, cb);
+    }
+
     var clickPoint = function(point){
-        var data = { 
-      image_key:image_key,
+        var data = { image_key:image_key,
             x: Math.round(point.x / resizeScale),
             y: Math.round(point.y / resizeScale)
         };
-        $.post('/update_pick', data, 
-            function(){addPoint(data, default_colour )});
+        server_update_pick( data, function() { addPoint(data, default_colour ) });
     };
 
     var removePoint = function(point){
@@ -160,18 +161,15 @@ pickDrawingSetup = function(){
         $.get('/update_pick?', parameters, function(data){
           if (data.current) {
             data.user_data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]},
-              current_colour);
+              addPoint({x:item[0], y:item[1]}, current_colour);
             });
           } else if (data.owner) {
             data.owner_data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]},
-              owner_colour);
+              addPoint({x:item[0], y:item[1]}, owner_colour);
             });
           } else {
             data.data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]},
-              default_colour);
+              addPoint({x:item[0], y:item[1]}, default_colour);
             });
           }
         }, 'json');
