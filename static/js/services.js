@@ -13,6 +13,9 @@ var pickrAPIService = function() {
     	},
     	get_picks: function(parameters, cb) {
             return $.get('/update_pick?', parameters, cb, 'json');
-        }
+        },
+        get_votes: function(parameters, cb) {
+        	return $.get('/vote', parameters, cb);
+      	}
     };
 };

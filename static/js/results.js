@@ -61,10 +61,7 @@ $(function() {
     };
    
     var loadPicks = function(user){
-      $.get('/vote',
-            {user:user, image_key:image_key}, 
-            updateVoteCount
-            );
+      server.get_votes( {user:user, image_key:image_key}, updateVoteCount);
 
       // This loads the picks for 'currentUser' who is not the 
       // currently-logged-in user, but the one in the pick

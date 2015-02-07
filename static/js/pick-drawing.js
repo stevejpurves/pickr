@@ -148,13 +148,13 @@ pickDrawingSetup = function(){
     }
 
     var drawAsOwner = function(points) {
-        data.owner_data.forEach(function(item){
+        points.forEach(function(item){
                 addPoint({x:item[0], y:item[1]}, owner_colour);
             });
     }
 
     var drawAsOther = function(points) {
-        data.data.forEach(function(item){
+        points.forEach(function(item){
                 addPoint({x:item[0], y:item[1]}, default_colour);
             });
     }
