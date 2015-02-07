@@ -141,48 +141,38 @@ pickDrawingSetup = function(){
         }
     };
 
-    // results controller
-    var loadPoints = function(parameters){
-        // Functioon gets called from results.js
-        // like so:
-        //   pickDrawing.load({
-        //       user:user,
-        //       image_key:image_key
-        //       });
+    var drawAsCurrentUser = function(points) {
+        points.forEach(function(item) {
+                addPoint({x:item[0], y:item[1]}, current_colour);
+            });
+    }
 
-        // This is the reason we can't have
-        // multiplt users' picks at once, 
-        // because clearPoints() has not
-        // concept of who points 'belong' to.
+    var drawAsOwner = function(points) {
+        data.owner_data.forEach(function(item){
+                addPoint({x:item[0], y:item[1]}, owner_colour);
+            });
+    }
+
+    var drawAsOther = function(points) {
+        data.data.forEach(function(item){
+                addPoint({x:item[0], y:item[1]}, default_colour);
+            });
+    }
+
+    var draw = function(data) {
         clearPoints();
+        if (data.current) drawAsCurrentUser(data.user_data);
+        else if (data.owner) drawAsOwner(data.owner_data);
+        else drawAsOther(data.data);        
+    } 
 
-        // Would it be better to send back the user
-        // owner in the JSON payload?
-
-        server.get_picks( parameters, function(data) {
-            if (data.current) {
-                data.user_data.forEach(function(item) {
-                    addPoint({x:item[0], y:item[1]}, current_colour);
-                    });
-            } else if (data.owner) {
-                data.owner_data.forEach(function(item){
-                    addPoint({x:item[0], y:item[1]}, owner_colour);
-                });
-            } else {
-                data.data.forEach(function(item){
-                    addPoint({x:item[0], y:item[1]}, default_colour);
-                });
-            }
-        });
-    };
-    
     return {
         setup: setup,
         addOverlay: addOverlay,
         clickPoint: clickPoint,
         removePoint: removePoint,
         clear: clearPoints,
-        load: loadPoints
+        draw: draw
     }
 };
 

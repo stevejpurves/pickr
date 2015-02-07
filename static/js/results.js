@@ -7,6 +7,7 @@ $(function() {
     // var ownerUser = "{{ owner_user }}";
     // var userID = "{{ user_id }}";
 
+    var server = pickrAPIService();
     var current = 0;  // An index for stepping over the list
     var currentUser = pickUsers[current];
 
@@ -68,9 +69,7 @@ $(function() {
       // This loads the picks for 'currentUser' who is not the 
       // currently-logged-in user, but the one in the pick
       // review cycle - the interpreter of the current pick.
-      pickDrawing.load({user:user,
-                        image_key: image_key
-                        });
+      server.get_picks( { user:user, image_key: image_key }, pickDrawing.draw);
     };
 
     $('#me-button').on('click', function(){
