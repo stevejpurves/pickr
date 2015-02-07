@@ -1,4 +1,7 @@
-var pickrAPIService = function() {
+var pickrAPIService = function(im_key) {
+
+	var image_key = im_key;
+
     return {
     	delete: function(cb) {
 	        return $.ajax("/update_pick?clear=1&image_key=" + image_key, 
@@ -11,11 +14,14 @@ var pickrAPIService = function() {
     	update_pick: function(data, cb) {
         	return $.post('/update_pick', data, cb);
     	},
-    	get_picks: function(parameters, cb) {
-            return $.get('/update_pick?', parameters, cb, 'json');
+    	get_picks: function(user, cb) {
+            return $.get('/update_pick?', { user:user, image_key: image_key }, cb, 'json');
         },
-        get_votes: function(parameters, cb) {
-        	return $.get('/vote', parameters, cb);
-      	}
+        get_votes: function(user, cb) {
+        	return $.get('/vote', {user:user, image_key:image_key}, cb);
+      	},
+      	vote: function(user, vote, cb) {
+         	return $.post('/vote',{ user: user, image_key: image_key, vote: vote }, cb);
+        }
     };
 };

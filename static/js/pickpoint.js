@@ -1,5 +1,5 @@
 $(function() {
-    var server = pickrAPIService();
+    var server = pickrAPIService(image_key);
 
     pickDrawing.setup('image-div');
 

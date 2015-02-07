@@ -25,7 +25,7 @@ pickDrawingSetup = function(){
     var penSize = avgImageSize / 200;
     var resizeScale = 1;
     
-    var server = pickrAPIService();
+    var server = pickrAPIService(image_key);
 
     var updatePaperSize = function(){
         var w = pickrElement.width();
