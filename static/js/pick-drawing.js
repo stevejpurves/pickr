@@ -25,6 +25,8 @@ pickDrawingSetup = function(){
     var penSize = avgImageSize / 200;
     var resizeScale = 1;
     
+    var server = pickrAPIService();
+
     var updatePaperSize = function(){
         var w = pickrElement.width();
         var h = w / aspectRatio;
@@ -110,16 +112,13 @@ pickDrawingSetup = function(){
         }
     };
     
-    var server_update_pick = function(data, cb) {
-        $.post('/update_pick', data, cb);
-    }
-
+    // picking controller
     var clickPoint = function(point){
         var data = { image_key:image_key,
             x: Math.round(point.x / resizeScale),
             y: Math.round(point.y / resizeScale)
         };
-        server_update_pick( data, function() { addPoint(data, default_colour ) });
+        server.update_pick( data, function() { addPoint(data, default_colour ) });
     };
 
     var removePoint = function(point){
@@ -141,7 +140,8 @@ pickDrawingSetup = function(){
             connectTheDots(default_colour);
         }
     };
-    
+
+    // results controller
     var loadPoints = function(parameters){
         // Functioon gets called from results.js
         // like so:
@@ -158,21 +158,22 @@ pickDrawingSetup = function(){
 
         // Would it be better to send back the user
         // owner in the JSON payload?
-        $.get('/update_pick?', parameters, function(data){
-          if (data.current) {
-            data.user_data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]}, current_colour);
-            });
-          } else if (data.owner) {
-            data.owner_data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]}, owner_colour);
-            });
-          } else {
-            data.data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]}, default_colour);
-            });
-          }
-        }, 'json');
+
+        server.get_picks( parameters, function(data) {
+            if (data.current) {
+                data.user_data.forEach(function(item) {
+                    addPoint({x:item[0], y:item[1]}, current_colour);
+                    });
+            } else if (data.owner) {
+                data.owner_data.forEach(function(item){
+                    addPoint({x:item[0], y:item[1]}, owner_colour);
+                });
+            } else {
+                data.data.forEach(function(item){
+                    addPoint({x:item[0], y:item[1]}, default_colour);
+                });
+            }
+        });
     };
     
     return {
