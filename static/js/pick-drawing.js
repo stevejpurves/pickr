@@ -105,6 +105,8 @@ pickDrawingSetup = function(){
     };
     
     var addPoint = function(point, colour){
+        if (!colour)
+            colour = default_colour;
         addCircle(point.x, point.y, colour);
         points.push(point);
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
@@ -112,14 +114,20 @@ pickDrawingSetup = function(){
         }
     };
     
+    var imagePositionToPoint = function(x, y) {
+        var point = { x: Math.round(x / resizeScale),
+                y: Math.round(y / resizeScale) };
+        return point;
+    }
+
     // picking controller
-    var clickPoint = function(point){
-        var data = { image_key:image_key,
-            x: Math.round(point.x / resizeScale),
-            y: Math.round(point.y / resizeScale)
-        };
-        server.update_pick( data, function() { addPoint(data, default_colour ) });
-    };
+    // var clickPoint = function(point){
+    //     var data = { image_key:image_key,
+    //         x: Math.round(point.x / resizeScale),
+    //         y: Math.round(point.y / resizeScale)
+    //     };
+    //     server.update_pick( data, function() { addPoint(data, default_colour ) });
+    // };
 
     var removePoint = function(point){
         removeCircle(point.x, point.y);
@@ -169,8 +177,9 @@ pickDrawingSetup = function(){
     return {
         setup: setup,
         addOverlay: addOverlay,
-        clickPoint: clickPoint,
+        addPoint: addPoint,
         removePoint: removePoint,
+        imagePositionToPoint: imagePositionToPoint,
         clear: clearPoints,
         draw: draw
     }

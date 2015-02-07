@@ -6,8 +6,10 @@ $(function() {
     $('#image-div').click(function(e) {
         var imageX = e.pageX - this.offsetLeft;
         var imageY = e.pageY - this.offsetTop - 2;
-        var point = { x: imageX, y: imageY };
-        pickDrawing.clickPoint(point);
+        var point = pickDrawing.imagePositionToPoint(imageX, imageY);
+        server.update_pick( point, function() { 
+                pickDrawing.addPoint(point)
+            });
     });
     
     $('#clear-button').click(function() { 

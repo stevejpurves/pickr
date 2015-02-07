@@ -11,8 +11,8 @@ var pickrAPIService = function(im_key) {
         	return $.ajax("/update_pick?undo=1&image_key=" + image_key,
         		{ type: "DELETE", dataType: "json", success: cb });
     	},
-    	update_pick: function(data, cb) {
-        	return $.post('/update_pick', data, cb);
+    	update_pick: function(point, cb) {
+        	return $.post('/update_pick', { x: point.x, y:point.y, image_key:image_key }, cb);
     	},
     	get_picks: function(user, cb) {
             return $.get('/update_pick?', { user:user, image_key: image_key }, cb, 'json');
