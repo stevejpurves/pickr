@@ -33,12 +33,16 @@ pickDrawingSetup = function(){
         paper.setSize(w, h);
     };
 
-    var onClick = function(cb) {
-        $(pickrElement).click(function(e) {
-            var imageX = e.pageX - this.offsetLeft;
-            var imageY = e.pageY - this.offsetTop - 2;
-            var point = { x: Math.round(imageX / resizeScale), y: Math.round(imageY / resizeScale) };
-            return cb(point);
+    var onPick = function(cb) {
+        $(pickrElement).mousedown(function(e) {
+            var x0 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
+            var y0 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
+            $(pickrElement).mouseup(function(e) {
+                var x1 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
+                var y1 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
+                $(pickrElement).unbind('mouseup');
+                return cb(x1, y1, x0, y0);
+            })
         });
     };
     
@@ -51,7 +55,8 @@ pickDrawingSetup = function(){
         updatePaperSize();
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
         baseImage = paper.image(image_url, 0, 0, baseImageWidth, baseImageHeight);
-        $(window).resize(updatePaperSize);      
+        $(window).resize(updatePaperSize);
+        return 1 + penSize;  
     };
     
     var renderImage = function(url)
@@ -130,7 +135,7 @@ pickDrawingSetup = function(){
 
     return {
         setup: setup,
-        onClick: onClick,
+        onPick: onPick,
         refresh: refresh,
         clear: clearAll,
         renderImage: renderImage,
