@@ -33,6 +33,16 @@ pickDrawingSetup = function(){
         resizeScale = w / baseImageWidth;
         paper.setSize(w, h);
     };
+
+    var onClick = function(cb) {
+        $(pickrElement).click(function(e) {
+            var imageX = e.pageX - this.offsetLeft;
+            var imageY = e.pageY - this.offsetTop - 2;
+            var point = { x: Math.round(imageX / resizeScale), y: Math.round(imageY / resizeScale) };
+            addPoint(point, default_colour);
+            return cb(point);
+        });
+    };
     
     var setup = function(elementId)
     {
@@ -83,70 +93,40 @@ pickDrawingSetup = function(){
     };
     
     var connectTheDots = function(colour){
-        if (!!linestrip)
-            linestrip.remove();
-        if (points.length === 0)
-            return;
-        // points.sort(function(a,b){ 
-        //     return parseInt(a.x) - parseInt(b.x); 
-        //     });
-        var path = '';
-        path += 'M' + points[0].x + ',' + points[0].y; // moveTo
-        points.forEach(function(p){
-            path += 'L' + p.x + ',' + p.y; // lineTo
-        });
-        if (pickstyle === "polygons"){
-          path += "Z"; // closed line
+        if (points.length === 0) return;
+        if (pickstyle === 'lines' || pickstyle === 'polygons'){
+            if (linestrip) linestrip.remove();
+            var path = '';
+            path += 'M' + points[0].x + ',' + points[0].y; // moveTo
+            points.forEach(function(p){
+                path += 'L' + p.x + ',' + p.y; // lineTo
+            });
+            if (pickstyle === "polygons") path += "Z";
+            linestrip = paper.path(path);
+            linestrip.attr({'stroke': colour});
+            linestrip.attr({'stroke-width':penSize});
+            linestrip.attr({'opacity':'0.5'});
         }
-        linestrip = paper.path(path);
-        linestrip.attr({'stroke': colour});
-        linestrip.attr({'stroke-width':penSize});
-        linestrip.attr({'opacity':'0.5'});
     };
     
     var addPoint = function(point, colour){
-        if (!colour)
-            colour = default_colour;
         addCircle(point.x, point.y, colour);
         points.push(point);
-        if (pickstyle === 'lines' || pickstyle === 'polygons'){
-            connectTheDots(colour);
-        }
+        connectTheDots(colour);
     };
-    
-    var imagePositionToPoint = function(x, y) {
-        var point = { x: Math.round(x / resizeScale),
-                y: Math.round(y / resizeScale) };
-        return point;
-    }
 
-    // picking controller
-    // var clickPoint = function(point){
-    //     var data = { image_key:image_key,
-    //         x: Math.round(point.x / resizeScale),
-    //         y: Math.round(point.y / resizeScale)
-    //     };
-    //     server.update_pick( data, function() { addPoint(data, default_colour ) });
-    // };
-
-    var removePoint = function(point){
+    var removePoint = function(point) {
         removeCircle(point.x, point.y);
         points = _.reject(points, function(p){
             return p.x === point.x && p.y === point.y;
         });
-        if (pickstyle === 'lines' || pickstyle === 'polygons'){
-            connectTheDots(default_colour);
-        }
+        connectTheDots(default_colour);
     };
     
-    var clearPoints = function(){
+    var clearAll = function(){
         clearCircles();
+        if (!!linestrip) linestrip.remove();
         points = [];
-
-        // Not sure why we connect after clearing...?
-        if (pickstyle === 'lines' || pickstyle === 'polygons'){
-            connectTheDots(default_colour);
-        }
     };
 
     var drawAsCurrentUser = function(points) {
@@ -168,7 +148,7 @@ pickDrawingSetup = function(){
     }
 
     var draw = function(data) {
-        clearPoints();
+        clearAll();
         if (data.current) drawAsCurrentUser(data.user_data);
         else if (data.owner) drawAsOwner(data.owner_data);
         else drawAsOther(data.data);        
@@ -176,11 +156,10 @@ pickDrawingSetup = function(){
 
     return {
         setup: setup,
+        onClick: onClick,
         addOverlay: addOverlay,
-        addPoint: addPoint,
         removePoint: removePoint,
-        imagePositionToPoint: imagePositionToPoint,
-        clear: clearPoints,
+        clear: clearAll,
         draw: draw
     }
 };

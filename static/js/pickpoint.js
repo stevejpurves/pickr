@@ -2,16 +2,10 @@ $(function() {
     var server = pickrAPIService(image_key);
 
     pickDrawing.setup('image-div');
-
-    $('#image-div').click(function(e) {
-        var imageX = e.pageX - this.offsetLeft;
-        var imageY = e.pageY - this.offsetTop - 2;
-        var point = pickDrawing.imagePositionToPoint(imageX, imageY);
-        server.update_pick( point, function() { 
-                pickDrawing.addPoint(point)
-            });
+    pickDrawing.onClick(function(p) {
+        server.update_pick(p);
     });
-    
+
     $('#clear-button').click(function() { 
         server.delete(function() { pickDrawing.clear(); })
     });
