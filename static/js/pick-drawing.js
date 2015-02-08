@@ -16,7 +16,6 @@ pickDrawingSetup = function(){
     var current_colour = "#00DD00"; // Current user
     var default_colour = "#FF0000"; // Everyone else
 
-    var points = [];
     var circles = [];
     var linestrip;    
     
@@ -39,7 +38,6 @@ pickDrawingSetup = function(){
             var imageX = e.pageX - this.offsetLeft;
             var imageY = e.pageY - this.offsetTop - 2;
             var point = { x: Math.round(imageX / resizeScale), y: Math.round(imageY / resizeScale) };
-            addPoint(point, default_colour);
             return cb(point);
         });
     };
@@ -52,12 +50,11 @@ pickDrawingSetup = function(){
   
         updatePaperSize();
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
-        baseImage = paper.image(image_url, 0, 0, baseImageWidth, 
-        baseImageHeight);
-        $(window).resize(updatePaperSize);        
+        baseImage = paper.image(image_url, 0, 0, baseImageWidth, baseImageHeight);
+        $(window).resize(updatePaperSize);      
     };
     
-    var addOverlay = function(url)
+    var renderImage = function(url)
     {
         var overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
         overlay.undrag();
@@ -76,23 +73,13 @@ pickDrawingSetup = function(){
         circles.push(circle);
     };
     
-    var removeCircle = function(x, y)
-    {
-        var circle = _.find(circles, function(c){
-            return c.attrs.cx === x && c.attrs.cy === y
-            });
-        circle.remove();
-        var index = circles.indexOf(circle);
-        circles.splice(index, 1);
-    };
-    
     var clearCircles = function()
     {
         circles.forEach(function(c){c.remove();});
         circles = [];   
     };
     
-    var connectTheDots = function(colour){
+    var connectTheDots = function(points, colour){
         if (points.length === 0) return;
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
             if (linestrip) linestrip.remove();
@@ -109,58 +96,45 @@ pickDrawingSetup = function(){
         }
     };
     
-    var addPoint = function(point, colour){
-        addCircle(point.x, point.y, colour);
-        points.push(point);
-        connectTheDots(colour);
-    };
-
-    var removePoint = function(point) {
-        removeCircle(point.x, point.y);
-        points = _.reject(points, function(p){
-            return p.x === point.x && p.y === point.y;
-        });
-        connectTheDots(default_colour);
-    };
-    
     var clearAll = function(){
         clearCircles();
         if (!!linestrip) linestrip.remove();
-        points = [];
     };
 
-    var drawAsCurrentUser = function(points) {
-        points.forEach(function(item) {
-                addPoint({x:item[0], y:item[1]}, current_colour);
-            });
+    var draw = function(points, colour) {
+        points.forEach(function(p) { addCircle(p.x, p.y, colour); });
+        connectTheDots(points, colour);
     }
 
-    var drawAsOwner = function(points) {
-        points.forEach(function(item){
-                addPoint({x:item[0], y:item[1]}, owner_colour);
-            });
-    }
-
-    var drawAsOther = function(points) {
-        points.forEach(function(item){
-                addPoint({x:item[0], y:item[1]}, default_colour);
-            });
-    }
-
-    var draw = function(data) {
+    var refresh = function(points) {
         clearAll();
-        if (data.current) drawAsCurrentUser(data.user_data);
-        else if (data.owner) drawAsOwner(data.owner_data);
-        else drawAsOther(data.data);        
+        draw(points, default_colour);
+    }
+
+    var convertToPoints = function(data) {
+        var points = [];
+        for (var i = 0; i < data.length; i++)
+            points.push({x: data[i][0], y: data[i][1]});
+        return points;
+    }
+
+    var renderResults = function(data) {
+        clearAll();
+        if (data.current) 
+            draw(convertToPoints(data.user_data), current_colour);
+        else if (data.owner)
+            draw(convertToPoints(data.owner_data), owner_colour);
+        else
+            draw(convertToPoints(data.data), default_colour);        
     } 
 
     return {
         setup: setup,
         onClick: onClick,
-        addOverlay: addOverlay,
-        removePoint: removePoint,
+        refresh: refresh,
         clear: clearAll,
-        draw: draw
+        renderImage: renderImage,
+        renderResults: renderResults
     }
 };
 

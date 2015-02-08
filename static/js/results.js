@@ -12,8 +12,7 @@ $(function() {
     var currentUser = pickUsers[current];
 
     pickDrawing.setup('image-div');
-    var overlay = pickDrawing.addOverlay('data:image/png;base64,' + 
-           overlay64);
+    var overlay = pickDrawing.renderImage('data:image/png;base64,' + overlay64);
 
     var updateInterpNo = function(n){
       $('#interp-no').text(parseInt(n+1));
@@ -66,7 +65,7 @@ $(function() {
       // This loads the picks for 'currentUser' who is not the 
       // currently-logged-in user, but the one in the pick
       // review cycle - the interpreter of the current pick.
-      server.get_picks( user, pickDrawing.draw);
+      server.get_picks( user, pickDrawing.renderResults);
     };
 
     $('#me-button').on('click', function(){

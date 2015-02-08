@@ -1,16 +1,23 @@
 $(function() {
     var server = pickrAPIService(image_key);
 
-    pickDrawing.setup('image-div');
-    pickDrawing.onClick(function(p) {
-        server.update_pick(p);
-    });
+    var pointList = [];
 
-    $('#clear-button').click(function() { 
-        server.delete(function() { pickDrawing.clear(); })
+    pickDrawing.setup('image-div');
+    pickDrawing.onClick(function(point) {
+        pointList.push(point);
+        pickDrawing.refresh(pointList);
+        server.update_pick(point)
+    })
+
+    $('#clear-button').click(function() {
+        pickDrawing.clear();
+        server.delete();
     });
 
     $('#undo-button').click(function() {
-        server.remove_last_point(function(p) { pickDrawing.removePoint({x: p[0], y: p[1]}); })
+        pointList.pop();
+        pickDrawing.refresh(pointList);
+        server.remove_last_point();
     });
 });
