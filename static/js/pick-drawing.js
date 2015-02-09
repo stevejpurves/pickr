@@ -34,15 +34,26 @@ pickDrawingSetup = function(){
     };
 
     var onPick = function(cb) {
+        var x0 = 0;
+        var y0 = 0;
         $(pickrElement).mousedown(function(e) {
-            var x0 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
-            var y0 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
+            x0 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
+            y0 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
             e.preventDefault();
+            $(pickrElement).mousemove(function(e){
+                var xt = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
+                var yt = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
+                e.preventDefault();
+                cb(xt, yt, x0, y0);
+                x0 = xt
+                y0 = yt
+            })
             $(pickrElement).mouseup(function(e) {
                 var x1 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
                 var y1 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
                 $(pickrElement).unbind('mouseup');
-                return cb(x1, y1, x0, y0);
+                $(pickrElement).unbind('mousemove');
+                cb(x1, y1, x0, y0);
             })
         });
     };
