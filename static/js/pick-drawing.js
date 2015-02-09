@@ -37,6 +37,7 @@ pickDrawingSetup = function(){
         $(pickrElement).mousedown(function(e) {
             var x0 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
             var y0 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
+            e.preventDefault();
             $(pickrElement).mouseup(function(e) {
                 var x1 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
                 var y1 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
