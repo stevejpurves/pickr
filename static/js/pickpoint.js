@@ -1,52 +1,57 @@
-
-
-
 var Point = function(X, Y) {
     this.x = X;
     this.y = Y;
+    this.equals = function(r, tol) {
+        if (!tol) tol = 0
+        return (Math.abs(this.x - r.x) <= tol) 
+            && (Math.abs(this.y - r.y) <= tol);
+    }
     return this;
-}
-
-Point.equal = function(a, b, tol) {
-    if (!tol) tol = 0
-    return (Math.abs(a.x - b.x) <= tol) 
-        && (Math.abs(a.y - b.y) <= tol);
 }
 
 var PointList = function()
 {
     var tol = 0;
-    this.points = []
-    this.push = function(x) { this.points.push(x) }
-    this.pop = function() { this.points.pop() }
-    this.clear = function() { this.points = [] }
+    var points = [];
+    var undo_stack = [];
+    this.get_points = function(x) { return points }
+    this.add = function(x) {
+                points.push(x)
+                undo_stack.push(points.length-1)
+            }
+    this.remove_last = function() {
+                points.splice(undo_stack[undo_stack.length-1], 1)
+                undo_stack.pop()
+            }
+    this.clear = function() { points = [] }
     this.setTolerance = function(t) { tol = t }
     this.contains = function(p) {
-        for (var i = 0; i < this.points.length; i++)
-            if (Point.equal(this.points[i], p, tol))
+        for (var i = 0; i < points.length; i++)
+            if (points[i].equals(p, tol))
                 return true;
         return false;
     }
     this.isIntersection = function(p) {
-        for (var i = 0; i < this.points.length-1; i++) {
-            if (this._colinear(this.points[i], this.points[i+1], p)) {
+        for (var i = 0; i < points.length-1; i++) {
+            if (this._colinear(points[i], points[i+1], p)) {
                 return true;
             }
         }
         return false;
     }
     this.insertAtIntersection = function(p) {
-        for (var i = 0; i < this.points.length-1; i++) {
-            if (this._colinear(this.points[i], this.points[i+1], p)) {
-                this.points.splice(i+1, 0, p)
+        for (var i = 0; i < points.length-1; i++) {
+            if (this._colinear(points[i], points[i+1], p)) {
+                points.splice(i+1, 0, p)
+                undo_stack.push(i+1)
                 return true
             }
         }
     }
     this.replace = function(p_old, p_new) {
-        for (var i = 0; i < this.points.length; i++)
-            if (Point.equal(this.points[i], p_old, tol)) {
-                this.points[i] = p_new
+        for (var i = 0; i < points.length; i++)
+            if (points[i].equals(p_old, tol)) {
+                points[i] = p_new
                 return true
             }
         return false
@@ -76,26 +81,22 @@ $(function() {
         else if (the_list.isIntersection(end))
             the_list.insertAtIntersection(end)
         else
-            the_list.push(end)    
-        pickDrawing.refresh(the_list.points);
-        // server.update_pick(end)
+            the_list.add(end)    
+        pickDrawing.refresh(the_list.get_points());
     })
 
     $('#clear-button').click(function() {
         pickDrawing.clear()
-        // server.delete()
         the_list.clear()
     });
 
     $('#undo-button').click(function() {
-        the_list.pop()
-        pickDrawing.refresh(the_list.points)
-        // server.remove_last_point()
+        the_list.remove_last()
+        pickDrawing.refresh(the_list.get_points())
     });
 
     $('#submit-button').click(function() {
-        var p = the_list.points
-        server.send_picks(the_list.points, function() {
+        server.send_picks(the_list.get_points(), function() {
             window.location.replace("/results?image_key=" + image_key);
         });
     });
