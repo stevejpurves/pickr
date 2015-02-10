@@ -1,13 +1,16 @@
 
+
+
 var Point = function(X, Y) {
     this.x = X;
     this.y = Y;
-    this.equals = function(r, tol) {
-        if (!tol) tol = 0
-        return (Math.abs(this.x - r.x) <= tol) 
-            && (Math.abs(this.y - r.y) <= tol);
-    }
     return this;
+}
+
+Point.equal = function(a, b, tol) {
+    if (!tol) tol = 0
+    return (Math.abs(a.x - b.x) <= tol) 
+        && (Math.abs(a.y - b.y) <= tol);
 }
 
 var PointList = function()
@@ -20,7 +23,7 @@ var PointList = function()
     this.setTolerance = function(t) { tol = t }
     this.contains = function(p) {
         for (var i = 0; i < this.points.length; i++)
-            if (this.points[i].equals(p, tol))
+            if (Point.equal(this.points[i], p, tol))
                 return true;
         return false;
     }
@@ -42,7 +45,7 @@ var PointList = function()
     }
     this.replace = function(p_old, p_new) {
         for (var i = 0; i < this.points.length; i++)
-            if (this.points[i].equals(p_old, tol)) {
+            if (Point.equal(this.points[i], p_old, tol)) {
                 this.points[i] = p_new
                 return true
             }
@@ -88,5 +91,12 @@ $(function() {
         the_list.pop()
         pickDrawing.refresh(the_list.points)
         // server.remove_last_point()
+    });
+
+    $('#submit-button').click(function() {
+        var p = the_list.points
+        server.send_picks(the_list.points, function() {
+            window.location.replace("/results?image_key=" + image_key);
+        });
     });
 });
