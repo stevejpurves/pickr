@@ -41,25 +41,26 @@ pickDrawingSetup = function(){
             y0 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
             e.preventDefault();
             $(pickrElement).mousemove(function(e){
+                $(pickrElement).css("cursor", "move");
                 var xt = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
                 var yt = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
                 e.preventDefault();
                 cb(xt, yt, x0, y0);
-                x0 = xt
-                y0 = yt
-            })
+                x0 = xt;
+                y0 = yt;
+            });
             $(pickrElement).mouseup(function(e) {
+                $(pickrElement).css("cursor", "");
                 var x1 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
                 var y1 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
                 $(pickrElement).unbind('mouseup');
                 $(pickrElement).unbind('mousemove');
                 cb(x1, y1, x0, y0);
-            })
+            });
         });
     };
     
-    var setup = function(elementId)
-    {
+    var setup = function(elementId) {
         pickrElement = $('#' + elementId);
         penSize = 1 + pickrElement.width() / 400;
         paper = Raphael(elementId);
@@ -71,33 +72,40 @@ pickDrawingSetup = function(){
         return 1 + penSize;  
     };
     
-    var renderImage = function(url)
-    {
+    var renderImage = function(url) {
         var overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
         overlay.undrag();
         return overlay.attr({opacity: 0.67});
     };
 
-    var addCircle = function(x, y, colour)
-    {
+    var addCircle = function(x, y, colour) {
         var radius = 1 + penSize;
         var circle = paper.circle(x, y, radius);
+
+        // Add its attributes
         circle.attr({
             fill: colour,
             stroke: '#fff',
             opacity: 0.5
         });
 
+        // Change the cursor on hover
+        circle.mouseover(function (e) {
+            this[0].style.cursor = "move";                
+        });
+        circle.mouseout(function (e) {
+            this[0].style.cursor = "";
+        });
+
         circles.push(circle);
     };
     
-    var clearCircles = function()
-    {
+    var clearCircles = function() {
         circles.forEach(function(c){c.remove();});
         circles = [];   
     };
     
-    var connectTheDots = function(points, colour){
+    var connectTheDots = function(points, colour) {
         if (points.length === 0) return;
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
             if (linestrip) linestrip.remove();
@@ -111,30 +119,38 @@ pickDrawingSetup = function(){
             linestrip.attr({'stroke': colour});
             linestrip.attr({'stroke-width':penSize});
             linestrip.attr({'opacity':'0.5'});
+
+            // Change the cursor on hover
+            linestrip.mouseover(function (e) {
+                this[0].style.cursor = "crosshair";                
+            });
+            linestrip.mouseout(function (e) {
+                this[0].style.cursor = "";
+            });
         }
     };
     
-    var clearAll = function(){
+    var clearAll = function() {
         clearCircles();
         if (!!linestrip) linestrip.remove();
     };
 
     var draw = function(points, colour) {
-        points.forEach(function(p) { addCircle(p.x, p.y, colour); });
         connectTheDots(points, colour);
-    }
+        points.forEach(function(p) { addCircle(p.x, p.y, colour); });
+    };
 
     var refresh = function(points) {
         clearAll();
         draw(points, default_colour);
-    }
+    };
 
     var convertToPoints = function(data) {
         var points = [];
         for (var i = 0; i < data.length; i++)
             points.push({x: data[i][0], y: data[i][1]});
         return points;
-    }
+    };
 
     var renderResults = function(data) {
         clearAll();
@@ -144,7 +160,7 @@ pickDrawingSetup = function(){
             draw(convertToPoints(data.owner_data), owner_colour);
         else
             draw(convertToPoints(data.data), default_colour);        
-    } 
+    };
 
     return {
         setup: setup,
@@ -153,7 +169,7 @@ pickDrawingSetup = function(){
         clear: clearAll,
         renderImage: renderImage,
         renderResults: renderResults
-    }
+    };
 };
 
 var pickDrawing = pickDrawingSetup();
