@@ -16,7 +16,6 @@ pickDrawingSetup = function(){
     var current_colour = "#00DD00"; // Current user
     var default_colour = "#FF0000"; // Everyone else
 
-    var points = [];
     var circles = [];
     var linestrip;    
     
@@ -25,11 +24,38 @@ pickDrawingSetup = function(){
     var penSize = avgImageSize / 200;
     var resizeScale = 1;
     
+    var server = pickrAPIService(image_key);
+
     var updatePaperSize = function(){
         var w = pickrElement.width();
         var h = w / aspectRatio;
         resizeScale = w / baseImageWidth;
         paper.setSize(w, h);
+    };
+
+    var onPick = function(cb) {
+        var x0 = 0;
+        var y0 = 0;
+        $(pickrElement).mousedown(function(e) {
+            x0 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
+            y0 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
+            e.preventDefault();
+            $(pickrElement).mousemove(function(e){
+                var xt = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
+                var yt = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
+                e.preventDefault();
+                cb(xt, yt, x0, y0);
+                x0 = xt
+                y0 = yt
+            })
+            $(pickrElement).mouseup(function(e) {
+                var x1 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
+                var y1 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
+                $(pickrElement).unbind('mouseup');
+                $(pickrElement).unbind('mousemove');
+                cb(x1, y1, x0, y0);
+            })
+        });
     };
     
     var setup = function(elementId)
@@ -40,16 +66,15 @@ pickDrawingSetup = function(){
   
         updatePaperSize();
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
-        baseImage = paper.image(image_url, 0, 0, baseImageWidth, 
-        baseImageHeight);
-        $(window).resize(updatePaperSize);        
+        baseImage = paper.image(image_url, 0, 0, baseImageWidth, baseImageHeight);
+        $(window).resize(updatePaperSize);
+        return 1 + penSize;  
     };
     
-    var addOverlay = function(url)
+    var renderImage = function(url)
     {
-        var overlay = paper.image(url, 0, 0, baseImageWidth, 
-          baseImageHeight);
-  overlay.undrag();
+        var overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
+        overlay.undrag();
         return overlay.attr({opacity: 0.67});
     };
 
@@ -62,17 +87,8 @@ pickDrawingSetup = function(){
             stroke: '#fff',
             opacity: 0.5
         });
+
         circles.push(circle);
-    };
-    
-    var removeCircle = function(x, y)
-    {
-        var circle = _.find(circles, function(c){
-            return c.attrs.cx === x && c.attrs.cy === y
-            });
-        circle.remove();
-        var index = circles.indexOf(circle);
-        circles.splice(index, 1);
     };
     
     var clearCircles = function()
@@ -81,109 +97,62 @@ pickDrawingSetup = function(){
         circles = [];   
     };
     
-    var connectTheDots = function(colour){
-        if (!!linestrip)
-            linestrip.remove();
-        if (points.length === 0)
-            return;
-        // points.sort(function(a,b){ 
-        //     return parseInt(a.x) - parseInt(b.x); 
-        //     });
-        var path = '';
-        path += 'M' + points[0].x + ',' + points[0].y; // moveTo
-        points.forEach(function(p){
-            path += 'L' + p.x + ',' + p.y; // lineTo
-        });
-        if (pickstyle === "polygons"){
-          path += "Z"; // closed line
-        }
-        linestrip = paper.path(path);
-        linestrip.attr({'stroke': colour});
-        linestrip.attr({'stroke-width':penSize});
-        linestrip.attr({'opacity':'0.5'});
-    };
-    
-    var addPoint = function(point, colour){
-        addCircle(point.x, point.y, colour);
-        points.push(point);
+    var connectTheDots = function(points, colour){
+        if (points.length === 0) return;
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
-            connectTheDots(colour);
+            if (linestrip) linestrip.remove();
+            var path = '';
+            path += 'M' + points[0].x + ',' + points[0].y; // moveTo
+            points.forEach(function(p){
+                path += 'L' + p.x + ',' + p.y; // lineTo
+            });
+            if (pickstyle === "polygons") path += "Z";
+            linestrip = paper.path(path);
+            linestrip.attr({'stroke': colour});
+            linestrip.attr({'stroke-width':penSize});
+            linestrip.attr({'opacity':'0.5'});
         }
     };
     
-    var clickPoint = function(point){
-        var data = { 
-      image_key:image_key,
-            x: Math.round(point.x / resizeScale),
-            y: Math.round(point.y / resizeScale)
-        };
-        $.post('/update_pick', data, 
-            function(){addPoint(data, default_colour )});
-    };
-
-    var removePoint = function(point){
-        removeCircle(point.x, point.y);
-        points = _.reject(points, function(p){
-            return p.x === point.x && p.y === point.y;
-        });
-        if (pickstyle === 'lines' || pickstyle === 'polygons'){
-            connectTheDots(default_colour);
-        }
-    };
-    
-    var clearPoints = function(){
+    var clearAll = function(){
         clearCircles();
-        points = [];
-
-        // Not sure why we connect after clearing...?
-        if (pickstyle === 'lines' || pickstyle === 'polygons'){
-            connectTheDots(default_colour);
-        }
+        if (!!linestrip) linestrip.remove();
     };
-    
-    var loadPoints = function(parameters){
-        // Functioon gets called from results.js
-        // like so:
-        //   pickDrawing.load({
-        //       user:user,
-        //       image_key:image_key
-        //       });
 
-        // This is the reason we can't have
-        // multiplt users' picks at once, 
-        // because clearPoints() has not
-        // concept of who points 'belong' to.
-        clearPoints();
+    var draw = function(points, colour) {
+        points.forEach(function(p) { addCircle(p.x, p.y, colour); });
+        connectTheDots(points, colour);
+    }
 
-        // Would it be better to send back the user
-        // owner in the JSON payload?
-        $.get('/update_pick?', parameters, function(data){
-          if (data.current) {
-            data.user_data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]},
-              current_colour);
-            });
-          } else if (data.owner) {
-            data.owner_data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]},
-              owner_colour);
-            });
-          } else {
-            data.data.forEach(function(item){
-              addPoint({x:item[0], y:item[1]},
-              default_colour);
-            });
-          }
-        }, 'json');
-    };
-    
+    var refresh = function(points) {
+        clearAll();
+        draw(points, default_colour);
+    }
+
+    var convertToPoints = function(data) {
+        var points = [];
+        for (var i = 0; i < data.length; i++)
+            points.push({x: data[i][0], y: data[i][1]});
+        return points;
+    }
+
+    var renderResults = function(data) {
+        clearAll();
+        if (data.current) 
+            draw(convertToPoints(data.user_data), current_colour);
+        else if (data.owner)
+            draw(convertToPoints(data.owner_data), owner_colour);
+        else
+            draw(convertToPoints(data.data), default_colour);        
+    } 
+
     return {
         setup: setup,
-        addOverlay: addOverlay,
-        clickPoint: clickPoint,
-        removePoint: removePoint,
-        clear: clearPoints,
-        load: loadPoints
+        onPick: onPick,
+        refresh: refresh,
+        clear: clearAll,
+        renderImage: renderImage,
+        renderResults: renderResults
     }
 };
 

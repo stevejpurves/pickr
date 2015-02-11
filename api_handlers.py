@@ -337,33 +337,58 @@ class PickHandler(webapp2.RequestHandler):
     @authenticate
     def post(self, user_id):
 
-        point = (int(self.request.get("x")),
-                 int(self.request.get("y")))
+        request_body = json.loads(self.request.body)
 
-        image_key = self.request.get("image_key")
+        image_key = request_body["image_key"];
 
-        img_obj = ImageObject.get_by_id(int(image_key),
-                                          parent=db_parent)
-        
+        points = request_body['points']
+        simple_points = []
+        for p in points:
+            simple_points.append((int(p['x']), int(p['y'])))
+
+        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
         picks = Picks.all().ancestor(img_obj)
         picks = picks.filter("user_id =", user_id).get()
 
-        if not picks:
-            # Then the user has not picked
-            # this image before so start
-            # some picks for this user.
-            picks = Picks(user_id=user_id,
-                          picks=json.dumps([point]).encode(),
-                          parent=img_obj)
-            picks.put()
-            img_obj.put()
+        if picks:
+            picks.delete()
 
-        else:
-            # Then carry on adding picks.
-            all_picks = json.loads(picks.picks)
-            all_picks.append(point)
-            picks.picks = json.dumps(all_picks).encode()
-            picks.put()
+        # store all picks as new object
+        picks = Picks(user_id=user_id,
+                      picks=json.dumps(simple_points).encode(),
+                      parent=img_obj)
+        picks.put()
+        img_obj.put()
+        
+        # print "JSONOBJ:", jsonobject
+        # points = jsonobject['points']
+        # print "POINTS:", points
+        # print "P[0]:", points[0]
+        # print "P[1]:", points[1]
+        # print "P[0].x:", points[0]['x']
+        # print "P[0].y:", points[0]['y']
+
+        # point = (int(self.request.get("x")),
+        #          int(self.request.get("y")))
+
+        # image_key = self.request.get("image_key")
+
+        # if not picks:
+        #     # Then the user has not picked
+        #     # this image before so start
+        #     # some picks for this user.
+        #     picks = Picks(user_id=user_id,
+        #                   picks=json.dumps([point]).encode(),
+        #                   parent=img_obj)
+        #     picks.put()
+        #     img_obj.put()
+
+        # else:
+        #     # Then carry on adding picks.
+        #     all_picks = json.loads(picks.picks)
+        #     all_picks.append(point)
+        #     picks.picks = json.dumps(all_picks).encode()
+        #     picks.put()
             
         self.response.write("Ok")
 
