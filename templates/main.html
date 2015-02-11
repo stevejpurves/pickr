@@ -3,6 +3,9 @@
 {% block title %}{% endblock %}
 
 {% block content %}
+<script>
+  var count = "{{ stats['image_count'] }}";
+</script>
 
 <head>
   <!-- Flip counter script -->
@@ -17,7 +20,7 @@
 
   <div class="col-md-12">
     <p style="margin-top:20px" class="lead pull-right hidden-xs">Sign in with your Google account...
-      <img class="pt-arrow" src="/static/img/arrow.png" width="60px" style="margin-top:-20px; margin-right:20px" />
+      <img class="pt-arrow" src="/static/img/arrow.png" width="60px" style="margin-top:-20px; margin-right:50px" />
     </p>
     <p style="margin-top:20px" class="lead pull-right visible-xs">Sign in above with your Google account.</p>
   </div>
@@ -30,21 +33,19 @@
     <p style="margin-top:0px" class="lead">Or continue without signing in.... <a href="/library">Let's go!</a></p>
   </div>
 
-<!-- REMOVE FOR NOW
-     Might want to shrink the sprite and use in the navbar
-     
+<!-- Remove for now
   <div class="container">
     <div id="flip-counter" class="flip-counter"></div>
   </div>
---> 
+-->
 
 </div>
 
   <script type="text/javascript">
-
   $(document).ready(function(){
     // Initialize a new counter
-    var myCounter = new flipCounter('flip-counter', { value:{{ stats['image_count'] }}, auto:'False'});
+    var myCounter = new flipCounter('flip-counter', {
+        value: count, auto:'False'});
   });
   </script>
 
