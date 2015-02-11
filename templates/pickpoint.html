@@ -12,8 +12,9 @@
   var baseImageHeight = "{{ img_obj.height }}";
   var pickstyle = "{{ img_obj.pickstyle }}";
 </script>
-<script src="/static/js/raphael-min.js"></script>
-<script src="/static/js/underscore-min.js"></script>
+<script src="/static/js/lib/raphael-min.js"></script>
+<script src="/static/js/lib/underscore-min.js"></script>
+<script src="/static/js/services.js"></script>
 <script src="/static/js/pick-drawing.js"></script>
 <script src="/static/js/pickpoint.js"></script>
 </head>
@@ -49,8 +50,9 @@
 
   <!-- div for big green button at bottom -->
   <div class="col-md-offset-2 col-md-8" style="margin-bottom:24px; margin-top:24px;">
-    <button type="button" class="btn btn-success btn-lg btn-block" 
-	    onclick="document.location.href='/results?image_key={{img_obj.id}}'">
+<!--     <button type="button" class="btn btn-success btn-lg btn-block" 
+	    onclick="document.location.href='/results?image_key={{img_obj.id}}'"> -->
+      <button id="submit-button" type="button" class="btn btn-success btn-lg btn-block">
       I'm all done... Submit!
     </button>
   </div>

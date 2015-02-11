@@ -7,12 +7,12 @@ $(function() {
     // var ownerUser = "{{ owner_user }}";
     // var userID = "{{ user_id }}";
 
+    var server = pickrAPIService(image_key);
     var current = 0;  // An index for stepping over the list
     var currentUser = pickUsers[current];
 
     pickDrawing.setup('image-div');
-    var overlay = pickDrawing.addOverlay('data:image/png;base64,' + 
-           overlay64);
+    var overlay = pickDrawing.renderImage('data:image/png;base64,' + overlay64);
 
     var updateInterpNo = function(n){
       $('#interp-no').text(parseInt(n+1));
@@ -60,17 +60,12 @@ $(function() {
     };
    
     var loadPicks = function(user){
-      $.get('/vote',
-            {user:user, image_key:image_key}, 
-            updateVoteCount
-            );
+      server.get_votes( user, updateVoteCount);
 
       // This loads the picks for 'currentUser' who is not the 
       // currently-logged-in user, but the one in the pick
       // review cycle - the interpreter of the current pick.
-      pickDrawing.load({user:user,
-                        image_key: image_key
-                        });
+      server.get_picks( user, pickDrawing.renderResults);
     };
 
     $('#me-button').on('click', function(){
@@ -191,11 +186,7 @@ $(function() {
     });
     
     var castVote = function(v, u){
-       $.post('/vote',{
-           user: u,
-           image_key: image_key,
-           vote: v
-       }, updateVoteCount);
+      server.vote(u, v, updateVoteCount);
     };
     
     $('#up-vote-button').on('click', function(){
