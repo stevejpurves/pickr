@@ -87,6 +87,7 @@ pickDrawingSetup = function(){
             stroke: '#fff',
             opacity: 0.5
         });
+
         circles.push(circle);
     };
     

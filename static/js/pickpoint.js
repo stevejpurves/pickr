@@ -1,6 +1,6 @@
 var Point = function(X, Y) {
-    this.x = X;
-    this.y = Y;
+    this.x = X || 0;
+    this.y = Y || 0;
     this.equals = function(r, tol) {
         if (!tol) tol = 0
         return (Math.abs(this.x - r.x) <= tol) 
@@ -33,7 +33,8 @@ var PointList = function()
     }
     this.isIntersection = function(p) {
         for (var i = 0; i < points.length-1; i++) {
-            if (this._colinear(points[i], points[i+1], p)) {
+            if (this._colinear(points[i], points[i+1], p) &&
+                this._inbounds(points[i], points[i+1], p)) {
                 return true;
             }
         }
@@ -41,7 +42,8 @@ var PointList = function()
     }
     this.insertAtIntersection = function(p) {
         for (var i = 0; i < points.length-1; i++) {
-            if (this._colinear(points[i], points[i+1], p)) {
+            if (this._colinear(points[i], points[i+1], p) &&
+                this._inbounds(points[i], points[i+1], p)) {
                 points.splice(i+1, 0, p)
                 undo_stack.push(i+1)
                 return true
@@ -61,6 +63,31 @@ var PointList = function()
         var segment_length = Math.sqrt( Math.pow(a.x-b.x,2) + Math.pow(a.y-b.y,2) )
         var abs_xprod = Math.abs((c.y - a.y) * (b.x - a.x) - (c.x - a.x) * (b.y - a.y))
         return abs_xprod < (1.1 * segment_length)
+    }
+
+    this._inbounds = function(a, b, p) {
+        var min = new Point()
+        var max = new Point()
+
+        if (a.x < b .x) {
+            min.x = a.x;
+            max.x = b.x;
+        }
+        else {
+            min.x = b.x;
+            max.x = a.x;
+        }
+
+        if (a.y < b .y) {
+            min.y = a.y;
+            max.y = b.y;
+        }
+        else {
+            min.y = b.y;
+            max.y = a.y;
+        }
+
+        return ((p.x >= min.x) && (p.x <= max.x)) && ( (p.y >= min.y) && (p.y <= max.y))
     }
 
     return this;
