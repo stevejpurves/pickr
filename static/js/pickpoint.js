@@ -25,21 +25,6 @@ var PointList = function()
             };
     this.clear = function() { points = []; };
     this.setTolerance = function(t) { tol = t; };
-    this.contains = function(p) {
-        for (var i = 0; i < points.length; i++)
-            if (points[i].equals(p, tol))
-                return true;
-        return false;
-    };
-    this.isIntersection = function(p) {
-        for (var i = 0; i < points.length-1; i++) {
-            if (this._colinear(points[i], points[i+1], p) &&
-                this._inbounds(points[i], points[i+1], p)) {
-                return true;
-            }
-        }
-        return false;
-    };
     this.insertAtIntersection = function(p) {
         for (var i = 0; i < points.length-1; i++) {
             if (this._colinear(points[i], points[i+1], p) &&
@@ -100,17 +85,21 @@ $(function() {
     var the_list = new PointList();
     the_list.setTolerance(pick_radius);
 
-    pickDrawing.onPick(function(x1, y1, x0, y0) {
-        var start = new Point(x0,y0);
-        var end = new Point(x1,y1);
-        if (the_list.contains(start))
-            the_list.replace(start, end);
-        else if (the_list.isIntersection(end))
-            the_list.insertAtIntersection(end);
-        else
-            the_list.add(end);
+
+    pickDrawing.onPick(function(p) {
+        the_list.add(p);
         pickDrawing.refresh(the_list.get_points());
     });
+
+    pickDrawing.onMove(function(end, start) {
+        the_list.replace(start, end);
+        pickDrawing.refresh(the_list.get_points());
+    });
+
+    pickDrawing.onInsert(function(p) {
+        the_list.insertAtIntersection(p)
+        pickDrawing.refresh(the_list.get_points());
+    })
 
     $('#clear-button').click(function() {
         pickDrawing.clear();

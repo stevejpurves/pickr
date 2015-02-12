@@ -9,6 +9,7 @@ pickDrawingSetup = function(){
     var pickrElement;
     var paper;
     var baseImage;
+    var overlay;
     
     window.ondragstart = function() { return false; } ;
 
@@ -22,50 +23,45 @@ pickDrawingSetup = function(){
     var aspectRatio = baseImageWidth / baseImageHeight;
     var avgImageSize = (baseImageWidth + baseImageHeight) / 2;
     var penSize;      // We will set these later.
-    var resizeScale;  // 
-    
+    var resizeScale;
+
+    var onPickCallback = null;
+    var onMoveCallback = null;
+    var onInsertCallback = null;
+
     var server = pickrAPIService(image_key);
 
     var updatePaperSize = function(){
         var w = pickrElement.width();
         var h = w / aspectRatio;
         resizeScale = w / baseImageWidth;
-            console.log("RESIZE ", resizeScale);
-
         paper.setSize(w, h);
     };
 
+    var getPointFromEvent = function(e) {
+        return new Point(Math.round( (e.offsetX) / resizeScale ),
+            Math.round( (e.offsetY /*- 2*/) / resizeScale ) );
+    }
+
     var onPick = function(cb) {
-        var x0 = 0;
-        var y0 = 0;
-        $(pickrElement).mousedown(function(e) {
-            x0 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
-            y0 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
-            e.preventDefault();
-            $(pickrElement).mousemove(function(e){
-                $(pickrElement).css("cursor", "move");
-                var xt = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
-                var yt = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
-                e.preventDefault();
-                cb(xt, yt, x0, y0);
-                x0 = xt;
-                y0 = yt;
-            });
-            $(pickrElement).mouseup(function(e) {
-                $(pickrElement).css("cursor", "");
-                var x1 = Math.round( (e.pageX - this.offsetLeft) / resizeScale );
-                var y1 = Math.round( (e.pageY - this.offsetTop - 2) / resizeScale );
-                $(pickrElement).unbind('mouseup');
-                $(pickrElement).unbind('mousemove');
-                cb(x1, y1, x0, y0);
-            });
-        });
+        onPickCallback = cb;
+        baseImage.click( function(e) {
+            var p = getPointFromEvent(e);
+            onPickCallback(p);
+        } );
+    };
+
+    var onMove = function(cb) {
+        onMoveCallback = cb;
+    };
+
+    var onInsert = function(cb) {
+        onInsertCallback = cb;
     };
     
     var setup = function(elementId) {
         pickrElement = $('#' + elementId);
         penSize = 4;
-        console.log("SETTING PEN", penSize);
         paper = Raphael(elementId);
   
         updatePaperSize();
@@ -76,13 +72,12 @@ pickDrawingSetup = function(){
     };
     
     var renderImage = function(url) {
-        var overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
+        overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
         overlay.undrag();
         return overlay.attr({opacity: 0.67});
     };
 
     var addCircle = function(x, y, colour) {
-        console.log(penSize);
         var radius = (4*penSize/(3*resizeScale));
         var circle = paper.circle(x, y, radius);
 
@@ -93,13 +88,24 @@ pickDrawingSetup = function(){
             opacity: 0.5
         });
 
-        // Change the cursor on hover
-        circle.mouseover(function (e) {
-            this[0].style.cursor = "move";                
-        });
-        circle.mouseout(function (e) {
-            this[0].style.cursor = "";
-        });
+        var p0;
+        circle.drag(function(dx, dy, x, y, e) {
+            var p = getPointFromEvent(e);
+            this.attr({'cx':p.x, 'cy':p.y});
+        }, function(x, y, e) {
+            p0 = getPointFromEvent(e);
+            this.attr({fill: '#0f0', opacity: 0.9});
+        }, function(e) {
+            this.attr({fill: colour, opacity: 0.5});  
+            var p1 = getPointFromEvent(e);
+            if (onMoveCallback) onMoveCallback(p1, p0);
+        }, circle, circle, circle)
+
+        circle.hover(function() {
+            this.attr({'opacity':'0.9'})
+        }, function() {
+            this.attr({'opacity':'0.5'})
+        }, circle, circle)
 
         circles.push(circle);
     };
@@ -110,7 +116,6 @@ pickDrawingSetup = function(){
     };
     
     var connectTheDots = function(points, colour) {
-        console.log(penSize);
         if (points.length === 0) return;
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
             if (linestrip) linestrip.remove();
@@ -122,16 +127,20 @@ pickDrawingSetup = function(){
             if (pickstyle === "polygons") path += "Z";
             linestrip = paper.path(path);
             linestrip.attr({'stroke': colour});
-            linestrip.attr({'stroke-width': penSize});
+            linestrip.attr({'stroke-width': 1.2*penSize});
             linestrip.attr({'opacity': '0.5'});
 
-            // Change the cursor on hover
-            linestrip.mouseover(function (e) {
-                this[0].style.cursor = "crosshair";                
-            });
-            linestrip.mouseout(function (e) {
-                this[0].style.cursor = "";
-            });
+            linestrip.click(function(e) {
+                e.preventDefault();
+                var p = getPointFromEvent(e);
+                if (onInsertCallback) onInsertCallback(p);
+            })
+
+            linestrip.hover(function(){
+                this.attr({'opacity':'0.9'})
+            }, function(){
+                this.attr({'opacity':'0.5'})
+            }, linestrip, linestrip)
         }
     };
     
@@ -170,6 +179,8 @@ pickDrawingSetup = function(){
     return {
         setup: setup,
         onPick: onPick,
+        onMove: onMove,
+        onInsert: onInsert,
         refresh: refresh,
         clear: clearAll,
         renderImage: renderImage,
