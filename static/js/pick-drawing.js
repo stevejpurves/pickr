@@ -21,8 +21,8 @@ pickDrawingSetup = function(){
     
     var aspectRatio = baseImageWidth / baseImageHeight;
     var avgImageSize = (baseImageWidth + baseImageHeight) / 2;
-    var penSize = avgImageSize / 200;
-    var resizeScale = 1;
+    var penSize;      // We will set these later.
+    var resizeScale;  // 
     
     var server = pickrAPIService(image_key);
 
@@ -30,6 +30,8 @@ pickDrawingSetup = function(){
         var w = pickrElement.width();
         var h = w / aspectRatio;
         resizeScale = w / baseImageWidth;
+            console.log("RESIZE ", resizeScale);
+
         paper.setSize(w, h);
     };
 
@@ -62,14 +64,15 @@ pickDrawingSetup = function(){
     
     var setup = function(elementId) {
         pickrElement = $('#' + elementId);
-        penSize = 1 + pickrElement.width() / 400;
+        penSize = 4;
+        console.log("SETTING PEN", penSize);
         paper = Raphael(elementId);
   
         updatePaperSize();
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
         baseImage = paper.image(image_url, 0, 0, baseImageWidth, baseImageHeight);
         $(window).resize(updatePaperSize);
-        return 1 + penSize;  
+        return penSize;  
     };
     
     var renderImage = function(url) {
@@ -79,7 +82,8 @@ pickDrawingSetup = function(){
     };
 
     var addCircle = function(x, y, colour) {
-        var radius = 1 + penSize;
+        console.log(penSize);
+        var radius = (4*penSize/(3*resizeScale));
         var circle = paper.circle(x, y, radius);
 
         // Add its attributes
@@ -106,6 +110,7 @@ pickDrawingSetup = function(){
     };
     
     var connectTheDots = function(points, colour) {
+        console.log(penSize);
         if (points.length === 0) return;
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
             if (linestrip) linestrip.remove();
@@ -117,8 +122,8 @@ pickDrawingSetup = function(){
             if (pickstyle === "polygons") path += "Z";
             linestrip = paper.path(path);
             linestrip.attr({'stroke': colour});
-            linestrip.attr({'stroke-width':penSize});
-            linestrip.attr({'opacity':'0.5'});
+            linestrip.attr({'stroke-width': penSize});
+            linestrip.attr({'opacity': '0.5'});
 
             // Change the cursor on hover
             linestrip.mouseover(function (e) {

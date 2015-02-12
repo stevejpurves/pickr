@@ -62,7 +62,7 @@ var PointList = function()
     this._colinear = function(a, b, c) {
         var segment_length = Math.sqrt( Math.pow(a.x-b.x,2) + Math.pow(a.y-b.y,2) );
         var abs_xprod = Math.abs((c.y - a.y) * (b.x - a.x) - (c.x - a.x) * (b.y - a.y));
-        return abs_xprod < (3 * segment_length);
+        return abs_xprod < (4 * segment_length);
     };
 
     this._inbounds = function(a, b, p) {
