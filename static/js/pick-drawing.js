@@ -25,9 +25,7 @@ pickDrawingSetup = function(){
     var penSize;      // We will set these later.
     var resizeScale;
 
-    var onPickCallback = null;
-    var onMoveCallback = null;
-    var onInsertCallback = null;
+    var handler = { pick:null, move:null, insert: null }
 
     var server = pickrAPIService(image_key);
 
@@ -44,19 +42,19 @@ pickDrawingSetup = function(){
     }
 
     var onPick = function(cb) {
-        onPickCallback = cb;
+        handler.pick = cb;
         baseImage.click( function(e) {
             var p = getPointFromEvent(e);
-            onPickCallback(p);
+            handler.pick(p);
         } );
     };
 
     var onMove = function(cb) {
-        onMoveCallback = cb;
+        handler.move = cb;
     };
 
     var onInsert = function(cb) {
-        onInsertCallback = cb;
+        handler.insert = cb;
     };
     
     var setup = function(elementId) {
@@ -88,23 +86,23 @@ pickDrawingSetup = function(){
             opacity: 0.5
         });
 
-        if (onMoveCallback) {
+        if (handler.move) {
             var p0;
-            circle.drag(function(dx, dy, x, y, e) {
+            circle.drag(function move(dx, dy, x, y, e) {
                 var p = getPointFromEvent(e);
                 this.attr({'cx':p.x, 'cy':p.y});
-            }, function(x, y, e) {
+            }, function start(x, y, e) {
                 p0 = getPointFromEvent(e);
                 this.attr({fill: '#0f0', opacity: 0.9});
-            }, function(e) {
+            }, function end(e) {
                 this.attr({fill: colour, opacity: 0.5});  
                 var p1 = getPointFromEvent(e);
-                if (onMoveCallback) onMoveCallback(p1, p0);
+                handler.move(p1, p0);
             }, circle, circle, circle)
 
-            circle.hover(function() {
+            circle.hover(function hoverIn() {
                 this.attr({'opacity':'0.9'})
-            }, function() {
+            }, function hoverOut() {
                 this.attr({'opacity':'0.5'})
             }, circle, circle)            
         }
@@ -134,16 +132,15 @@ pickDrawingSetup = function(){
             linestrip.attr({'opacity': '0.5'});
 
 
-            if (onInsertCallback) {
+            if (handler.insert) {
                 linestrip.click(function(e) {
                     e.preventDefault();
-                    var p = getPointFromEvent(e);
-                    if (onInsertCallback) onInsertCallback(p);
+                    handler.insert(getPointFromEvent(e));
                 })
 
-                linestrip.hover(function(){
+                linestrip.hover(function hoverIn(){
                     this.attr({'opacity':'0.9'})
-                }, function(){
+                }, function hoverOut(){
                     this.attr({'opacity':'0.5'})
                 }, linestrip, linestrip)                
             }
