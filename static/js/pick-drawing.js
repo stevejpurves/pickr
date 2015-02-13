@@ -27,8 +27,8 @@ pickDrawingSetup = function(){
     var resizeScale;
 
     var handler = { pick:null, move:null, insert: null }
-
     var server = pickrAPIService(image_key);
+    var currentMousePosition = null;
 
     var updatePaperSize = function(){
         var w = pickrElement.width();
@@ -67,6 +67,11 @@ pickDrawingSetup = function(){
         paper.setViewBox(0, 0, baseImageWidth, baseImageHeight);
         baseImage = paper.image(image_url, 0, 0, baseImageWidth, baseImageHeight);
         $(window).resize(updatePaperSize);
+
+        baseImage.mousemove(function(e) {
+            currentMousePosition = getPointFromEvent(e);
+        })
+
         return penSize;  
     };
     
@@ -75,6 +80,9 @@ pickDrawingSetup = function(){
         overlay.undrag();
         return overlay.attr({opacity: 0.67});
     };
+
+    var hoverIn = function() { this.attr({'opacity':'0.9'}) }
+    var hoverOut = function() { this.attr({'opacity':'0.5'}) }
 
     var addCircle = function(x, y, colour) {
         var radius = (4*penSize/(3*resizeScale));
@@ -91,6 +99,7 @@ pickDrawingSetup = function(){
             var p0;
             circle.drag(function move(dx, dy, x, y, e) {
                 var p = getPointFromEvent(e);
+                currentMousePosition = p;
                 this.attr({'cx':p.x, 'cy':p.y});
             }, function start(x, y, e) {
                 p0 = getPointFromEvent(e);
@@ -101,13 +110,11 @@ pickDrawingSetup = function(){
                 handler.move(p1, p0);
             }, circle, circle, circle)
 
-            circle.hover(function hoverIn() {
-                this.attr({'opacity':'0.9'})
-            }, function hoverOut() {
-                this.attr({'opacity':'0.5'})
-            }, circle, circle)            
-        }
+            circle.hover(hoverIn, hoverOut, circle, circle)
 
+            if (circle.isPointInside(currentMousePosition.x, currentMousePosition.y))
+                hoverIn.apply(circle);
+        }
 
         circles.push(circle);
     };
@@ -127,11 +134,7 @@ pickDrawingSetup = function(){
                 handler.insert(getPointFromEvent(e));
             })
 
-            linestrip.hover(function hoverIn(){
-                this.attr({'opacity':'0.9'})
-            }, function hoverOut(){
-                this.attr({'opacity':'0.5'})
-            }, linestrip, linestrip)                
+            linestrip.hover(hoverIn, hoverOut, linestrip, linestrip)                
         }
 
         segments.push(linestrip);
