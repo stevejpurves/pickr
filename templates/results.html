@@ -120,6 +120,17 @@
 
     </div> <!-- end of col -->
 
+    {% if admin %}
+  <!-- div for big delete button -->
+  <div class="col-md-offset-2 col-md-8" style="margin-bottom:24px; margin-top:24px;">
+      <button id="submit-button" type="button" class="btn btn-danger btn-lg btn-block"
+      onclick="document.location.href='/update_pick?image_key={{img_obj.id}}">
+        Delete this interpretation
+      </button>
+  </div>
+
+    {% endif %}
+
     <div class="visible-xs visible-sm hidden-md" style="height:48px;">&nbsp;</div>
 
     <!-- Metadata -->
