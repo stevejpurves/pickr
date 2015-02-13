@@ -38,15 +38,18 @@ pickDrawingSetup = function(){
     };
 
     var getPointFromEvent = function(e) {
-        return new Point(Math.round( (e.offsetX) / resizeScale ),
-            Math.round( (e.offsetY - 2) / resizeScale ) );
+        var x = e.offsetX || e.layerX;
+        var y = e.offsetY || e.layerY;
+        return new Point(Math.round(x / resizeScale), Math.round((y-2) / resizeScale));
     }
 
     var onPick = function(cb) {
         handler.pick = cb;
         baseImage.click( function(e) {
             var p = getPointFromEvent(e);
+            console.log("onPICK", p)
             handler.pick(p);
+
         } );
     };
 
@@ -140,24 +143,29 @@ pickDrawingSetup = function(){
         circles.push(circle);
     };
 
-    var addSegment = function(p0, p1, colour, opacity) {
+    var writeSegmentPath = function(p0, p1) {
         var path = '';
         path += 'M' + p0.x + ',' + p0.y; // moveTo
-        path += 'L' + p1.x + ',' + p1.y;
-        var linestrip = paper.path(path);
-        linestrip.attr({'stroke': colour});
-        linestrip.attr({'stroke-width': 1.2*penSize});
-        linestrip.attr({'opacity': opacity});
+        path += 'L' + p1.x + ',' + p1.y; // lineTo
+        return path;
+    }
+
+    var addSegment = function(p0, p1, colour, opacity) {
+        var path = writeSegmentPath(p0, p1);
+        var segment = paper.path(path);
+        segment.attr({'stroke': colour});
+        segment.attr({'stroke-width': 1.2*penSize});
+        segment.attr({'opacity': opacity});
 
         if (handler.insert) {
-            linestrip.click(function(e) {
+            segment.click(function(e) {
                 e.preventDefault();
                 handler.insert(getPointFromEvent(e));
             })
-            linestrip.hover(hoverIn, hoverOut, linestrip, linestrip)                
+            segment.hover(hoverIn, hoverOut, segment, segment)                
         }
 
-        segments.push(linestrip);
+        segments.push(segment);
     }
     
     var connectTheDots = function(points, colour) {
