@@ -171,19 +171,20 @@ pickDrawingSetup = function(){
             }
         }
     };
-    
-    var clearAll = function() {
+
+    var clear = function() {
         circles.remove();
         segments.remove();
-    };
+    }
 
-    var draw = function(points, colour) {
-        connectTheDots(points, colour);
+    var draw = function(points, colour) {        
         points.forEach(function(p) { addCircle(p.x, p.y, colour); });
+        connectTheDots(points, colour);
+        circles.insertAfter(segments);
     };
 
     var refresh = function(points) {
-        clearAll();
+        clear();
         draw(points, default_colour);
     };
 
@@ -195,7 +196,7 @@ pickDrawingSetup = function(){
     };
 
     var renderResults = function(data) {
-        clearAll();
+        clear();
         if (data.current) 
             draw(convertToPoints(data.user_data), current_colour);
         else if (data.owner)
@@ -210,7 +211,7 @@ pickDrawingSetup = function(){
         onMove: onMove,
         onInsert: onInsert,
         refresh: refresh,
-        clear: clearAll,
+        clear: clear,
         renderImage: renderImage,
         renderResults: renderResults
     };
