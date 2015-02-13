@@ -18,6 +18,7 @@ pickDrawingSetup = function(){
     var default_colour = "#FF0000"; // Everyone else
 
     var circles = [];
+    var segments = [];
     var linestrip;    
     
     var aspectRatio = baseImageWidth / baseImageHeight;
@@ -110,46 +111,57 @@ pickDrawingSetup = function(){
 
         circles.push(circle);
     };
+
+    var addSegment = function(p0, p1, colour) {
+        var path = '';
+        path += 'M' + p0.x + ',' + p0.y; // moveTo
+        path += 'L' + p1.x + ',' + p1.y;
+        var linestrip = paper.path(path);
+        linestrip.attr({'stroke': colour});
+        linestrip.attr({'stroke-width': 1.2*penSize});
+        linestrip.attr({'opacity': '0.5'});
+
+        if (handler.insert) {
+            linestrip.click(function(e) {
+                e.preventDefault();
+                handler.insert(getPointFromEvent(e));
+            })
+
+            linestrip.hover(function hoverIn(){
+                this.attr({'opacity':'0.9'})
+            }, function hoverOut(){
+                this.attr({'opacity':'0.5'})
+            }, linestrip, linestrip)                
+        }
+
+        segments.push(linestrip);
+    }
     
     var clearCircles = function() {
         circles.forEach(function(c){c.remove();});
         circles = [];   
     };
+
+    var clearSegments = function() {
+        segments.forEach(function(s) {s.remove();});
+        segments = [];
+    };
     
     var connectTheDots = function(points, colour) {
         if (points.length === 0) return;
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
-            if (linestrip) linestrip.remove();
-            var path = '';
-            path += 'M' + points[0].x + ',' + points[0].y; // moveTo
-            points.forEach(function(p){
-                path += 'L' + p.x + ',' + p.y; // lineTo
-            });
-            if (pickstyle === "polygons") path += "Z";
-            linestrip = paper.path(path);
-            linestrip.attr({'stroke': colour});
-            linestrip.attr({'stroke-width': 1.2*penSize});
-            linestrip.attr({'opacity': '0.5'});
-
-
-            if (handler.insert) {
-                linestrip.click(function(e) {
-                    e.preventDefault();
-                    handler.insert(getPointFromEvent(e));
-                })
-
-                linestrip.hover(function hoverIn(){
-                    this.attr({'opacity':'0.9'})
-                }, function hoverOut(){
-                    this.attr({'opacity':'0.5'})
-                }, linestrip, linestrip)                
+            if (segments) clearSegments();
+            for (var i = 0; i < points.length-1; i++)
+                addSegment(points[i], points[i+1], colour);
+            if (pickstyle === "polygons") {
+                addSegment(points[points.length-1], points[0], colour);
             }
         }
     };
     
     var clearAll = function() {
         clearCircles();
-        if (!!linestrip) linestrip.remove();
+        clearSegments();
     };
 
     var draw = function(points, colour) {
