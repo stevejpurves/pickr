@@ -34,6 +34,14 @@ var PointList = function()
                 return true;
             }
         }
+        var last = points.length-1;
+        if (this._colinear(points[last], points[0], p) &&
+            this._inbounds(points[last], points[0], p)) {
+            points.push(p);
+            undo_stack.push(points.length-1);
+            return true;
+        }
+
     };
     this.replace = function(p_old, p_new) {
         for (var i = 0; i < points.length; i++)
