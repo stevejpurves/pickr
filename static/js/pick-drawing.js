@@ -88,24 +88,27 @@ pickDrawingSetup = function(){
             opacity: 0.5
         });
 
-        var p0;
-        circle.drag(function(dx, dy, x, y, e) {
-            var p = getPointFromEvent(e);
-            this.attr({'cx':p.x, 'cy':p.y});
-        }, function(x, y, e) {
-            p0 = getPointFromEvent(e);
-            this.attr({fill: '#0f0', opacity: 0.9});
-        }, function(e) {
-            this.attr({fill: colour, opacity: 0.5});  
-            var p1 = getPointFromEvent(e);
-            if (onMoveCallback) onMoveCallback(p1, p0);
-        }, circle, circle, circle)
+        if (onMoveCallback) {
+            var p0;
+            circle.drag(function(dx, dy, x, y, e) {
+                var p = getPointFromEvent(e);
+                this.attr({'cx':p.x, 'cy':p.y});
+            }, function(x, y, e) {
+                p0 = getPointFromEvent(e);
+                this.attr({fill: '#0f0', opacity: 0.9});
+            }, function(e) {
+                this.attr({fill: colour, opacity: 0.5});  
+                var p1 = getPointFromEvent(e);
+                if (onMoveCallback) onMoveCallback(p1, p0);
+            }, circle, circle, circle)
 
-        circle.hover(function() {
-            this.attr({'opacity':'0.9'})
-        }, function() {
-            this.attr({'opacity':'0.5'})
-        }, circle, circle)
+            circle.hover(function() {
+                this.attr({'opacity':'0.9'})
+            }, function() {
+                this.attr({'opacity':'0.5'})
+            }, circle, circle)            
+        }
+
 
         circles.push(circle);
     };
@@ -130,17 +133,20 @@ pickDrawingSetup = function(){
             linestrip.attr({'stroke-width': 1.2*penSize});
             linestrip.attr({'opacity': '0.5'});
 
-            linestrip.click(function(e) {
-                e.preventDefault();
-                var p = getPointFromEvent(e);
-                if (onInsertCallback) onInsertCallback(p);
-            })
 
-            linestrip.hover(function(){
-                this.attr({'opacity':'0.9'})
-            }, function(){
-                this.attr({'opacity':'0.5'})
-            }, linestrip, linestrip)
+            if (onInsertCallback) {
+                linestrip.click(function(e) {
+                    e.preventDefault();
+                    var p = getPointFromEvent(e);
+                    if (onInsertCallback) onInsertCallback(p);
+                })
+
+                linestrip.hover(function(){
+                    this.attr({'opacity':'0.9'})
+                }, function(){
+                    this.attr({'opacity':'0.5'})
+                }, linestrip, linestrip)                
+            }
         }
     };
     
