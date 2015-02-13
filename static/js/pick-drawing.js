@@ -40,7 +40,7 @@ pickDrawingSetup = function(){
 
     var getPointFromEvent = function(e) {
         return new Point(Math.round( (e.offsetX) / resizeScale ),
-            Math.round( (e.offsetY /*- 2*/) / resizeScale ) );
+            Math.round( (e.offsetY - 2) / resizeScale ) );
     }
 
     var onPick = function(cb) {
