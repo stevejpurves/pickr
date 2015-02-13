@@ -38,8 +38,8 @@ pickDrawingSetup = function(){
     };
 
     var getPointFromEvent = function(e) {
-        var x = e.offsetX || e.layerX;
-        var y = e.offsetY || e.layerY;
+        var x = e.offsetX || e.pageX - pickrElement.offset().left;
+        var y = e.offsetY || e.pageY - pickrElement.offset().top;
         return new Point(Math.round(x / resizeScale), Math.round((y-2) / resizeScale));
     }
 
@@ -47,9 +47,7 @@ pickDrawingSetup = function(){
         handler.pick = cb;
         baseImage.click( function(e) {
             var p = getPointFromEvent(e);
-            console.log("onPICK", p)
             handler.pick(p);
-
         } );
     };
 
@@ -89,16 +87,20 @@ pickDrawingSetup = function(){
     var hoverIn = function() { this.attr({'opacity':'0.9'}) }
     var hoverOut = function() { this.attr({'opacity':'0.5'}) }
 
-    var indexOfCircleAt = function(p) {
+    var indexOfCircle = function(c) {
         for (var i = 0; i < circles.length; i++)
-            if (circles[i].isPointInside(p.x,p.y))
+            if (circles[i] === c)
                 return i;
+        return 0;
     }
 
-    var addCircle = function(x, y, colour) {
+    var addCircle = function(p, colour) {
         var radius = (4*penSize/(3*resizeScale));
-        var circle = paper.circle(x, y, radius);
+        var circle = paper.circle(p.x, p.y, radius);
         
+        // attach the point
+        circle.point = p;
+
         // Add its attributes
         circle.attr({
             fill: colour,
@@ -107,29 +109,44 @@ pickDrawingSetup = function(){
         });
 
         if (handler.move) {
-            var p0;
-            var left, right;
+            var p0, p0idx;
+            var left = { seg: null, circle: null};
+            var right = { seg: null, circle: null};
             circle.drag(function move(dx, dy, x, y, e) {
                 var p = getPointFromEvent(e);
-                currentMousePosition = p;
+                if (p.y < 0) return;
                 this.attr({'cx':p.x, 'cy':p.y});
-
-
-
+                if (left.seg)
+                    left.seg.attr({ path: writeSegmentPath(left.circle.point, p) });
+                if (right.seg)
+                    right.seg.attr({path: writeSegmentPath(p, right.circle.point) })
             }, function start(x, y, e) {
-                p0 = getPointFromEvent(e);
                 this.attr({fill: '#0f0', opacity: 0.9});
 
-                var idx = indexOfCircleAt(p0);
-                right = segments[idx];
-                if (idx == 0) idx = segments.length;
-                left = segments[idx-1]
+                p0 = getPointFromEvent(e);
+                p0idx = indexOfCircle(this);
 
-                left.attr({stroke: '#0f0', opacity: 0.9});
-                right.attr({stroke: '#00f', opacity: 0.9});
+                right.seg = segments[p0idx];
+                right.circle = (p0idx < circles.length-1) ? circles[p0idx+1] : 
+                                (pickstyle === 'polygons') ? circles[0] : null;
+
+                if (p0idx < circles.length-1)
+                    right.circle = circles[p0idx+1]
+                else if (pickstyle === 'polygons')
+                    right.circle = circles[0]
+
+                if (p0idx > 0) {
+                    left.seg = segments[p0idx-1];
+                    left.circle = circles[p0idx-1];
+                }
+                else if (pickstyle === 'polygons') {
+                    left.seg = segments[segments.length-1];
+                    left.circle = circles[circles.length-1];
+                }
 
             }, function end(e) {
-                this.attr({fill: colour, opacity: 0.5});  
+                this.attr({fill: colour, opacity: 0.5});
+                left.seg = left.circle = right.seg = right.circle = null;
                 var p1 = getPointFromEvent(e);
                 handler.move(p1, p0);
             }, circle, circle, circle)
@@ -182,11 +199,14 @@ pickDrawingSetup = function(){
 
     var clear = function() {
         circles.remove();
+        circles.clear();
         segments.remove();
+        segments.clear();
     }
 
-    var draw = function(points, colour) {        
-        points.forEach(function(p) { addCircle(p.x, p.y, colour); });
+    var draw = function(points, colour) {
+        for (var i = 0; i < points.length; i++)   
+            addCircle(points[i], colour);
         connectTheDots(points, colour);
         circles.insertAfter(segments);
     };
