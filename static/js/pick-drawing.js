@@ -138,6 +138,7 @@ pickDrawingSetup = function(){
         }
 
         segments.push(linestrip);
+        return linestrip;
     }
     
     var clearCircles = function() {
