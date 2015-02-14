@@ -396,30 +396,24 @@ class PickHandler(webapp2.RequestHandler):
     @authenticate
     def delete(self, user_id):
 
-        image_key = self.request.get("image_key")
+        image_key = self.request.get('image_key')
+        user_id   = self.request.get('user_id')
 
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
-        data = Picks.all().ancestor(img_obj).filter("user_id =",
+        picks = Picks.all().ancestor(img_obj).filter("user_id =",
                                                     user_id)
-        data = data.get()
+        picks = picks.get()
 
-        points = json.loads(data.picks)
+        self.response.headers["Content-Type"] = "application/json"
 
-        if self.request.get("clear"):
-            data.delete()
-            value = []
-            img_obj.put()
-            
-        elif self.request.get("undo"):
-            
-            value = points.pop()
-            data.picks = json.dumps(points).encode()
-            data.put()
-                 
-        self.response.write(json.dumps(value))
-
+        if users.is_current_user_admin():
+            picks.delete()
+            self.response.write(json.dumps({"success":True}))
+        else:
+            self.response.write(json.dumps({"success":False}))
+                
 
 class BlobURLHandler(blobstore_handlers.BlobstoreUploadHandler):
 

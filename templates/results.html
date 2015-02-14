@@ -3,6 +3,8 @@
 {% block title %}{% endblock %}
 
 {% block content %}
+<head>
+<script src="/static/js/lib/bootbox.min.js"></script>
 
 <script>
 
@@ -25,7 +27,20 @@
   var baseImageWidth = "{{ img_obj.width }}";
   var baseImageHeight = "{{ img_obj.height }}";
   var pickstyle = "{{ img_obj.pickstyle }}";
-
+ 
+  // This deletes interpretations (admin only).
+  //function deleteInterpretation(){
+  //  var q = 'image_key=' + image_key + '&user_id=' + userID;
+  //  $.ajax('update_pick?' + q, {
+  //        type:'DELETE',
+  //        success: function(data){
+  //          if(data.success){
+  //            console.log("Successfully deleted!");
+  //            bootbox.alert('Interpretation has been deleted.');
+  //          }
+  //       };
+  //    });
+  //};
 </script>
 
 <script src="/static/js/lib/raphael-min.js"></script>
@@ -33,7 +48,7 @@
 <script src="/static/js/services.js"></script>
 <script src="/static/js/pick-drawing.js"></script>
 <script src="/static/js/results.js"></script>
-
+</head>
 
 <div class="container">
 
@@ -71,7 +86,7 @@
         <button type="button" id="owner-button" class="btn btn-primary btn-lrg"
             style="height:59px;" title="Toggle the uploader's interpretation"
             {% if user_id == img_obj.user_id %}disabled{% endif %}>
-          Uploader's pick
+          Uploader's pick{% if user_id == img_obj.user_id %}<br><span style="font-size:80%;">You are the uploader</span>{% endif %}
         </button>
         <div class="btn-group btn-group-vertical" role="group">
         <button type="button" id="owner-up-vote-button" class="btn btn-default btn-sm disabled" title="Upvote" {% if user_id == img_obj.user_id %}disabled{% endif %}><span class="glyphicon glyphicon-thumbs-up grey" id="owner-thumbs-up"></span></button>
@@ -121,14 +136,12 @@
     </div> <!-- end of col -->
 
     {% if admin %}
-  <!-- div for big delete button -->
-  <div class="col-md-offset-2 col-md-8" style="margin-bottom:24px; margin-top:24px;">
-      <button id="submit-button" type="button" class="btn btn-danger btn-lg btn-block"
-      onclick="document.location.href='/update_pick?image_key={{img_obj.id}}">
-        Delete this interpretation
-      </button>
-  </div>
-
+      <!-- div for big delete button -->
+      <div class="col-md-offset-2 col-md-8" style="margin-bottom:24px; margin-top:24px;">
+          <button id="delete-interp" type="button" class="btn btn-danger btn-lg btn-block disabled">
+            Delete this interpretation by <span id="interp-user"></span>
+          </button>
+      </div>
     {% endif %}
 
     <div class="visible-xs visible-sm hidden-md" style="height:48px;">&nbsp;</div>

@@ -6,6 +6,11 @@ $(function() {
     // var pickUsers = [];   // A list
     // var ownerUser = "{{ owner_user }}";
     // var userID = "{{ user_id }}";
+    // var image_url = "{{ img_obj.url(size=1200) }}";
+    // var image_key = "{{ img_obj.key().id() }}";
+    // var baseImageWidth = "{{ img_obj.width }}";
+    // var baseImageHeight = "{{ img_obj.height }}";
+    // var pickstyle = "{{ img_obj.pickstyle }}";
 
     var server = pickrAPIService(image_key);
     var current = 0;  // An index for stepping over the list
@@ -66,6 +71,9 @@ $(function() {
       // currently-logged-in user, but the one in the pick
       // review cycle - the interpreter of the current pick.
       server.get_picks( user, pickDrawing.renderResults);
+
+      // Set the text in the delete interp button
+      $('#interp-user').text(user);
     };
 
     $('#me-button').on('click', function(){
@@ -73,6 +81,7 @@ $(function() {
         $(this).button('toggle');
         if ($(this).hasClass('active')){
           loadPicks(userID);
+          $('#delete-interp').addClass('disabled');
           $('#owner-up-vote-button').addClass('disabled');
           $('#owner-down-vote-button').addClass('disabled');
           $('#up-vote-button').addClass('disabled');
@@ -93,6 +102,7 @@ $(function() {
     $('#owner-button').on('click', function(){
         $(this).button('toggle');
         if ($(this).hasClass('active')){
+          $('#delete-interp').addClass('disabled');
           $('#owner-up-vote-button').removeClass('disabled');
           $('#owner-down-vote-button').removeClass('disabled');
           $('#up-vote-button').addClass('disabled');
@@ -135,6 +145,7 @@ $(function() {
           // Turn everything on
 
           loadPicks(currentUser);
+          $('#delete-interp').removeClass('disabled');
           $('#owner-up-vote-button').addClass('disabled');
           $('#owner-down-vote-button').addClass('disabled');
           $('#up-vote-button').removeClass('disabled');
@@ -203,6 +214,24 @@ $(function() {
 
     $('#owner-down-vote-button').on('click', function(){
         castVote(-1, ownerUser);
+    });
+    
+    $('#delete-interp').on('click', function(){
+      var q = 'image_key=' + image_key + '&user_id=' + currentUser;
+      $.ajax({type:"DELETE",
+              url:"/update_pick?" + q,
+              dataType: "json",
+              contentType: "application/json; charset=utf-8",
+              // This is not allowed apparently, hence 'q' above
+              // data: JSON.stringify({"image_key": image_key,
+              //                      "user_id": currentUser
+              //                      })
+      })
+      .done(function( data ) {
+          bootbox.alert('Interpretation has been deleted.', function(){
+            location.reload();
+          });
+      });
     });
     
     $( "#overlay-slider" )

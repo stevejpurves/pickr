@@ -41,7 +41,7 @@ pickDrawingSetup = function(){
         var x = e.offsetX || e.pageX - pickrElement.offset().left;
         var y = e.offsetY || e.pageY - pickrElement.offset().top;
         return new Point(Math.round(x / resizeScale), Math.round((y-2) / resizeScale));
-    }
+    };
 
     var onPick = function(cb) {
         handler.pick = cb;
@@ -84,8 +84,8 @@ pickDrawingSetup = function(){
         return overlay.attr({opacity: 0.67});
     };
 
-    var hoverIn = function() { this.attr({'opacity':'0.9'}) }
-    var hoverOut = function() { this.attr({'opacity':'0.5'}) }
+    var hoverIn = function() { this.attr({'opacity':'0.9'}); };
+    var hoverOut = function() { this.attr({'opacity':'0.5'}); };
 
     var indexOfCircle = function(c) {
         for (var i = 0; i < circles.length; i++)
@@ -118,7 +118,7 @@ pickDrawingSetup = function(){
                 if (left.seg)
                     left.seg.attr({ path: writeSegmentPath(left.circle.point, p) });
                 if (right.seg)
-                    right.seg.attr({path: writeSegmentPath(p, right.circle.point) })
+                    right.seg.attr({path: writeSegmentPath(p, right.circle.point) });
             }, function start(x, y, e) {
                 this.attr({fill: '#0f0', opacity: 0.9});
                 p0 = getPointFromEvent(e);

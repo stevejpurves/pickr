@@ -1,16 +1,6 @@
-var pickrAPIService = function(im_key) {
-
-	var image_key = im_key;
+var pickrAPIService = function(image_key) {
 
     return {
-    	delete: function(cb) {
-	        return $.ajax("/update_pick?clear=1&image_key=" + image_key, 
-	        	{ type: "DELETE", success: cb });
-	    },
-    	remove_last_point: function(cb) {
-        	return $.ajax("/update_pick?undo=1&image_key=" + image_key,
-        		{ type: "DELETE", dataType: "json", success: cb });
-    	},
     	get_picks: function(user, cb) {
             return $.get('/update_pick?', { user:user, image_key: image_key }, cb, 'json');
         },
