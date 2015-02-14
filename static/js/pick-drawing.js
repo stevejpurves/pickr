@@ -95,7 +95,6 @@ pickDrawingSetup = function(){
     }
 
     var addCircle = function(p, colour) {
-        console.log("addCircle")
         var radius = (4*penSize/(3*resizeScale));
         var circle = paper.circle(p.x, p.y, radius);
         
@@ -115,7 +114,6 @@ pickDrawingSetup = function(){
             var right = { seg: null, circle: null};
             circle.drag(function move(dx, dy, x, y, e) {
                 var p = getPointFromEvent(e);
-                // if (p.y < 0) return;
                 this.attr({'cx':p.x, 'cy':p.y});
                 if (left.seg)
                     left.seg.attr({ path: writeSegmentPath(left.circle.point, p) });
@@ -145,7 +143,7 @@ pickDrawingSetup = function(){
                 }
             }, function end(e) {
                 this.attr({fill: colour, opacity: 0.5});
-                // left.seg = left.circle = right.seg = right.circle = null;
+                left.seg = left.circle = right.seg = right.circle = null;
                 var p1 = getPointFromEvent(e);
                 handler.move(p1, p0);
             }, circle, circle, circle)
@@ -166,13 +164,10 @@ pickDrawingSetup = function(){
         return path;
     }
 
-    var addSegment = function(p0, p1, colour, opacity) {
+    var addSegment = function(p0, p1, options) {
         var path = writeSegmentPath(p0, p1);
         var segment = paper.path(path);
-        segment.attr({'stroke': colour});
-        segment.attr({'stroke-width': 1.2*penSize});
-        segment.attr({'opacity': opacity});
-
+        segment.attr(options);
         if (handler.insert) {
             segment.click(function(e) {
                 e.preventDefault();
@@ -187,10 +182,13 @@ pickDrawingSetup = function(){
     var connectTheDots = function(points, colour) {
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
             if (segments.length > 0) segments.remove();
+            var options = {'stroke': colour, 'stroke-width': 1.2*penSize, 'opacity': 0.5};
             for (var i = 0; i < points.length-1; i++)
-                addSegment(points[i], points[i+1], colour, 0.5);
+                addSegment(points[i], points[i+1], options);
             if (pickstyle === "polygons") {
-                addSegment(points[points.length-1], points[0], colour, 0.5);
+                var auto_segment = options;
+                auto_segment['stroke-dasharray'] = ".";
+                addSegment(points[points.length-1], points[0], auto_segment);
             }
         }
     };
