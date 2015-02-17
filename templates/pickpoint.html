@@ -12,8 +12,9 @@
   var baseImageHeight = "{{ img_obj.height }}";
   var pickstyle = "{{ img_obj.pickstyle }}";
 </script>
-<script src="/static/js/raphael-min.js"></script>
-<script src="/static/js/underscore-min.js"></script>
+<script src="/static/js/lib/raphael-min.js"></script>
+<script src="/static/js/lib/underscore-min.js"></script>
+<script src="/static/js/services.js"></script>
 <script src="/static/js/pick-drawing.js"></script>
 <script src="/static/js/pickpoint.js"></script>
 </head>
@@ -33,11 +34,11 @@
         </button>
         <button id="undo-button" type="button" 
           class="btn btn-primary">
-            Undo
+            Remove last
         </button>
         <button id="clear-button" type="button" 
 		      class="btn btn-primary">
-            Clear
+            Remove all
         </button>
       </div>
     </div>
@@ -49,8 +50,9 @@
 
   <!-- div for big green button at bottom -->
   <div class="col-md-offset-2 col-md-8" style="margin-bottom:24px; margin-top:24px;">
-    <button type="button" class="btn btn-success btn-lg btn-block" 
-	    onclick="document.location.href='/results?image_key={{img_obj.id}}'">
+<!--     <button type="button" class="btn btn-success btn-lg btn-block" 
+	    onclick="document.location.href='/results?image_key={{img_obj.id}}'"> -->
+      <button id="submit-button" type="button" class="btn btn-success btn-lg btn-block">
       I'm all done... Submit!
     </button>
   </div>
@@ -89,9 +91,9 @@
         <h4 class="modal-title">Quick help</h4>
       </div>
       <div class="modal-body">
-        <p>Click on the image to add new points. When you are satisfied with your interpretation, hit <strong>Submit</strong>. Then you will get to see everyone else's interpretations.</p>
-        {% if img_obj.pickstyle != "points" %}<p>In this case, the uploader is asking you to pick {{ img_obj.pickstyle }}, so the points will join to form a {{ img_obj.pickstyle[:-1] }}.</p>{% endif %}
-        <p>Use the <strong>Undo</strong> and <strong>Clear</strong> buttons if you need them.</p>
+        <p>Click on the image to add new points.{% if img_obj.pickstyle != "points" %} On this image, the uploader is asking you to pick {{ img_obj.pickstyle }}, so the points will join to form a {{ img_obj.pickstyle[:-1] }}.{% endif %}</p>
+        <p>To <strong>move</strong> a point, hover over the point and click.{% if img_obj.pickstyle != "points" %} To <strong>insert</strong> a point, hover over the line and click.{% endif %} Use the <strong>Remove</strong> buttons if you need them.</p>
+        <p>When you are satisfied with your interpretation, hit <strong>Submit</strong>. Then you will get to see everyone else's interpretations.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

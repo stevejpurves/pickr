@@ -88,8 +88,6 @@ def get_result_image(img_obj, opacity_scalar=None):
         # Get the points.
         picks = np.array(json.loads(user.picks))
 
-        print picks
-
         if img_obj.pickstyle == 'polygons':
             picks = np.append(picks, picks[0]).reshape(picks.shape[0]+1, picks.shape[1])
 
@@ -112,9 +110,6 @@ def get_result_image(img_obj, opacity_scalar=None):
                     xrev = False
 
                 ypair = picks[i:i+2,1]
-
-                print " ++ IN THE LOOP ++ "
-                print xpair, ypair
 
                 if ypair[0] > ypair[1]:
                     ypair = ypair[ypair[:].argsort()]

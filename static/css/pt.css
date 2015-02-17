@@ -113,13 +113,13 @@ body {
 
 .pt-title {
   padding-left: 48px;
-  background:transparent url('/static/img/mouse_pointer.png') left center no-repeat;
-  background-size: 32px;
+  background:transparent url('/static/img/pickthis_nodot.png') left center no-repeat;
+  background-size: 24px;
   background-position: 12px;
 }
 .pt-title:hover {
-  background:transparent url('/static/img/mouse_pointer.png') left center no-repeat;
-  background-size: 32px;
+  background:transparent url('/static/img/pickthis.png') left center no-repeat;
+  background-size: 24px;
   background-position: 12px;
 }
 
