@@ -1,3 +1,6 @@
+Feb 16 2015 v0.3
+Major interface/code refactoring merge
+
 Dec 7 2014 v0.2.1
 Fixes some text formatting
 
