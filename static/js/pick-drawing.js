@@ -171,11 +171,12 @@ pickDrawingSetup = function(){
         if (handler.insert) {
             segment.click(function(e) {
                 e.preventDefault();
-                handler.insert(getPointFromEvent(e));
+                handler.insert(getPointFromEvent(e), segment.idx);
             })
             segment.hover(hoverIn, hoverOut, segment, segment)                
         }
 
+        segment.idx = segments.length;
         segments.push(segment);
     }
     
