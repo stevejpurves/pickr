@@ -44,7 +44,7 @@ var PointList = function()
 
 $(function() {
     var server = pickrAPIService(image_key);
-    var pick_radius = pickDrawing.setup('image-div');
+    var pick_radius = pickDrawing.setup('image-div','picking');
     
     var the_list = new PointList();
     the_list.setTolerance(pick_radius);

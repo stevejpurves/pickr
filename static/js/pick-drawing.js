@@ -9,8 +9,9 @@ pickDrawingSetup = function(){
     var pickrElement;
     var paper;
     var baseImage;
-    var overlay;
-    
+    var overlay
+    var mode;   
+
     window.ondragstart = function() { return false; } ;
 
     var owner_colour   = "#0000FF"; // Image owner
@@ -59,7 +60,9 @@ pickDrawingSetup = function(){
         handler.insert = cb;
     };
     
-    var setup = function(elementId) {
+    var setup = function(elementId, the_mode) {
+        mode = the_mode || "picking";
+
         pickrElement = $('#' + elementId);
         penSize = 4;
         paper = Raphael(elementId);
@@ -188,7 +191,8 @@ pickDrawingSetup = function(){
                 addSegment(points[i], points[i+1], options);
             if (pickstyle === "polygons") {
                 var auto_segment = options;
-                auto_segment['stroke-dasharray'] = ".";
+                if (mode === "picking")
+                    auto_segment['stroke-dasharray'] = ".";
                 addSegment(points[points.length-1], points[0], auto_segment);
             }
         }

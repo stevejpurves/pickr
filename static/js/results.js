@@ -16,7 +16,7 @@ $(function() {
     var current = 0;  // An index for stepping over the list
     var currentUser = pickUsers[current];
 
-    pickDrawing.setup('image-div');
+    pickDrawing.setup('image-div', 'rendering');
     var overlay = pickDrawing.renderImage('data:image/png;base64,' + overlay64);
 
     var updateInterpNo = function(n){
