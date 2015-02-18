@@ -256,7 +256,7 @@ $(function() {
       })
       .done(function( data ) {
           $('#delete-ack').show("fast");
-          $('#delete-ack').delay(2000).fadeOut("fast", function() {
+          $('#delete-ack').delay(2000, function() {
             location.reload();
           });
       });
