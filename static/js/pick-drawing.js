@@ -213,32 +213,16 @@ pickDrawingSetup = function(){
         draw(points, default_colour);
     };
 
-    var convertToPoints = function(data) {
-        var points = [];
-        for (var i = 0; i < data.length; i++)
-            points.push({x: data[i][0], y: data[i][1]});
-        return points;
-    };
-
-    var renderResults = function(data) {
-        clear();
-        if (data.current) 
-            draw(convertToPoints(data.user_data), current_colour);
-        else if (data.owner)
-            draw(convertToPoints(data.owner_data), owner_colour);
-        else
-            draw(convertToPoints(data.data), default_colour);        
-    };
-
     return {
+        colour: { default: default_colour, current: current_colour, owner: owner_colour },
         setup: setup,
         onPick: onPick,
         onMove: onMove,
         onInsert: onInsert,
         refresh: refresh,
+        draw: draw,
         clear: clear,
-        renderImage: renderImage,
-        renderResults: renderResults
+        renderImage: renderImage
     };
 };
 

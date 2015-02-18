@@ -70,7 +70,23 @@ $(function() {
       // This loads the picks for 'currentUser' who is not the 
       // currently-logged-in user, but the one in the pick
       // review cycle - the interpreter of the current pick.
-      server.get_picks( user, pickDrawing.renderResults);
+      server.get_picks( user, function (data) {
+
+        var convertToPoints = function(d) {
+            var points = [];
+            for (var i = 0; i < d.length; i++)
+                points.push({x: d[i][0], y: d[i][1]});
+            return points;
+        };
+
+        pickDrawing.clear();
+        if (data.current) 
+            pickDrawing.draw(convertToPoints(data.user_data), pickDrawing.colour.current);
+        else if (data.owner)
+            pickDrawing.draw(convertToPoints(data.owner_data), pickDrawing.colour.owner);
+        else
+            pickDrawing.draw(convertToPoints(data.data), pickDrawing.colour.default);
+      });
 
       // Set the text in the delete interp button
       $('#interp-user').text(user);
