@@ -97,7 +97,9 @@ $(function() {
         $(this).button('toggle');
         if ($(this).hasClass('active')){
           loadPicks(userID);
-          $('#delete-interp').addClass('disabled');
+          $('#delete-confirm-div').addClass('disabled')
+          $('#delete-confirm').prop('disabled', true).prop('checked', false);
+          // $('#delete-interp').addClass('disabled');
           $('#owner-up-vote-button').addClass('disabled');
           $('#owner-down-vote-button').addClass('disabled');
           $('#up-vote-button').addClass('disabled');
@@ -118,7 +120,10 @@ $(function() {
     $('#owner-button').on('click', function(){
         $(this).button('toggle');
         if ($(this).hasClass('active')){
-          $('#delete-interp').addClass('disabled');
+
+          $('#delete-confirm-div').addClass('disabled')
+          $('#delete-confirm').prop('disabled', true).prop('checked', false);
+          // $('#delete-interp').addClass('disabled');
           $('#owner-up-vote-button').removeClass('disabled');
           $('#owner-down-vote-button').removeClass('disabled');
           $('#up-vote-button').addClass('disabled');
@@ -161,7 +166,9 @@ $(function() {
           // Turn everything on
 
           loadPicks(currentUser);
-          $('#delete-interp').removeClass('disabled');
+          $('#delete-confirm-div').removeClass('disabled');
+          $('#delete-confirm').prop('disabled', false);
+          // $('#delete-interp').removeClass('disabled');
           $('#owner-up-vote-button').addClass('disabled');
           $('#owner-down-vote-button').addClass('disabled');
           $('#up-vote-button').removeClass('disabled');
@@ -231,20 +238,25 @@ $(function() {
     $('#owner-down-vote-button').on('click', function(){
         castVote(-1, ownerUser);
     });
+
+    $('#delete-confirm').on('change', function() {
+      console.log('on change')
+      if($(this).is(':checked'))
+        $('#delete-interp').removeClass('disabled')
+      else 
+        $('#delete-interp').addClass('disabled')
+    })
     
     $('#delete-interp').on('click', function(){
       var q = 'image_key=' + image_key + '&user_id=' + currentUser;
       $.ajax({type:"DELETE",
               url:"/update_pick?" + q,
               dataType: "json",
-              contentType: "application/json; charset=utf-8",
-              // This is not allowed apparently, hence 'q' above
-              // data: JSON.stringify({"image_key": image_key,
-              //                      "user_id": currentUser
-              //                      })
+              contentType: "application/json; charset=utf-8"
       })
       .done(function( data ) {
-          bootbox.alert('Interpretation has been deleted.', function(){
+          $('#delete-ack').show("fast");
+          $('#delete-ack').delay(2000).fadeOut("fast", function() {
             location.reload();
           });
       });
