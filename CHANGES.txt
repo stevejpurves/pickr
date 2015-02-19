@@ -1,3 +1,6 @@
+Feb 19 2015 v0.3.1
+Hacked an indexing error bug fix. Quick and dirty hot fix
+
 Feb 16 2015 v0.3
 Major interface/code refactoring merge
 
