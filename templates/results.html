@@ -137,10 +137,19 @@
 
     {% if admin %}
       <!-- div for big delete button -->
-      <div class="col-md-offset-2 col-md-8" style="margin-bottom:24px; margin-top:24px;">
+      <div id="delete-confirm-div" class="col-md-offset-4 col-md-6 checkbox disabled" style="margin-top:24px;">
+        <label>
+          <input id="delete-confirm" type="checkbox" disabled>
+          Delete this interpretation by <span id="interp-user"></span>
+        </label>
+      </div>
+      <div class="col-md-offset-2 col-md-8 centered" style="margin-bottom:24px;">          
           <button id="delete-interp" type="button" class="btn btn-danger btn-lg btn-block disabled">
-            Delete this interpretation by <span id="interp-user"></span>
+            Delete
           </button>
+      </div>
+      <div id="delete-confirm-div" class="col-md-12 text-center" style="margin-bottom:24px;">
+          <span id='delete-ack' style='display:none;'>Interpretation has been deleted, reloading...'</span>
       </div>
     {% endif %}
 
