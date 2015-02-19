@@ -4,6 +4,7 @@ import StringIO
 import time
 import cgi
 import re
+import sys
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
@@ -141,11 +142,7 @@ class ResultsHandler(PickThisPageRequest):
                                         parent=db_parent)
 
         # DO THE MAGIC!
-        try:
-            image = get_result_image(img_obj)
-
-        except Exception as e:
-            raise Exception("plotting error")
+        image = get_result_image(img_obj)
         
         picks = Picks.all().ancestor(img_obj).fetch(10000)
         pick_users = [p.user_id for p in picks]
