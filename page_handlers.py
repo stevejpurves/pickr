@@ -141,9 +141,13 @@ class ResultsHandler(PickThisPageRequest):
                                         parent=db_parent)
 
         # DO THE MAGIC!
-        image = get_result_image(img_obj)
+        try:
+            image = get_result_image(img_obj)
 
-        picks = Picks.all().ancestor(img_obj).fetch(1000)
+        except Exception as e:
+            raise Exception("plotting error")
+        
+        picks = Picks.all().ancestor(img_obj).fetch(10000)
         pick_users = [p.user_id for p in picks]
         count = len(pick_users)
 
@@ -156,7 +160,7 @@ class ResultsHandler(PickThisPageRequest):
             pick_users.remove(owner_user)
 
         # Get a list of comment strings, if any.
-        cmts = Comment.all().ancestor(img_obj).order('datetime').fetch(1000)
+        cmts = Comment.all().ancestor(img_obj).order('datetime').fetch(10000)
 
         params = self.get_base_params(count=count,
                                       image=image,
@@ -246,10 +250,10 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         # https://developer.mozilla.org/en-US/docs/WindowEventHandlers.onbeforeunload
         if users.is_current_user_admin():
             # Then see everything.
-            img_objs = ImageObject.all().ancestor(db_parent).fetch(1000)
+            img_objs = ImageObject.all().ancestor(db_parent).fetch(10000)
         else:
             # Then omit aborted uploads.
-            img_objs = ImageObject.all().ancestor(db_parent).filter("title !=", '').fetch(1000)
+            img_objs = ImageObject.all().ancestor(db_parent).filter("title !=", '').fetch(10000)
 
         template = env.get_template('choose.html')
 

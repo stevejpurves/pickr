@@ -59,7 +59,7 @@ def get_result_image(img_obj, opacity_scalar=None):
     
     """
     # Read the interpretations for this image.
-    data = Picks.all().ancestor(img_obj).fetch(1000)
+    data = Picks.all().ancestor(img_obj).fetch(10000)
     
     # Get the dimensions.
     w, h = img_obj.width, img_obj.height
@@ -99,7 +99,7 @@ def get_result_image(img_obj, opacity_scalar=None):
         # Deal with the points, and set the
         # radius of the disk structuring element.
         if img_obj.pickstyle != 'points':
-            for i in range(picks.shape[0] - 1):
+            for i in range(picks.shape[0] - 2):
 
                 xpair = picks[i:i+2,0]
 
