@@ -59,7 +59,7 @@ def get_result_image(img_obj, opacity_scalar=None):
     
     """
     # Read the interpretations for this image.
-    data = Picks.all().ancestor(img_obj).fetch(1000)
+    data = Picks.all().ancestor(img_obj).fetch(10000)
     
     # Get the dimensions.
     w, h = img_obj.width, img_obj.height
