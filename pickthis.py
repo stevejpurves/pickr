@@ -16,7 +16,6 @@ def interpolate(x_in, y_in):
     """
     For line interpretations.
     Connect the dots of each interpretation.
-    
     """
 
     # Check difference in x and in y, so we can
@@ -24,10 +23,6 @@ def interpolate(x_in, y_in):
 
     x_range = np.arange(np.amin(x_in), np.amax(x_in)+1)
     y_range = np.arange(np.amin(y_in), np.amax(y_in)+1)
-
-    # x_out = x_range
-    # y_out = np.interp(x_out, x_in, y_in)
-
 
     if x_range.size >= y_range.size:
         x_out = x_range
@@ -38,12 +33,12 @@ def interpolate(x_in, y_in):
 
     return x_out.astype(int), y_out.astype(int)
 
-    
+
 def normalize(a, newmax):
     """
     Normalize the values of an
     array a to some new max.
-    
+
     """
     return (float(newmax) * a) / np.amax(a)
 
@@ -56,16 +51,16 @@ def get_result_image(img_obj, opacity_scalar=None):
 
     Returns the new 'heatmap' image,
     plus a count of interpretations.
-    
+
     """
     # Read the interpretations for this image.
     data = Picks.all().ancestor(img_obj).fetch(10000)
-    
+
     # Get the dimensions.
     w, h = img_obj.width, img_obj.height
     avg = (w + h) / 2.
 
-    # Make an 'empty' image for all the results. 
+    # Make an 'empty' image for all the results.
     heatmap_image = np.zeros((h, w))
     alpha_image = np.ones_like(heatmap_image)
 
@@ -91,17 +86,12 @@ def get_result_image(img_obj, opacity_scalar=None):
         if img_obj.pickstyle == 'polygons':
             picks = np.append(picks, picks[0]).reshape(picks.shape[0]+1, picks.shape[1])
 
-        # Sort on x values.
-        #picks = picks[picks[:,0].argsort()]
-
-        # This needs refactoring!
-
         # Deal with the points, and set the
         # radius of the disk structuring element.
         if img_obj.pickstyle != 'points':
-            for i in range(picks.shape[0] - 2):
+            for i, pick in enumerate(picks[:-1]):
 
-                xpair = picks[i:i+2,0]
+                xpair = picks[i:i+2, 0]
 
                 if xpair[0] > xpair[1]:
                     xpair = xpair[xpair[:].argsort()]
@@ -109,7 +99,7 @@ def get_result_image(img_obj, opacity_scalar=None):
                 else:
                     xrev = False
 
-                ypair = picks[i:i+2,1]
+                ypair = picks[i:i+2, 1]
 
                 if ypair[0] > ypair[1]:
                     ypair = ypair[ypair[:].argsort()]
@@ -120,28 +110,32 @@ def get_result_image(img_obj, opacity_scalar=None):
                 # Do the interpolation
                 x, y = interpolate(xpair, ypair)
 
-                if xrev: # then need to unreverse...
+                if xrev:  # then need to unreverse...
                     x = x[::-1]
-                if yrev: # then need to unreverse...
+                if yrev:  # then need to unreverse...
                     y = y[::-1]
 
-                # Build up the image
+                # Build up the image, accounting for pixels at
+                # the edge, which have the wrong indices.
+                x[x >= w] = w - 1
+                y[y >= h] = h - 1
                 user_image[(y, x)] = 1.
-            
-            n = np.ceil(avg / 300.).astype(int) 
+
+            n = np.ceil(avg / 300.).astype(int)
 
         else:
-            x, y = picks[:,0], picks[:,1]
+            x, y = picks[:, 0], picks[:, 1]
             user_image[(y, x)] = 1.
 
-            n = np.ceil(avg / 150.).astype(int) # The radius of the disk structuring element
+            # The radius of the disk structuring element
+            n = np.ceil(avg / 150.).astype(int)
 
         # Dilate this image.
         dilated_image = dilate(user_image.astype(int),
                                B=sedisk(r=n))
 
         heatmap_image += dilated_image
-       
+
         # Add it to the running summed image.
         if opacity_scalar == 'votes':
             if nvotes > -5:
@@ -165,7 +159,7 @@ def get_result_image(img_obj, opacity_scalar=None):
     a = alpha_norm
 
     # Set everything corresponding to zero data to transparent.
-    a[heatmap_image==0] = 0 
+    a[heatmap_image == 0] = 0
 
     # Make the 4-channel image from an array.
     im = np.dstack([r, g, b, a])
@@ -174,8 +168,9 @@ def get_result_image(img_obj, opacity_scalar=None):
     # Save out into file-like.
     output = StringIO.StringIO()
     im_out.save(output, 'png')
-    
+
     return base64.b64encode(output.getvalue())
+
 
 def statistics():
 
@@ -185,8 +180,3 @@ def statistics():
              "vote_count": Vote.all().count()}
 
     return stats
-    
-
-
- 
-
