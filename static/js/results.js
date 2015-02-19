@@ -88,8 +88,9 @@ $(function() {
             pickDrawing.draw(convertToPoints(data.data), pickDrawing.colour.default);
       });
 
-      // Set the text in the delete interp button
+      // Set the text in the delete interp button, and uncheck
       $('#interp-user').text(user);
+      $('#delete-confirm').prop('checked', false);
     };
 
     $('#me-button').on('click', function(){
