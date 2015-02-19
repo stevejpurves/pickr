@@ -126,6 +126,8 @@ def get_result_image(img_obj, opacity_scalar=None):
                     y = y[::-1]
 
                 # Build up the image
+                y[y>=h] = h-1
+                x[x>=w] = w-1
                 user_image[(y, x)] = 1.
             
             n = np.ceil(avg / 300.).astype(int) 
