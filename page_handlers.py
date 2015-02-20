@@ -147,6 +147,8 @@ class ResultsHandler(PickThisPageRequest):
         
         picks = Picks.all().ancestor(img_obj).fetch(10000)
         pick_users = [p.user_id for p in picks]
+
+
         count = len(pick_users)
 
         owner_user = img_obj.user_id
@@ -154,6 +156,9 @@ class ResultsHandler(PickThisPageRequest):
         # Filter out the owner and current user
         if user_id in pick_users:
             pick_users.remove(user_id)
+        else:
+            # You shouldn't even be here!
+            self.redirect('/')
         if owner_user in pick_users:
             pick_users.remove(owner_user)
 
