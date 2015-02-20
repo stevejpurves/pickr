@@ -294,7 +294,7 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         bs_file = '/gs' + output_filename
         output_blob_key = blobstore.create_gs_key(bs_file)
 
-        name = self.request.get("name")
+        #name = self.request.get("name")
         description = self.request.get("description")
 
         new_db = ImageObject(description=description,
