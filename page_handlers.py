@@ -4,6 +4,8 @@ import StringIO
 import time
 import cgi
 import re
+import os
+import Cookie
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
@@ -70,7 +72,7 @@ class PickThisPageRequest(webapp2.RequestHandler):
             user = User.all().filter("user_id =", g_user.user_id())
             user = user.get()
 
-            logout_url = users.create_logout_url('/')
+            logout_url = '/logout'
             login_url = None
             email_hash = hashlib.md5(user.email).hexdigest()
             nickname = user.nickname
@@ -112,10 +114,6 @@ class MainPage(webapp2.RequestHandler):
             self.response.out.write(html)
 
         else:
-            logout_url = users.create_logout_url('/')
-            login_url = None
-            email_hash = hashlib.md5(g_user.email()).hexdigest()
-
             user_obj = User.all().ancestor(db_parent)
             user_obj = user_obj.filter("user_id =", g_user.user_id())
             user_obj = user_obj.get()
@@ -393,3 +391,31 @@ class AddImageHandler(PickThisPageRequest):
 
         self.redirect('/')
         
+
+class LogoutHandler(webapp2.RequestHandler):
+
+    @error_catch
+    @authenticate
+    def get(self, user_id):
+        # On the dev instance, we just revert to standard AppEngine
+        # operating procedure. 
+        target_url = self.request.referer or '/'
+        if os.environ.get('SERVER_SOFTWARE', '').startswith('Development/'):
+            self.redirect(users.create_logout_url(target_url))
+            return
+
+        # On the production instance, we just remove the session cookie, because
+        # redirecting users.create_logout_url(...) would log out of all Google
+        # (e.g. Gmail, Google Calendar).
+        #
+        # It seems that AppEngine is setting the ACSID cookie for http:// ,
+        # and the SACSID cookie for https:// . We just unset both below.
+        cookie = Cookie.SimpleCookie()
+        cookie['ACSID'] = ''
+        cookie['ACSID']['expires'] = -86400  # In the past, a day ago.
+        self.response.headers.add_header(*cookie.output().split(': ', 1))
+        cookie = Cookie.SimpleCookie()
+        cookie['SACSID'] = ''
+        cookie['SACSID']['expires'] = -86400
+        self.response.headers.add_header(*cookie.output().split(': ', 1))
+        self.redirect(target_url) 

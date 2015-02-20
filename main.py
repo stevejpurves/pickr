@@ -19,6 +19,7 @@ app = webapp2.WSGIApplication([
     ('BlobURL', BlobURLHandler),
     ('/err', ErrorHandler),
     ('/pickr', PickerHandler),
+    ('/logout', LogoutHandler),
     (r'/([0-9]+)$', PickerHandler),  # An image ID.
     (r'/([-_a-zA-Z0-9]+)$', PickerHandler),  # A short URL.
     ('/.*', ErrorHandler)],
