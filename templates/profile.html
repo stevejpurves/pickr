@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %} &middot; about{% endblock %}
+
+  {% block content %}
+      
+  <div class="container">
+
+  <p style="float:right; color:lightgray;"><strong>User ID:</strong> {{ user.user_id }}</p>
+	<h2>{{ user.email }}</h2>
+
+    <figure style="bottom:8px;">
+      <a href="https://gravatar.com/" title="Gravatar.com" target="_blank">
+        <img style="right:4px;" src="https://www.gravatar.com/avatar/{{ email_hash }}?s=64&d=identicon" />
+      </a><a href="https://gravatar.com/" target="_blank">Change your avatar at Gravatar.com</a>
+    </figure></p>
+
+    <p><strong>Nickname:</strong> {{ user.nickname }}</p>
+
+    <p><strong>Location:</strong> {{ region }}, {{ country }}</p>
+
+    <p><strong>Reputation:</strong> {{ user.cred }}</p>
+
+    <p><strong>Picks:</strong> {{ user.picks | length }}</p>
+
+    <p><strong>Uploads:</strong> {{ user.uploads | length }}</p>
+
+  </div>
+
+  {% endblock %}

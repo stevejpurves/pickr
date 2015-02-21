@@ -148,7 +148,6 @@ class ResultsHandler(PickThisPageRequest):
         picks = Picks.all().ancestor(img_obj).fetch(10000)
         pick_users = [p.user_id for p in picks]
 
-
         count = len(pick_users)
 
         owner_user = img_obj.user_id
@@ -176,6 +175,27 @@ class ResultsHandler(PickThisPageRequest):
         template = env.get_template("results.html")
         html = template.render(params)
 
+        self.response.write(html)
+
+
+class ProfileHandler(PickThisPageRequest):
+    @error_catch
+    @authenticate
+    def get(self, user_id):
+        user = User.all().filter("user_id =", user_id).get()
+
+        country = self.request.headers.get("X-AppEngine-Country")
+        region = self.request.headers.get("X-AppEngine-Region")
+        city = self.request.headers.get("X-AppEngine-City")
+        latlong = self.request.headers.get("X-AppEngine-CityLatLong")
+
+        template_params = self.get_base_params()
+        template_params.update(user=user,
+                               region=region,
+                               country=country)
+
+        template = env.get_template('profile.html')
+        html = template.render(template_params)
         self.response.write(html)
 
 
@@ -221,11 +241,8 @@ class PickerHandler(PickThisPageRequest):
 
         # Write the page.
         template = env.get_template('pickpoint.html')
-
         params = self.get_base_params(img_obj=img_obj)
-
         html = template.render(params)
-
         self.response.write(html)
 
 

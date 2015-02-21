@@ -5,7 +5,6 @@ from google.appengine.api import users
 
 from PIL import Image
 
-
 import json
 
 
@@ -15,32 +14,44 @@ class User(db.Model):
     user_id = db.StringProperty()
     nickname = db.StringProperty()
     email = db.EmailProperty()
+    linkedin = db.LinkProperty()
+    education = db.StringProperty()
+    location = db.GeoPtProperty()
     
     @property
+    def picks(self):
+
+        all_picks = Picks.all()
+        my_picks = all_picks.filter("user_id =", self.user_id)
+
+        return my_picks.fetch(1000)
+
+    @property
+    def uploads(self):
+
+        all_imgs = ImageObject.all()
+        my_imgs = all_imgs.filter("user_id =", self.user_id)
+        my_imgs = my_imgs.filter("title !=", '')
+
+        return my_imgs.fetch(1000)
+
+    @property
     def cred(self):
-
-        all_picks = Picks.all().filter("user_id =",
-                                       self.user_id).fetch(1000)
-        all_imgs  = \
-          ImageObject.all().filter("user_id =",
-                                    self.user_id).filter("title !=",
-                                                      '').fetch(1000)
-
-        
 
         rep = 1 # everyone start with 1
 
         # Award rep for votes received.
-        for picks in all_picks:
+        for picks in self.picks:
             rep += picks.votes
 
         # Award rep for interpretations made.
-        rep += 3 * len(all_picks)
+        rep += 3 * len(self.picks)
 
         # Award rep for uploading.
-        rep += 3 * len(all_imgs)
+        rep += 3 * len(self.uploads)
 
         return rep
+
 
 class Vote(db.Model):
 
@@ -50,8 +61,10 @@ class Vote(db.Model):
     # +1 or -1
     value = db.IntegerProperty()
     
+
 class ImageParent(db.Model):
     pass
+
 
 class Picks(db.Model):
 
@@ -104,6 +117,9 @@ class ImageObject(db.Model):
     pickstyle = db.StringProperty(default="")
     rightsholder = db.StringProperty(default="")
 
+    # Eventually we will want this
+    # location = db.GeoPtProperty()
+
     favouriters = db.ListProperty(str, default=[])
 
     # This is safer than using a user directly
@@ -147,12 +163,9 @@ class ImageObject(db.Model):
 
         return self.key().id()
     
-
     @property
     def nickname(self):
 
         user = User.all().filter("user_id =",
                                  self.user_id).get()
         return user.nickname
-    
-        
