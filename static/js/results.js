@@ -256,6 +256,7 @@ $(function() {
               contentType: "application/json; charset=utf-8"
       })
       .done(function( data ) {
+          console.log(data)
           $('#delete-ack').show("fast");
           $('#delete-ack').delay(2000, function() {
             location.reload();

@@ -28,3 +28,12 @@ Using dev_appserver.py from the [Google App Engine SDK](https://cloud.google.com
 ### For Remote Access
 
     dev_appserver.py . --clear_datastore true --log_level debug --host 0.0.0.0
+
+## Test
+
+Frontend unit tests use mocha and chai. To get them running:
+
+1. install node. e.g. on OSX type: `brew install node`
+1. type `cd pickr`
+1. type `npm install`
+1. type `mocha`
