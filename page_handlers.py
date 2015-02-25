@@ -4,6 +4,8 @@ import StringIO
 import time
 import cgi
 import re
+import os
+import Cookie
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
@@ -70,7 +72,7 @@ class PickThisPageRequest(webapp2.RequestHandler):
             user = User.all().filter("user_id =", g_user.user_id())
             user = user.get()
 
-            logout_url = users.create_logout_url('/')
+            logout_url = '/logout'
             login_url = None
             email_hash = hashlib.md5(user.email).hexdigest()
             nickname = user.nickname
@@ -112,10 +114,6 @@ class MainPage(webapp2.RequestHandler):
             self.response.out.write(html)
 
         else:
-            logout_url = users.create_logout_url('/')
-            login_url = None
-            email_hash = hashlib.md5(g_user.email()).hexdigest()
-
             user_obj = User.all().ancestor(db_parent)
             user_obj = user_obj.filter("user_id =", g_user.user_id())
             user_obj = user_obj.get()
@@ -145,6 +143,7 @@ class ResultsHandler(PickThisPageRequest):
         
         picks = Picks.all().ancestor(img_obj).fetch(10000)
         pick_users = [p.user_id for p in picks]
+
         count = len(pick_users)
 
         owner_user = img_obj.user_id
@@ -152,6 +151,9 @@ class ResultsHandler(PickThisPageRequest):
         # Filter out the owner and current user
         if user_id in pick_users:
             pick_users.remove(user_id)
+        else:
+            # You shouldn't even be here!
+            self.redirect('/')
         if owner_user in pick_users:
             pick_users.remove(owner_user)
 
@@ -169,6 +171,27 @@ class ResultsHandler(PickThisPageRequest):
         template = env.get_template("results.html")
         html = template.render(params)
 
+        self.response.write(html)
+
+
+class ProfileHandler(PickThisPageRequest):
+    @error_catch
+    @authenticate
+    def get(self, user_id):
+        user = User.all().filter("user_id =", user_id).get()
+
+        country = self.request.headers.get("X-AppEngine-Country")
+        region = self.request.headers.get("X-AppEngine-Region")
+        city = self.request.headers.get("X-AppEngine-City")
+        latlong = self.request.headers.get("X-AppEngine-CityLatLong")
+
+        template_params = self.get_base_params()
+        template_params.update(user=user,
+                               region=region,
+                               country=country)
+
+        template = env.get_template('profile.html')
+        html = template.render(template_params)
         self.response.write(html)
 
 
@@ -214,11 +237,8 @@ class PickerHandler(PickThisPageRequest):
 
         # Write the page.
         template = env.get_template('pickpoint.html')
-
         params = self.get_base_params(img_obj=img_obj)
-
         html = template.render(params)
-
         self.response.write(html)
 
 
@@ -290,7 +310,7 @@ class LibraryHandler(blobstore_handlers.BlobstoreUploadHandler,
         bs_file = '/gs' + output_filename
         output_blob_key = blobstore.create_gs_key(bs_file)
 
-        name = self.request.get("name")
+        #name = self.request.get("name")
         description = self.request.get("description")
 
         new_db = ImageObject(description=description,
@@ -389,3 +409,31 @@ class AddImageHandler(PickThisPageRequest):
 
         self.redirect('/')
         
+
+class LogoutHandler(webapp2.RequestHandler):
+
+    @error_catch
+    @authenticate
+    def get(self, user_id):
+        # On the dev instance, we just revert to standard AppEngine
+        # operating procedure. 
+        target_url = self.request.referer or '/'
+        if os.environ.get('SERVER_SOFTWARE', '').startswith('Development/'):
+            self.redirect(users.create_logout_url(target_url))
+            return
+
+        # On the production instance, we just remove the session cookie, because
+        # redirecting users.create_logout_url(...) would log out of all Google
+        # (e.g. Gmail, Google Calendar).
+        #
+        # It seems that AppEngine is setting the ACSID cookie for http:// ,
+        # and the SACSID cookie for https:// . We just unset both below.
+        cookie = Cookie.SimpleCookie()
+        cookie['ACSID'] = ''
+        cookie['ACSID']['expires'] = -86400  # In the past, a day ago.
+        self.response.headers.add_header(*cookie.output().split(': ', 1))
+        cookie = Cookie.SimpleCookie()
+        cookie['SACSID'] = ''
+        cookie['SACSID']['expires'] = -86400
+        self.response.headers.add_header(*cookie.output().split(': ', 1))
+        self.redirect(target_url) 
