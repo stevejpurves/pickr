@@ -4,7 +4,6 @@ import StringIO
 import time
 import cgi
 import re
-import sys
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
