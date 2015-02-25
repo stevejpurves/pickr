@@ -1,3 +1,6 @@
+Feb 25 2015 v0.3.2
+FIxed the index bug for real
+
 Feb 19 2015 v0.3.1
 Hacked an indexing error bug fix. Quick and dirty hot fix
 
