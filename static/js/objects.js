@@ -9,45 +9,9 @@ var Point = function(X, Y) {
     return this;
 };
 
-var PickHistory = function() {
-    var history = []
-
-    var last = function() {
-        if (history.length === 0) return
-        console.log(history)
-        return history[history.length-1]
-    }
-
-    this.clear = function() {
-        history = []
-    }
-
-    this.log_add = function(idx, point) {
-        history.push({action: 'add', idx: idx, point: point})
-        return last()
-    }
-    this.log_insert = function(idx, point) {
-        history.push({action:'insert', idx: idx, point: point})
-        return last()
-    }
-    this.log_move = function(idx, to, from) {
-        history.push({action:'move', idx: idx, to: to, from: from})
-        return last()
-    }
-    this.log_remove = function(idx, point) {
-        history.push({action:'remove', idx: idx, point: point})
-        return last()
-    }
-    this.json = function() {
-        return JSON.stringify(history)
-    }
-    return this;
-}
-
 var UndoStack = function()
 {
     var the_stack = [];
-
     this.push = function(historyItem) {
         the_stack.push(historyItem)
     }
@@ -57,15 +21,70 @@ var UndoStack = function()
         the_stack.pop();
         return popped;
     }
+    this.clear = function() {
+        the_stack = []
+    }
     return this;
 }
 
-var PointList = function()
+var PickHistory = function() {
+    var history = []
+    var undo_stack = new UndoStack();
+
+    var last = function() {
+        if (history.length === 0) return
+        return history[history.length-1]
+    }
+
+    var log_it = function(item, options) {
+        history.push(item)
+        if (options.can_undo) undo_stack.push(last())
+    }
+
+    this.clear = function() {
+        history = []
+        undo_stack.clear()
+    }
+
+    this.log_add = function(idx, point) {
+        log_it({action: 'add', idx: idx, point: point}, {can_undo:true})
+        return last()
+    }
+    this.log_insert = function(idx, point) {
+        log_it({action:'insert', idx: idx, point: point}, {can_undo:true})
+        return last()
+    }
+    this.log_move = function(idx, to, from) {
+        log_it({action:'move', idx: idx, to: to, from: from}, {can_undo:true})
+        return last()
+    }
+    this.log_remove = function(idx, point) {
+        log_it({action:'remove', idx: idx, point: point}, {can_undo:false})
+        return last()
+    }
+    this.undo = function(interpretation) {
+        var last = undo_stack.pop()
+        if (last)
+            if (last.action === 'move') {
+                interpretation.replace(last.to, last.from)
+                undo_stack.pop() // avoid circular move
+            }
+            else {
+                interpretation.remove(last.idx)
+            }
+    }
+    this.json = function() {
+        return JSON.stringify(history)
+    }
+    return this;
+}
+
+var Interpretation = function(the_pick_history)
 {
+    var self = this;
     var tol = 0;
     var points = [];
-    var history = new PickHistory();
-    var undo_stack = new UndoStack();
+    var history = the_pick_history;
     
     this.get_points = function() {
         return points;
@@ -73,35 +92,28 @@ var PointList = function()
 
     this.add = function(p) {
         points.push(p);
-        undo_stack.push(history.log_add(points.length-1, p));
+        history.log_add(points.length-1, p);
     };
 
     this.insertAt = function(p, at) {
         points.splice(at+1, 0, p);
-        undo_stack.push(history.log_add(at+1, p));
+        history.log_add(at+1, p);
     };
 
     this.replace = function(p_old, p_new) {
         for (var i = 0; i < points.length; i++)
             if (points[i].equals(p_old, tol)) {
-                undo_stack.push(history.log_move(i, p_new, points[i]))
+                history.log_move(i, p_new, points[i])
                 points[i] = p_new;
                 return true;
             }
         return false;
     };
 
-    this.remove_last = function() {
-        var last = undo_stack.pop();
-        if (last.action === 'move') {
-            this.replace(points[last.idx], last.from)
-            undo_stack.pop()
-        }
-        else {
-            history.log_remove(last.idx, points[last.idx])
-            points.splice(last.idx, 1);
-        }
-    };
+    this.remove = function(idx) {
+        history.log_remove(idx, points[idx])
+        points.splice(idx, 1);
+    }
 
     this.clear = function() { 
         points = []

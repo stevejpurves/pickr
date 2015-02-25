@@ -1,4 +1,4 @@
-var expect = chai.expect
+// var expect = chai.expect
 
 
 
@@ -82,5 +82,16 @@ describe("Frontend", function() {
 				expect(report()[2].point.y).to.equal(8)			
 			})
 		})
+
+		describe("undo the corresponding interpretation", function() {
+
+
+
+			it("can't undo using a cleared history", function() {
+				
+
+
+			});
+		});
 	})
 })

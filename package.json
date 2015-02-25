@@ -15,7 +15,9 @@
     "karma-mocha": "^0.1.10",
     "karma-mocha-reporter": "^1.0.0",
     "karma-safari-launcher": "^0.1.1",
-    "mocha": "^2.1.0"
+    "mocha": "^2.1.0",
+    "sinon": "^1.12.2",
+    "sinon-chai": "^2.7.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
