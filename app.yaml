@@ -28,3 +28,5 @@ libraries:
 - name: numpy
   version: latest
 
+inbound_services:
+- warmup
