@@ -1,8 +1,11 @@
 Feb 26 2015 v0.3.3.1
-Turned on warmup requests
+Added warmup requests
 
-Feb 25 2015 v0.3.2
+
+Feb 25 2015 v0.3.3
 FIxed the index bug for real
+
+## SOME HOW 3.2 got lost?
 
 Feb 19 2015 v0.3.1
 Hacked an indexing error bug fix. Quick and dirty hot fix
