@@ -28,12 +28,11 @@ $(function() {
 
     $('#undo-button').click(function() {
         history.undo(the_interpretation)
-        // the_interpretation.remove_last();
         pickDrawing.refresh(the_interpretation.get_points());
     });
 
     $('#submit-button').click(function() {
-        server.send_picks(the_interpretation.get_points(), function() {
+        server.send_picks(the_interpretation.get_points(), history.raw(), function() {
             window.location.replace("/results?image_key=" + image_key);
         });
     });

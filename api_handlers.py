@@ -2,7 +2,7 @@ import webapp2
 import traceback
 import cgi
 
-from lib_db import ImageObject, Picks, Vote, Comment
+from lib_db import ImageObject, Picks, Vote, Comment, History
 
 from constants import db_parent
 
@@ -336,60 +336,36 @@ class PickHandler(webapp2.RequestHandler):
     @error_catch
     @authenticate
     def post(self, user_id):
-
         request_body = json.loads(self.request.body)
-
-        image_key = request_body["image_key"];
-
+        image_key = request_body["image_key"]
+        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
+        
         points = request_body['points']
         simple_points = []
         for p in points:
             simple_points.append((int(p['x']), int(p['y'])))
-
-        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
         picks = Picks.all().ancestor(img_obj)
         picks = picks.filter("user_id =", user_id).get()
-
         if picks:
             picks.delete()
-
         # store all picks as new object
         picks = Picks(user_id=user_id,
                       picks=json.dumps(simple_points).encode(),
                       parent=img_obj)
         picks.put()
-        img_obj.put()
         
-        # print "JSONOBJ:", jsonobject
-        # points = jsonobject['points']
-        # print "POINTS:", points
-        # print "P[0]:", points[0]
-        # print "P[1]:", points[1]
-        # print "P[0].x:", points[0]['x']
-        # print "P[0].y:", points[0]['y']
+        the_history = request_body['history']
+        history = History.all().ancestor(img_obj)
+        history = history.filter("user_id =", user_id).get()
+        if history:
+            history.delete()
+        history = History(user_id=user_id,
+                        history=the_history,
+                        parent=img_obj)
+        history.put()
+        
+        img_obj.put()
 
-        # point = (int(self.request.get("x")),
-        #          int(self.request.get("y")))
-
-        # image_key = self.request.get("image_key")
-
-        # if not picks:
-        #     # Then the user has not picked
-        #     # this image before so start
-        #     # some picks for this user.
-        #     picks = Picks(user_id=user_id,
-        #                   picks=json.dumps([point]).encode(),
-        #                   parent=img_obj)
-        #     picks.put()
-        #     img_obj.put()
-
-        # else:
-        #     # Then carry on adding picks.
-        #     all_picks = json.loads(picks.picks)
-        #     all_picks.append(point)
-        #     picks.picks = json.dumps(all_picks).encode()
-        #     picks.put()
-            
         self.response.write("Ok")
 
     @error_catch

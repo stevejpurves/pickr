@@ -70,6 +70,9 @@ var PickHistory = function() {
                 interpretation.remove(last.idx)
             }
     }
+    this.raw = function() {
+        return history;
+    }
     this.json = function() {
         return JSON.stringify(history)
     }

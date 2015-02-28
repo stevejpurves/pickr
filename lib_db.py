@@ -85,6 +85,10 @@ class Picks(db.Model):
 
         return total
         
+class History(db.Model):
+    user_id = db.StringProperty()
+    date = db.DateTimeProperty(auto_now_add=True)
+    picks = db.BlobProperty()
 
 class Comment(db.Model):
 
