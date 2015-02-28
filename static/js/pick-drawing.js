@@ -190,6 +190,7 @@ pickDrawingSetup = function(){
     }
     
     var connectTheDots = function(points, colour) {
+        if (points.length > 0)
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
             if (segments.length > 0) segments.remove();
             for (var i = 0; i < points.length-1; i++)

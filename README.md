@@ -28,3 +28,16 @@ Using dev_appserver.py from the [Google App Engine SDK](https://cloud.google.com
 ### For Remote Access
 
     dev_appserver.py . --clear_datastore true --log_level debug --host 0.0.0.0
+
+## Testing
+
+### Frontend 
+Frontend unit tests use node and karma. To get them running:
+
+1. install node. e.g. on OSX type: `brew install node` then:
+1. npm install karma-cli -g
+1. cd pickr
+1. npm install
+1. karma start
+
+This is configured to run firefox, chrome and safari which will all need to be installed
