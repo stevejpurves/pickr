@@ -37,6 +37,7 @@ var PickHistory = function() {
     }
 
     var log_it = function(item, options) {
+        item.timestamp = Date.now()
         history.push(item)
         if (options.can_undo) undo_stack.push(last())
     }

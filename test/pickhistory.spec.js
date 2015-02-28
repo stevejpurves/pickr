@@ -1,5 +1,5 @@
 describe("Frontend", function() {
-	
+
 	describe("Pick History", function() {
 		
 		var history;
@@ -16,15 +16,29 @@ describe("Frontend", function() {
 			history.log_add(1)
 			history.clear()
 			expect(report()).to.be.empty
-		});
+		})
 
 		describe("LOGS pick actions", function() {
+			var clock
+			var mock_time_now
+
+			before(function() {
+				mock_time_now = Date.now()
+				clock = sinon.useFakeTimers(mock_time_now)
+			})
+
+			after(function() {
+				clock.restore()
+			})
+
+
 			it("adding a pick", function() {
 				var item = history.log_add(4, new Point(2,3))
 				expect(item.idx).to.equal(4)
 				expect(item.action).to.equal('add')
 				expect(item.point.x).to.equal(2)
 				expect(item.point.y).to.equal(3)
+				expect(item.timestamp).to.equal(mock_time_now)
 			})
 			
 			it("moving a pick", function() {
@@ -35,6 +49,7 @@ describe("Frontend", function() {
 				expect(item.to.y).to.equal(6)				
 				expect(item.from.x).to.equal(1)
 				expect(item.from.y).to.equal(2)
+				expect(item.timestamp).to.equal(mock_time_now)
 			})
 
 			it("removing a pick", function() {
@@ -42,7 +57,8 @@ describe("Frontend", function() {
 				expect(item.action).to.equal('remove')
 				expect(item.idx).to.equal(7)
 				expect(item.point.x).to.equal(7)
-				expect(item.point.y).to.equal(8)				
+				expect(item.point.y).to.equal(8)
+				expect(item.timestamp).to.equal(mock_time_now)	
 			})
 		})
 
