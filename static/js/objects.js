@@ -50,10 +50,7 @@ var PickHistory = function() {
         log_it({action: 'add', idx: idx, point: point}, {can_undo:true})
         return last()
     }
-    this.log_insert = function(idx, point) {
-        log_it({action:'insert', idx: idx, point: point}, {can_undo:true})
-        return last()
-    }
+
     this.log_move = function(idx, to, from) {
         log_it({action:'move', idx: idx, to: to, from: from}, {can_undo:true})
         return last()

@@ -1,8 +1,3 @@
-// var expect = chai.expect
-
-
-
-
 describe("Frontend", function() {
 	
 	describe("Pick History", function() {
@@ -84,14 +79,61 @@ describe("Frontend", function() {
 		})
 
 		describe("undo the corresponding interpretation", function() {
+			var interpretation;
 
+			beforeEach(function() {
+				interpretation = new Interpretation(new PickHistory())
+			})
 
+			afterEach(function() {
+			})
 
-			it("can't undo using a cleared history", function() {
+			it("can't undo using a cleared/empty history", function() {
+				var mock = sinon.mock(interpretation)
+				mock.expects("replace").never()
+				mock.expects("remove").never()
+
+				history.undo(interpretation)
 				
+				mock.verify()
+			})
 
+			it("can't undo an undoable action (remove)", function() {
+				var mock = sinon.mock(interpretation)
+				mock.expects("replace").once()
+				mock.expects("remove").never()
 
-			});
-		});
+				history.log_move()
+				history.log_remove(99)
+				history.undo(interpretation)
+				
+				mock.verify()
+			})
+
+			it("can undo an add", function() {
+				var mock = sinon.mock(interpretation)
+				mock.expects("remove").once().withArgs(0)
+
+				history.log_add(0, new Point(1,2))
+				history.undo(interpretation)
+
+				mock.verify()
+			})
+
+			it("can undo a move", function() {
+				var p0 = new Point(1,2)
+				var p1 = new Point(3,4)
+				interpretation.add(p0)
+				interpretation.replace(p0, p1)
+
+				var mock = sinon.mock(interpretation)
+				mock.expects("replace").once().withArgs(p1, p0)
+
+				history.log_move(99, p1, p0)
+				history.undo(interpretation)
+
+				mock.verify()
+			})
+		})
 	})
 })
