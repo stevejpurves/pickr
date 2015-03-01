@@ -84,7 +84,8 @@ class Picks(db.Model):
             total += vote.value
 
         return total
-        
+
+
 class History(db.Model):
     user_id = db.StringProperty()
     date = db.DateTimeProperty(auto_now_add=True)
@@ -105,6 +106,9 @@ class Comment(db.Model):
                                  self.user_id).get()
         return user.nickname
     
+class Heatmap(db.Model):
+    stale = db.BooleanProperty(default=False)
+    png = db.BlobProperty()
 
 class ImageObject(db.Model):
 
