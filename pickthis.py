@@ -167,12 +167,10 @@ def get_result_image(img_obj, opacity_scalar=None):
     plus a count of interpretations.
 
     """
-    # Read the interpretations for this image.
-    data = Picks.all().ancestor(img_obj).fetch(10000)
-
     cached_heatmap = Heatmap.all().ancestor(img_obj).get()
 
     if not cached_heatmap or cached_heatmap.stale:
+        data = Picks.all().ancestor(img_obj).fetch(10000)
         im_out = generate_heatmap(img_obj, data, opacity_scalar)
         output = StringIO.StringIO()
         im_out.save(output, 'png')
