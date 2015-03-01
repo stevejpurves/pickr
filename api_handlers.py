@@ -2,7 +2,7 @@ import webapp2
 import traceback
 import cgi
 
-from lib_db import ImageObject, Picks, Vote, Comment, History
+from lib_db import ImageObject, Picks, Vote, Comment, History, Heatmap
 
 from constants import db_parent
 
@@ -364,6 +364,11 @@ class PickHandler(webapp2.RequestHandler):
                         parent=img_obj)
         history.put()
         
+        cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+        if (cached_heatmap):
+            cached_heatmap.stale = True
+            cached_heatmap.put()
+
         img_obj.put()
 
         self.response.write("Ok")
