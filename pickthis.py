@@ -173,14 +173,12 @@ def get_result_image(img_obj, opacity_scalar=None):
     cached_heatmap = Heatmap.all().ancestor(img_obj).get()
 
     if not cached_heatmap or cached_heatmap.stale:
-        print "regenerating heatmap"
         im_out = generate_heatmap(img_obj, data, opacity_scalar)
         output = StringIO.StringIO()
         im_out.save(output, 'png')
         cached_heatmap = Heatmap(stale=False, png=output.getvalue(), parent=img_obj)
         cached_heatmap.put()
 
-    print "returning"
     return base64.b64encode(cached_heatmap.png)
 
 
