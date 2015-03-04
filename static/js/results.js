@@ -17,7 +17,22 @@ $(function() {
     var currentUser = pickUsers[current];
 
     pickDrawing.setup('image-div', 'rendering');
-    var overlay = pickDrawing.renderImage('data:image/png;base64,' + overlay64);
+    
+
+    // Ajax call to get the heatmap
+    $.get('/heatmap?image_key=' + image_key, function(data){ 
+
+	$('#loader').fadeOut();   
+	var overlay = pickDrawing.renderImage('data:image/png;base64,' 
+					      + data);
+
+
+	$( "#overlay-slider" )
+            .slider({min: 0, max: 100, value:67, change: function( event, ui ) {
+		console.log(overlay);
+		overlay.animate({opacity: ui.value / 100});
+        }});
+    });
 
     var updateInterpNo = function(n){
       $('#interp-no').text(parseInt(n+1));
@@ -264,11 +279,7 @@ $(function() {
       });
     });
     
-    $( "#overlay-slider" )
-        .slider({min: 0, max: 100, value:67, change: function( event, ui ) {
-            console.log(overlay);
-            overlay.animate({opacity: ui.value / 100});
-        }});
+
 
   loadPicks(userID);
 

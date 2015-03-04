@@ -21,7 +21,7 @@
     pickUsers.push("{{ pick_owner }}");
   {% endfor %}
 
-  var overlay64 = "{{ image }}";
+  //var overlay64 = "{{ image }}";
   var image_url = "{{ img_obj.url(size=1200) }}";
   var image_key = "{{ img_obj.key().id() }}";
   var baseImageWidth = "{{ img_obj.width }}";
@@ -56,7 +56,9 @@
   <p class="lead">Compare your interpretation to the image uploader and everyone else... and vote on those that stand out.</p>
 
   <!-- SEISMIC IMAGE -->
-  <div id="image-div"></div>
+  <div id="image-div">
+    <img style="position:absolute;top:0;left:0" id="loader" src="/static/img/ajax-loader.gif" />
+  </div>
 
   <!-- OPACITY SLIDER -->
   <div class="col-md-offset-2 col-md-8 col-xs-offset-1 col-xs-10" title="Change the opacity of the picks" style="margin-top:18px; margin-bottom:36px;" id="overlay-slider"></div>

@@ -12,6 +12,8 @@ from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
 
+from pickthis import get_result_image
+
 def authenticate(func):
     """
     Wrapper function for methods that require a logged in
@@ -40,6 +42,25 @@ def error_catch(func):
             self.error(500)
             
     return call_and_catch
+
+
+
+class HeatmapHandler(webapp2.RequestHandler):
+
+    @error_catch
+    @authenticate
+    def get(self, user_id):
+
+        image_key = self.request.get("image_key")
+        
+        img_obj = ImageObject.get_by_id(int(image_key),
+                                        parent=db_parent)
+
+   
+        image = get_result_image(img_obj)
+            
+
+        self.response.write(image)
 
 
 class CommentHandler(webapp2.RequestHandler):
@@ -338,7 +359,8 @@ class PickHandler(webapp2.RequestHandler):
     def post(self, user_id):
         request_body = json.loads(self.request.body)
         image_key = request_body["image_key"]
-        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
+        img_obj = ImageObject.get_by_id(int(image_key),
+                                        parent=db_parent)
         
         points = request_body['points']
         simple_points = []

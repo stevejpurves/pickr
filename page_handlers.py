@@ -137,9 +137,6 @@ class ResultsHandler(PickThisPageRequest):
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
-
-        # DO THE MAGIC!
-        image = get_result_image(img_obj)
         
         picks = Picks.all().ancestor(img_obj).fetch(10000)
         pick_users = [p.user_id for p in picks]
@@ -161,7 +158,6 @@ class ResultsHandler(PickThisPageRequest):
         cmts = Comment.all().ancestor(img_obj).order('datetime').fetch(10000)
 
         params = self.get_base_params(count=count,
-                                      image=image,
                                       img_obj=img_obj,
                                       user_id=user_id,
                                       owner_user=owner_user,

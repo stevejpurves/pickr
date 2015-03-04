@@ -174,7 +174,8 @@ def get_result_image(img_obj, opacity_scalar=None):
         im_out = generate_heatmap(img_obj, data, opacity_scalar)
         output = StringIO.StringIO()
         im_out.save(output, 'png')
-        cached_heatmap = Heatmap(stale=False, png=output.getvalue(), parent=img_obj)
+        cached_heatmap = Heatmap(stale=False, png=output.getvalue(),
+                                 parent=img_obj)
         cached_heatmap.put()
 
     return base64.b64encode(cached_heatmap.png)
