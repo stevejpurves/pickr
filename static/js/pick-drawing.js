@@ -9,13 +9,18 @@ pickDrawingSetup = function(){
     var pickrElement;
     var paper;
     var baseImage;
-    var overlay;
-    
+    var overlay
+    var mode;   
+
     window.ondragstart = function() { return false; } ;
 
-    var owner_colour   = "#0000FF"; // Image owner
-    var current_colour = "#00DD00"; // Current user
-    var default_colour = "#FF0000"; // Everyone else
+    var cfg = {}
+    cfg.colour = {}
+    cfg.styles = {}
+
+    cfg.colour.owner   = "#0000FF"; // Image owner
+    cfg.colour.current = "#00DD00"; // Current user
+    cfg.colour.default = "#FF0000"; // Everyone else
 
     var circles;
     var segments;
@@ -23,7 +28,6 @@ pickDrawingSetup = function(){
     
     var aspectRatio = baseImageWidth / baseImageHeight;
     var avgImageSize = (baseImageWidth + baseImageHeight) / 2;
-    var penSize;      // We will set these later.
     var resizeScale;
 
     var handler = { pick:null, move:null, insert: null }
@@ -40,7 +44,7 @@ pickDrawingSetup = function(){
     var getPointFromEvent = function(e) {
         var x = e.offsetX || e.pageX - pickrElement.offset().left;
         var y = e.offsetY || e.pageY - pickrElement.offset().top;
-        return new Point(Math.round(x / resizeScale), Math.round((y-2) / resizeScale));
+        return new Point(Math.round(x / resizeScale), Math.round((y-cfg.cursor_y_offset) / resizeScale));
     };
 
     var onPick = function(cb) {
@@ -59,9 +63,10 @@ pickDrawingSetup = function(){
         handler.insert = cb;
     };
     
-    var setup = function(elementId) {
+    var setup = function(elementId, the_mode) {
+        mode = the_mode || "picking";
+
         pickrElement = $('#' + elementId);
-        penSize = 4;
         paper = Raphael(elementId);
   
         updatePaperSize();
@@ -71,21 +76,33 @@ pickDrawingSetup = function(){
         segments = paper.set();
         $(window).resize(updatePaperSize);
 
+        cfg.cursor_y_offset = 2;
+        cfg.penSize = 4;
+        cfg.styles.hoverIn = {'opacity':'0.9'};
+        cfg.styles.hoverOut = {'opacity':'0.5'};
+        cfg.styles.circle_radius = 4*cfg.penSize/(3*resizeScale);
+        cfg.styles.segment = {'stroke-width': 1.2*cfg.penSize, 'opacity': 0.5};
+        cfg.styles.segment_dashed = {'stroke-dasharray':"."};
+        cfg.styles.circle = { stroke: '#fff', opacity: 0.5 };
+        cfg.styles.circle_startMove = {fill: '#0f0', opacity: 0.9};
+        cfg.styles.circle_endMove = {opacity: 0.5};
+        cfg.styles.overlay = {opacity: 0.67};
+
         baseImage.mousemove(function(e) {
             currentMousePosition = getPointFromEvent(e);
         })
 
-        return penSize;  
+        return cfg.penSize;  
     };
     
     var renderImage = function(url) {
         overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
         overlay.undrag();
-        return overlay.attr({opacity: 0.67});
+        return overlay.attr(cfg.styles.overlay);
     };
 
-    var hoverIn = function() { this.attr({'opacity':'0.9'}); };
-    var hoverOut = function() { this.attr({'opacity':'0.5'}); };
+    var hoverIn = function() { this.attr( cfg.styles.hoverIn ); };
+    var hoverOut = function() { this.attr( cfg.styles.hoverOut ); };
 
     var indexOfCircle = function(c) {
         for (var i = 0; i < circles.length; i++)
@@ -95,18 +112,9 @@ pickDrawingSetup = function(){
     }
 
     var addCircle = function(p, colour) {
-        var radius = (4*penSize/(3*resizeScale));
-        var circle = paper.circle(p.x, p.y, radius);
-        
-        // attach the point
+        var circle = paper.circle(p.x, p.y, cfg.styles.circle_radius);
         circle.point = p;
-
-        // Add its attributes
-        circle.attr({
-            fill: colour,
-            stroke: '#fff',
-            opacity: 0.5
-        });
+        circle.attr(_.extend({ fill: colour }, cfg.styles.circle));
 
         if (handler.move) {
             var p0, p0idx;
@@ -120,7 +128,7 @@ pickDrawingSetup = function(){
                 if (right.seg)
                     right.seg.attr({path: writeSegmentPath(p, right.circle.point) });
             }, function start(x, y, e) {
-                this.attr({fill: '#0f0', opacity: 0.9});
+                this.attr(cfg.styles.circle_startMove );
                 p0 = getPointFromEvent(e);
 
                 if (pickstyle === 'lines' || pickstyle === 'polygons') {
@@ -142,7 +150,7 @@ pickDrawingSetup = function(){
                     }
                 }
             }, function end(e) {
-                this.attr({fill: colour, opacity: 0.5});
+                this.attr(_.extend({fill: colour}, cfg.styles.circle_endMove));
                 left.seg = left.circle = right.seg = right.circle = null;
                 var p1 = getPointFromEvent(e);
                 handler.move(p1, p0);
@@ -164,31 +172,33 @@ pickDrawingSetup = function(){
         return path;
     }
 
-    var addSegment = function(p0, p1, options) {
+    var addSegment = function(p0, p1, colour) {
         var path = writeSegmentPath(p0, p1);
         var segment = paper.path(path);
-        segment.attr(options);
+        segment.attr(_.extend({'stroke': colour}, cfg.styles.segment));
         if (handler.insert) {
             segment.click(function(e) {
                 e.preventDefault();
-                handler.insert(getPointFromEvent(e));
+                handler.insert(getPointFromEvent(e), segment.idx);
             })
             segment.hover(hoverIn, hoverOut, segment, segment)                
         }
 
+        segment.idx = segments.length;
         segments.push(segment);
+        return segment;
     }
     
     var connectTheDots = function(points, colour) {
+        if (points.length > 0)
         if (pickstyle === 'lines' || pickstyle === 'polygons'){
             if (segments.length > 0) segments.remove();
-            var options = {'stroke': colour, 'stroke-width': 1.2*penSize, 'opacity': 0.5};
             for (var i = 0; i < points.length-1; i++)
-                addSegment(points[i], points[i+1], options);
+                addSegment(points[i], points[i+1], colour);
             if (pickstyle === "polygons") {
-                var auto_segment = options;
-                auto_segment['stroke-dasharray'] = ".";
-                addSegment(points[points.length-1], points[0], auto_segment);
+                var auto = addSegment(points[points.length-1], points[0], colour);
+                if (mode === "picking")
+                    auto.attr(cfg.styles.segment_dashed);
             }
         }
     };
@@ -208,37 +218,21 @@ pickDrawingSetup = function(){
             circles.insertAfter(segments);
     };
 
-    var refresh = function(points) {
+    var refresh = function(points, colour) {
         clear();
-        draw(points, default_colour);
-    };
-
-    var convertToPoints = function(data) {
-        var points = [];
-        for (var i = 0; i < data.length; i++)
-            points.push({x: data[i][0], y: data[i][1]});
-        return points;
-    };
-
-    var renderResults = function(data) {
-        clear();
-        if (data.current) 
-            draw(convertToPoints(data.user_data), current_colour);
-        else if (data.owner)
-            draw(convertToPoints(data.owner_data), owner_colour);
-        else
-            draw(convertToPoints(data.data), default_colour);        
+        draw(points, colour || cfg.colour.default);
     };
 
     return {
+        colour: { default: cfg.colour.default, current: cfg.colour.current, owner: cfg.colour.owner },
         setup: setup,
         onPick: onPick,
         onMove: onMove,
         onInsert: onInsert,
         refresh: refresh,
+        draw: draw,
         clear: clear,
-        renderImage: renderImage,
-        renderResults: renderResults
+        renderImage: renderImage
     };
 };
 

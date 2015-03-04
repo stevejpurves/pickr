@@ -2,7 +2,7 @@
 import numpy as np
 import StringIO, json, base64
 
-from lib_db import Picks, ImageObject, User, Vote
+from lib_db import Picks, ImageObject, User, Vote, Heatmap
 
 from google.appengine.api import images
 from google.appengine.ext import blobstore
@@ -43,21 +43,9 @@ def normalize(a, newmax):
     return (float(newmax) * a) / np.amax(a)
 
 
-def get_result_image(img_obj, opacity_scalar=None):
-    """
-    Takes an image, gets its interpretations, and makes a
-    new image that shows all the interpretations concatenated.
-    Maps a 'heatmap' colourbar to the result.
-
-    Returns the new 'heatmap' image,
-    plus a count of interpretations.
-
-    """
-    # Read the interpretations for this image.
-    data = Picks.all().ancestor(img_obj).fetch(10000)
-
-    # Get the dimensions.
-    w, h = img_obj.width, img_obj.height
+def generate_heatmap(img_obj, data, opacity_scalar):
+    w = img_obj.width
+    h = img_obj.height
     avg = (w + h) / 2.
 
     # Make an 'empty' image for all the results.
@@ -164,12 +152,33 @@ def get_result_image(img_obj, opacity_scalar=None):
     # Make the 4-channel image from an array.
     im = np.dstack([r, g, b, a])
     im_out = Image.fromarray(im.astype('uint8'), 'RGBA')
+    
+    return im_out
 
-    # Save out into file-like.
-    output = StringIO.StringIO()
-    im_out.save(output, 'png')
 
-    return base64.b64encode(output.getvalue())
+
+def get_result_image(img_obj, opacity_scalar=None):
+    """
+    Takes an image, gets its interpretations, and makes a
+    new image that shows all the interpretations concatenated.
+    Maps a 'heatmap' colourbar to the result.
+
+    Returns the new 'heatmap' image,
+    plus a count of interpretations.
+
+    """
+    cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+
+    if not cached_heatmap or cached_heatmap.stale:
+        data = Picks.all().ancestor(img_obj).fetch(10000)
+        im_out = generate_heatmap(img_obj, data, opacity_scalar)
+        output = StringIO.StringIO()
+        im_out.save(output, 'png')
+        cached_heatmap = Heatmap(stale=False, png=output.getvalue(),
+                                 parent=img_obj)
+        cached_heatmap.put()
+
+    return base64.b64encode(cached_heatmap.png)
 
 
 def statistics():
