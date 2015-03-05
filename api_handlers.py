@@ -11,6 +11,7 @@ import json, base64, StringIO
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
+from google.appengine.ext import deferred
 
 from pickthis import generate_heatmap
 
@@ -59,17 +60,15 @@ class HeatmapHandler(webapp2.RequestHandler):
         cached_heatmap = Heatmap.all().ancestor(img_obj).get()
 
         if cached_heatmap:
-            self.response.write(base64.b64encode(cached_heatmap.png))
-        
+            image = base64.b64encode(cached_heatmap.png)
+        else:
+            image = None
+            
         if not cached_heatmap or cached_heatmap.stale:
             data = Picks.all().ancestor(img_obj).fetch(10000)
-            im_out = generate_heatmap(img_obj, data, None)
-            output = StringIO.StringIO()
-            im_out.save(output, 'png')
-            cached_heatmap = Heatmap(stale=False,
-                                     png=output.getvalue(),
-                                     parent=img_obj)
-            cached_heatmap.put()
+            deferred.defer(generate_heatmap,img_obj, data, None)
+
+        self.response.write(image)
             
 
 

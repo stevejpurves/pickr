@@ -152,8 +152,14 @@ def generate_heatmap(img_obj, data, opacity_scalar):
     # Make the 4-channel image from an array.
     im = np.dstack([r, g, b, a])
     im_out = Image.fromarray(im.astype('uint8'), 'RGBA')
-    
-    return im_out
+
+    output = StringIO.StringIO()
+    im_out.save(output, 'png')
+    cached_heatmap = Heatmap(stale=False,
+                             png=output.getvalue(),
+                             parent=img_obj)
+    cached_heatmap.put()
+
 
 
 
