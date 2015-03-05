@@ -157,28 +157,7 @@ def generate_heatmap(img_obj, data, opacity_scalar):
 
 
 
-def get_result_image(img_obj, opacity_scalar=None):
-    """
-    Takes an image, gets its interpretations, and makes a
-    new image that shows all the interpretations concatenated.
-    Maps a 'heatmap' colourbar to the result.
 
-    Returns the new 'heatmap' image,
-    plus a count of interpretations.
-
-    """
-    cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-
-    if not cached_heatmap or cached_heatmap.stale:
-        data = Picks.all().ancestor(img_obj).fetch(10000)
-        im_out = generate_heatmap(img_obj, data, opacity_scalar)
-        output = StringIO.StringIO()
-        im_out.save(output, 'png')
-        cached_heatmap = Heatmap(stale=False, png=output.getvalue(),
-                                 parent=img_obj)
-        cached_heatmap.put()
-
-    return base64.b64encode(cached_heatmap.png)
 
 
 def statistics():

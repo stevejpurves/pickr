@@ -14,7 +14,7 @@ from google.appengine.ext import blobstore
 # For image manipulation.
 from PIL import Image
 
-from pickthis import get_result_image, statistics
+from pickthis import  statistics
 from constants import env, db_parent
 from lib_db import ImageObject, Picks, User
 from lib_db import Comment

@@ -6,13 +6,13 @@ from lib_db import ImageObject, Picks, Vote, Comment, History, Heatmap
 
 from constants import db_parent
 
-import json
+import json, base64, StringIO
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
 
-from pickthis import get_result_image
+from pickthis import generate_heatmap
 
 def authenticate(func):
     """
@@ -56,11 +56,22 @@ class HeatmapHandler(webapp2.RequestHandler):
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
 
-   
-        image = get_result_image(img_obj)
+        cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+
+        if cached_heatmap:
+            self.response.write(base64.b64encode(cached_heatmap.png))
+        
+        if not cached_heatmap or cached_heatmap.stale:
+            data = Picks.all().ancestor(img_obj).fetch(10000)
+            im_out = generate_heatmap(img_obj, data, None)
+            output = StringIO.StringIO()
+            im_out.save(output, 'png')
+            cached_heatmap = Heatmap(stale=False,
+                                     png=output.getvalue(),
+                                     parent=img_obj)
+            cached_heatmap.put()
             
 
-        self.response.write(image)
 
 
 class CommentHandler(webapp2.RequestHandler):

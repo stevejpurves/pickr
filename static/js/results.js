@@ -21,8 +21,7 @@ $(function() {
 
     // Ajax call to get the heatmap
     $.get('/heatmap?image_key=' + image_key, function(data){ 
-
-	$('#loader').fadeOut();   
+  
 	var overlay = pickDrawing.renderImage('data:image/png;base64,' 
 					      + data);
 
