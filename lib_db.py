@@ -20,35 +20,30 @@ class User(db.Model):
     
     @property
     def picks(self):
-
         all_picks = Picks.all()
         my_picks = all_picks.filter("user_id =", self.user_id)
-
         return my_picks.fetch(1000)
 
     @property
     def uploads(self):
-
         all_imgs = ImageObject.all()
         my_imgs = all_imgs.filter("user_id =", self.user_id)
         my_imgs = my_imgs.filter("title !=", '')
-
         return my_imgs.fetch(1000)
 
     @property
-    def cred(self):
-
-        rep = 1 # everyone start with 1
-
-        # Award rep for votes received.
+    def votes(self):
+        votes = 0
         for picks in self.picks:
-            rep += picks.votes
+            votes += picks.votes
+        return votes
 
-        # Award rep for interpretations made.
-        rep += 3 * len(self.picks)
-
-        # Award rep for uploading.
-        rep += 3 * len(self.uploads)
+    @property
+    def cred(self):
+        rep = 1                       # everyone start with 1
+        rep += self.votes             # votes received
+        rep += 3 * len(self.picks)    # picks performed
+        rep += 3 * len(self.uploads)  # uploads performed
 
         return rep
 

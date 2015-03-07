@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %} &middot; league{% endblock %}
+
+  {% block content %}
+      
+  <div class="container">
+
+    <h2>League of picksters</h2>
+    <div style="bottom-margin:24px;">&nbsp;</div>
+
+    <table class="table table-hover">
+      <tr>
+        <th>Reputation</th>
+        <th>User</th>
+        <th>Uploads</th>
+        <th>Picks</th>
+        <th>Votes</th>
+      </tr>
+      {% for user in top_users %}
+        <tr {% if user[0].user_id == user_id %}class="success"{% endif %}>
+          <td>{{ user[0].cred }}</td>
+          <td>{{ user[0].nickname }}</td>
+          <td>{{ user[0].uploads | length }}</td>
+          <td>{{ user[0].picks | length }}</td>
+          <td>{{ user[0].votes }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+  </div>
+
+  {% endblock %}

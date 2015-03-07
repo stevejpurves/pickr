@@ -20,6 +20,7 @@ app = webapp2.WSGIApplication([
     ('/err', ErrorHandler),
     ('/pickr', PickerHandler),
     ('/profile', ProfileHandler),
+    ('/league', LeagueHandler),
     ('/logout', LogoutHandler),
     ('/heatmap', HeatmapHandler),
     (r'/([0-9]+)$', PickerHandler),  # An image ID.

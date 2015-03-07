@@ -6,6 +6,7 @@ import cgi
 import re
 import os
 import Cookie
+import operator
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
@@ -174,12 +175,13 @@ class ProfileHandler(PickThisPageRequest):
     @error_catch
     @authenticate
     def get(self, user_id):
-        user = User.all().filter("user_id =", user_id).get()
+        #user = User.all().filter("user_id =", user_id).get()
+        user = users.get_current_user()
 
         country = self.request.headers.get("X-AppEngine-Country")
         region = self.request.headers.get("X-AppEngine-Region")
-        city = self.request.headers.get("X-AppEngine-City")
-        latlong = self.request.headers.get("X-AppEngine-CityLatLong")
+        # city = self.request.headers.get("X-AppEngine-City")
+        # latlong = self.request.headers.get("X-AppEngine-CityLatLong")
 
         template_params = self.get_base_params()
         template_params.update(user=user,
@@ -187,6 +189,34 @@ class ProfileHandler(PickThisPageRequest):
                                country=country)
 
         template = env.get_template('profile.html')
+        html = template.render(template_params)
+        self.response.write(html)
+
+
+class LeagueHandler(PickThisPageRequest):
+    @error_catch
+    @authenticate
+    def get(self, user_id):
+
+        #user_id = users.get_current_user()
+
+        users = User.all().fetch(10000)
+
+        # Unfortunately, cannot do this.
+        # top_users = q.order('-cred').fetch(10)
+
+        # This will be expensive, we'll need to cache
+        rep = {}
+        for u in users:
+            rep[u] = u.cred
+        by_rep = sorted(rep.items(),
+                        key=operator.itemgetter(1),
+                        reverse=True)
+
+        template_params = self.get_base_params()
+        template_params.update(user_id=user_id,
+                               top_users=by_rep[:10])
+        template = env.get_template('league.html')
         html = template.render(template_params)
         self.response.write(html)
 
