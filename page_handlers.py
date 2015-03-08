@@ -17,7 +17,7 @@ from PIL import Image
 
 from pickthis import  statistics
 from constants import env, db_parent
-from lib_db import ImageObject, Picks, User
+from lib_db import ImageObject, Picks, User, Heatmap
 from lib_db import Comment
 
 # For image serving
@@ -138,7 +138,7 @@ class ResultsHandler(PickThisPageRequest):
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key),
                                         parent=db_parent)
-        
+
         picks = Picks.all().ancestor(img_obj).fetch(10000)
         pick_users = [p.user_id for p in picks]
 
@@ -158,7 +158,12 @@ class ResultsHandler(PickThisPageRequest):
         # Get a list of comment strings, if any.
         cmts = Comment.all().ancestor(img_obj).order('datetime').fetch(10000)
 
+        cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+        # if not cached_heatmap or cached_heatmap.stale:
+            # kick off async process to compute the heatmap
+
         params = self.get_base_params(count=count,
+                                      image=cached_heatmap,
                                       img_obj=img_obj,
                                       user_id=user_id,
                                       owner_user=owner_user,
