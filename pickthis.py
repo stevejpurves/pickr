@@ -1,6 +1,7 @@
 
 import numpy as np
 import StringIO, json, base64
+import time
 
 from lib_db import Picks, ImageObject, User, Vote, Heatmap
 
@@ -44,9 +45,12 @@ def normalize(a, newmax):
 
 
 def generate_heatmap(img_obj, data, opacity_scalar):
+    print "GENERATING HEATMAP"
     w = img_obj.width
     h = img_obj.height
     avg = (w + h) / 2.
+
+    time.sleep(10)
 
     # Make an 'empty' image for all the results.
     heatmap_image = np.zeros((h, w))
@@ -155,16 +159,18 @@ def generate_heatmap(img_obj, data, opacity_scalar):
 
     output = StringIO.StringIO()
     im_out.save(output, 'png')
-    cached_heatmap = Heatmap(stale=False,
-                             png=output.getvalue(),
-                             parent=img_obj)
+
+    cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+    if not cached_heatmap:
+        cached_heatmap = Heatmap(stale=False,
+                                 png=output.getvalue(),
+                                 parent=img_obj)
+    else:
+        cached_heatmap.stale = False
+        cached_heatmap.png = output.getvalue()
+
     cached_heatmap.put()
-
-
-
-
-
-
+    print "FINSHED GENERATING HEATMAP"
 
 def statistics():
 

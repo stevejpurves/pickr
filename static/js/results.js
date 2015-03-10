@@ -12,21 +12,58 @@ $(function() {
     // var baseImageHeight = "{{ img_obj.height }}";
     // var pickstyle = "{{ img_obj.pickstyle }}";
 
+    var opts = {
+      lines: 13, // The number of lines to draw
+      length: 0, // The length of each line
+      width: 10, // The line thickness
+      radius: 30, // The radius of the inner circle
+      corners: 1, // Corner roundness (0..1)
+      rotate: 0, // The rotation offset
+      direction: 1, // 1: clockwise, -1: counterclockwise
+      color: '#000', // #rgb or #rrggbb or array of colors
+      speed: 1, // Rounds per second
+      trail: 75, // Afterglow percentage
+      shadow: false, // Whether to render a shadow
+      hwaccel: false, // Whether to use hardware acceleration
+      className: 'spinner', // The CSS class to assign to the spinner
+      zIndex: 2e9, // The z-index (defaults to 2000000000)
+      top: '50%', // Top position relative to parent
+      left: '50%' // Left position relative to parent
+    }
+
+
+
     var server = pickrAPIService(image_key);
     var current = 0;  // An index for stepping over the list
     var currentUser = pickUsers[current];
+    var overlay;
 
     pickDrawing.setup('image-div', 'rendering');
 
-    // Ajax call to get the heatmap
-    $.get('/heatmap?image_key=' + image_key, function(data) { 
-  
-    	var overlay = pickDrawing.renderImage('data:image/png;base64,' + data);
+    function renderOverlay(overlayData) {
+      var overlay = pickDrawing.renderOverlay('data:image/png;base64,' + overlayData);
+      $( "#overlay-slider" ).slider({min: 0, max: 100, value:67, change: function( event, ui ) {
+          overlay.animate({opacity: ui.value / 100});
+      }});      
+    }
 
-    	$( "#overlay-slider" ).slider({min: 0, max: 100, value:67, change: function( event, ui ) {
-    		  overlay.animate({opacity: ui.value / 100});
-      }});
-    });
+    function pollHeatmap() {
+      console.log("polling")
+      $.get('/heatmap?image_key=' + image_key, function(data) {
+        if (data.stale) {
+          $('#heatmap-notify').slideDown();
+          return setTimeout(function(){ pollHeatmap() }, 2000);
+        }
+        renderOverlay(data.image)
+        $('#heatmap-notify').slideUp();
+        $('#me-button').click().click();
+      })   
+    }
+
+    // load existing heatmap immediately even if its stale
+    if (overlay64) renderOverlay(overlay64)
+    // poll for an updated heatmap
+    pollHeatmap();
 
     var updateInterpNo = function(n){
       $('#interp-no').text(parseInt(n+1));
@@ -272,9 +309,6 @@ $(function() {
           });
       });
     });
-    
-
 
   loadPicks(userID);
-
 });

@@ -51,27 +51,21 @@ class HeatmapHandler(webapp2.RequestHandler):
     @error_catch
     @authenticate
     def get(self, user_id):
-
         image_key = self.request.get("image_key")
-        
-        img_obj = ImageObject.get_by_id(int(image_key),
-                                        parent=db_parent)
-
+        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
         cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-
-        if cached_heatmap:
+        print "cached_heatmap.stale", cached_heatmap.stale
+        if cached_heatmap and not cached_heatmap.stale:
             image = base64.b64encode(cached_heatmap.png)
+            output = {"stale": cached_heatmap.stale, "image":image}
         else:
             image = None
-            
-        if not cached_heatmap or cached_heatmap.stale:
-            data = Picks.all().ancestor(img_obj).fetch(10000)
-            deferred.defer(generate_heatmap,img_obj, data, None)
+            output = {"stale": True}
 
-        self.response.write(image)
-            
+        
 
-
+        self.response.headers["Content-Type"] = "application/json"
+        self.response.write(json.dumps(output))        
 
 class CommentHandler(webapp2.RequestHandler):
 
@@ -400,6 +394,9 @@ class PickHandler(webapp2.RequestHandler):
         if (cached_heatmap):
             cached_heatmap.stale = True
             cached_heatmap.put()
+
+        data = Picks.all().ancestor(img_obj).fetch(10000)
+        deferred.defer(generate_heatmap,img_obj, data, None)
 
         img_obj.put()
 

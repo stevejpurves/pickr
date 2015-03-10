@@ -95,11 +95,16 @@ pickDrawingSetup = function(){
         return cfg.penSize;  
     };
     
-    var renderImage = function(url) {
+    var renderOverlay = function(url) {
+        if (overlay) overlay.remove()
         overlay = paper.image(url, 0, 0, baseImageWidth, baseImageHeight);
         overlay.undrag();
         return overlay.attr(cfg.styles.overlay);
     };
+
+    var updateOverlay = function(url) {
+        overlay.node.href.baseVal = url;
+    }
 
     var hoverIn = function() { this.attr( cfg.styles.hoverIn ); };
     var hoverOut = function() { this.attr( cfg.styles.hoverOut ); };
@@ -232,7 +237,7 @@ pickDrawingSetup = function(){
         refresh: refresh,
         draw: draw,
         clear: clear,
-        renderImage: renderImage
+        renderOverlay: renderOverlay
     };
 };
 

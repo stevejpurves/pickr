@@ -7,10 +7,12 @@ import re
 import os
 import Cookie
 import operator
+import base64
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
+from google.appengine.ext import deferred
 
 # For image manipulation.
 from PIL import Image
@@ -19,6 +21,7 @@ from pickthis import  statistics
 from constants import env, db_parent
 from lib_db import ImageObject, Picks, User, Heatmap
 from lib_db import Comment
+from pickthis import generate_heatmap
 
 # For image serving
 import cloudstorage as gcs
@@ -158,18 +161,25 @@ class ResultsHandler(PickThisPageRequest):
         # Get a list of comment strings, if any.
         cmts = Comment.all().ancestor(img_obj).order('datetime').fetch(10000)
 
-        cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-        # if not cached_heatmap or cached_heatmap.stale:
-            # kick off async process to compute the heatmap
-
         params = self.get_base_params(count=count,
-                                      image=cached_heatmap,
-                                      img_obj=img_obj,
-                                      user_id=user_id,
-                                      owner_user=owner_user,
-                                      pick_users=pick_users,
-                                      comments=cmts)
+                                        img_obj=img_obj,
+                                        user_id=user_id,
+                                        owner_user=owner_user,
+                                        pick_users=pick_users,
+                                        comments=cmts)
 
+        cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+
+        if not cached_heatmap:
+            # only for degenerate cases until everything in the db has a heatmap
+            data = Picks.all().ancestor(img_obj).fetch(10000)
+            deferred.defer(generate_heatmap,img_obj, data, None)
+        else:
+            # if there is a heatmap render it to the template even if stale
+            # if not then leave that parameter as undefined and let the front end
+            # handle it
+            params.update(image=base64.b64encode(cached_heatmap.png))
+            
         template = env.get_template("results.html")
         html = template.render(params)
 
