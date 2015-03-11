@@ -54,7 +54,6 @@ class HeatmapHandler(webapp2.RequestHandler):
         image_key = self.request.get("image_key")
         img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
         cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-        print "cached_heatmap.stale", cached_heatmap.stale
         if cached_heatmap and not cached_heatmap.stale:
             image = base64.b64encode(cached_heatmap.png)
             output = {"stale": cached_heatmap.stale, "image":image}
