@@ -49,15 +49,15 @@ $(function() {
 
     function pollHeatmap() {
       console.log("polling")
-      $.get('/heatmap?image_key=' + image_key, function(data) {
+      server.get_heatmap(function(data) {
         if (data.stale) {
           $('#heatmap-notify').slideDown();
           return setTimeout(function(){ pollHeatmap() }, 2000);
         }
         renderOverlay(data.image)
         $('#heatmap-notify').slideUp();
-        $('#me-button').click().click();
-      })   
+        loadPicks(userID)
+      });  
     }
 
     // load existing heatmap immediately even if its stale

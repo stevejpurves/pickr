@@ -23,6 +23,9 @@ var pickrAPIService = function(image_key) {
       },
       vote: function(user, vote, cb) {
        	return $.post('/vote',{ user: user, image_key: image_key, vote: vote }, cb);
+      },
+      get_heatmap: function(cb) {
+        $.get('/heatmap?image_key=' + image_key).done(cb);
       }
     };
 };
