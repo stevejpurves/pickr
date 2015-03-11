@@ -47,12 +47,12 @@ $(function() {
       }});      
     }
 
+    var polling_interval = 1000;
     function pollHeatmap() {
-      console.log("polling")
       server.get_heatmap(function(data) {
         if (data.stale) {
           $('#heatmap-notify').slideDown();
-          return setTimeout(function(){ pollHeatmap() }, 2000);
+          return setTimeout(function(){ pollHeatmap() }, polling_interval);
         }
         renderOverlay(data.image)
         $('#heatmap-notify').slideUp();
@@ -303,6 +303,10 @@ $(function() {
           });
       });
     });
+
+    $('#regenerate-heatmap').on('click', function() {
+      server.regenerate_heatmap(pollHeatmap)
+    })
 
   loadPicks(userID);
 });

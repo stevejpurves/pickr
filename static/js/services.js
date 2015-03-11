@@ -26,6 +26,9 @@ var pickrAPIService = function(image_key) {
       },
       get_heatmap: function(cb) {
         $.get('/heatmap?image_key=' + image_key).done(cb);
+      },
+      regenerate_heatmap: function(cb) {
+        $.post('/heatmap?image_key=' + image_key).done(cb);
       }
     };
 };
