@@ -295,13 +295,7 @@ $(function() {
     })
     
     $('#delete-interp').on('click', function(){
-      var q = 'image_key=' + image_key + '&user_id=' + currentUser;
-      $.ajax({type:"DELETE",
-              url:"/update_pick?" + q,
-              dataType: "json",
-              contentType: "application/json; charset=utf-8"
-      })
-      .done(function( data ) {
+      server.delete_picks(currentUser, function( data ) {
           console.log(data)
           $('#delete-ack').show("fast");
           $('#delete-ack').delay(2000, function() {

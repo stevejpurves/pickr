@@ -268,9 +268,16 @@ class VoteHandler(webapp2.RequestHandler):
                 "user_choice": vote.value}
         
         self.response.write(json.dumps(data))
- 
 
 class PickHandler(webapp2.RequestHandler):
+
+    def markHeatmapAsStaleAndStartGeneratingNewOne(self, img_obj):
+        cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+        if (cached_heatmap):
+            cached_heatmap.stale = True
+            cached_heatmap.put()
+        data = Picks.all().ancestor(img_obj).fetch(10000)
+        deferred.defer(generate_heatmap,img_obj, data, None)
     
     @error_catch
     @authenticate
@@ -389,13 +396,13 @@ class PickHandler(webapp2.RequestHandler):
                         parent=img_obj)
         history.put()
         
-        cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-        if (cached_heatmap):
-            cached_heatmap.stale = True
-            cached_heatmap.put()
-
-        data = Picks.all().ancestor(img_obj).fetch(10000)
-        deferred.defer(generate_heatmap,img_obj, data, None)
+        self.markHeatmapAsStaleAndStartGeneratingNewOne(img_obj)
+        # cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+        # if (cached_heatmap):
+        #     cached_heatmap.stale = True
+        #     cached_heatmap.put()
+        # data = Picks.all().ancestor(img_obj).fetch(10000)
+        # deferred.defer(generate_heatmap,img_obj, data, None)
 
         img_obj.put()
 
@@ -420,6 +427,7 @@ class PickHandler(webapp2.RequestHandler):
         if users.is_current_user_admin():
             picks.delete()
             self.response.write(json.dumps({"success":True}))
+            self.markHeatmapAsStaleAndStartGeneratingNewOne(img_obj)
         else:
             self.response.write(json.dumps({"success":False}))
                 
