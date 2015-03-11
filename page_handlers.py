@@ -176,7 +176,7 @@ class ResultsHandler(PickThisPageRequest):
             deferred.defer(generate_heatmap,img_obj, data, None)
         else:
             # if there is a heatmap render it to the template even if stale
-            # if not then leave that parameter as undefined and let the front end
+            # if not then leave that paramter as undefined and let the front end
             # handle it
             params.update(image=base64.b64encode(cached_heatmap.png))
             
@@ -460,7 +460,7 @@ class LogoutHandler(webapp2.RequestHandler):
         # operating procedure. 
         target_url = self.request.referer or '/'
         if os.environ.get('SERVER_SOFTWARE', '').startswith('Development/'):
-            self.redirect(users.create_logout_url(target_url))
+            self.redirect(users.create_logout_url('/'))
             return
 
         # On the production instance, we just remove the session cookie, because

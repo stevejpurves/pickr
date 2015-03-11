@@ -45,12 +45,9 @@ def normalize(a, newmax):
 
 
 def generate_heatmap(img_obj, data, opacity_scalar):
-    print "GENERATING HEATMAP"
     w = img_obj.width
     h = img_obj.height
     avg = (w + h) / 2.
-
-    time.sleep(10)
 
     # Make an 'empty' image for all the results.
     heatmap_image = np.zeros((h, w))
@@ -170,7 +167,6 @@ def generate_heatmap(img_obj, data, opacity_scalar):
         cached_heatmap.png = output.getvalue()
 
     cached_heatmap.put()
-    print "FINSHED GENERATING HEATMAP"
 
 def statistics():
 
