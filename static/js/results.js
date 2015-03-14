@@ -5,37 +5,16 @@ $(function() {
     // var interpretationCount = {{ count }}; 
     // var pickUsers = [];   // A list
     // var ownerUser = "{{ owner_user }}";
-    // var userID = "{{ user_id }}";
+    // var loggedInUser = "{{ user_id }}";
     // var image_url = "{{ img_obj.url(size=1200) }}";
     // var image_key = "{{ img_obj.key().id() }}";
     // var baseImageWidth = "{{ img_obj.width }}";
     // var baseImageHeight = "{{ img_obj.height }}";
     // var pickstyle = "{{ img_obj.pickstyle }}";
 
-    var opts = {
-      lines: 13, // The number of lines to draw
-      length: 0, // The length of each line
-      width: 10, // The line thickness
-      radius: 30, // The radius of the inner circle
-      corners: 1, // Corner roundness (0..1)
-      rotate: 0, // The rotation offset
-      direction: 1, // 1: clockwise, -1: counterclockwise
-      color: '#000', // #rgb or #rrggbb or array of colors
-      speed: 1, // Rounds per second
-      trail: 75, // Afterglow percentage
-      shadow: false, // Whether to render a shadow
-      hwaccel: false, // Whether to use hardware acceleration
-      className: 'spinner', // The CSS class to assign to the spinner
-      zIndex: 2e9, // The z-index (defaults to 2000000000)
-      top: '50%', // Top position relative to parent
-      left: '50%' // Left position relative to parent
-    }
-
-
-
     var server = pickrAPIService(image_key);
     var current = 0;  // An index for stepping over the list
-    var currentUser = pickUsers[current];
+    var userOfDisplayedPick = loggedInUser;
     var overlay;
 
     pickDrawing.setup('image-div', 'rendering');
@@ -56,7 +35,7 @@ $(function() {
         }
         renderOverlay(data.image)
         $('#heatmap-notify').slideUp();
-        loadPicks(userID)
+        loadPicks(userOfDisplayedPick)
       });  
     }
 
@@ -113,7 +92,7 @@ $(function() {
     var loadPicks = function(user){
       server.get_votes( user, updateVoteCount);
 
-      // This loads the picks for 'currentUser' who is not the 
+      // This loads the picks for 'userOfDisplayedPick' who is not the 
       // currently-logged-in user, but the one in the pick
       // review cycle - the interpreter of the current pick.
       server.get_picks( user, function (data) {
@@ -143,7 +122,8 @@ $(function() {
         // Toggles the user's own interpretation
         $(this).button('toggle');
         if ($(this).hasClass('active')){
-          loadPicks(userID);
+          userOfDisplayedPick = loggedInUser;
+          loadPicks(loggedInUser);
           $('#delete-confirm-div').addClass('disabled')
           $('#delete-confirm').prop('disabled', true).prop('checked', false);
           // $('#delete-interp').addClass('disabled');
@@ -170,13 +150,13 @@ $(function() {
 
           $('#delete-confirm-div').addClass('disabled')
           $('#delete-confirm').prop('disabled', true).prop('checked', false);
-          // $('#delete-interp').addClass('disabled');
           $('#owner-up-vote-button').removeClass('disabled');
           $('#owner-down-vote-button').removeClass('disabled');
           $('#up-vote-button').addClass('disabled');
           $('#down-vote-button').addClass('disabled');
           $('#next-button').addClass('disabled');
           $('#previous-button').addClass('disabled');
+          userOfDisplayedPick = ownerUser;
           loadPicks(ownerUser);
         } else {
           pickDrawing.clear(); // Bah, deletes everything!
@@ -212,10 +192,9 @@ $(function() {
 
           // Turn everything on
 
-          loadPicks(currentUser);
+          loadPicks(userOfDisplayedPick);
           $('#delete-confirm-div').removeClass('disabled');
           $('#delete-confirm').prop('disabled', false);
-          // $('#delete-interp').removeClass('disabled');
           $('#owner-up-vote-button').addClass('disabled');
           $('#owner-down-vote-button').addClass('disabled');
           $('#up-vote-button').removeClass('disabled');
@@ -248,8 +227,8 @@ $(function() {
       if (current === 0){
         $('#previous-button').addClass('disabled');
       }
-      currentUser = pickUsers[current];
-      loadPicks(currentUser);
+      userOfDisplayedPick = pickUsers[current];
+      loadPicks(userOfDisplayedPick);
       updateInterpNo(current);
 	
     });
@@ -261,8 +240,8 @@ $(function() {
         if (current == (userCount - 1)){
           $('#next-button').addClass('disabled');
         }
-        currentUser = pickUsers[current];
-        loadPicks(currentUser);
+        userOfDisplayedPick = pickUsers[current];
+        loadPicks(userOfDisplayedPick);
         updateInterpNo(current);
     });
     
@@ -271,11 +250,11 @@ $(function() {
     };
     
     $('#up-vote-button').on('click', function(){
-        castVote(1, currentUser);
+        castVote(1, userOfDisplayedPick);
     });
 
     $('#down-vote-button').on('click', function(){
-        castVote(-1, currentUser);
+        castVote(-1, userOfDisplayedPick);
     });
     
     $('#owner-up-vote-button').on('click', function(){
@@ -295,7 +274,7 @@ $(function() {
     })
     
     $('#delete-interp').on('click', function(){
-      server.delete_picks(currentUser, function( data ) {
+      server.delete_picks(userOfDisplayedPick, function( data ) {
           console.log(data)
           $('#delete-ack').show("fast");
           $('#delete-ack').delay(2000, function() {
@@ -308,5 +287,5 @@ $(function() {
       server.regenerate_heatmap(pollHeatmap)
     })
 
-  loadPicks(userID);
+  loadPicks(userOfDisplayedPick);
 });

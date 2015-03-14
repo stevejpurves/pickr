@@ -12,7 +12,7 @@
   var userCount = {{ pick_users | length }} // Not including owner or self
   
   var ownerUser = "{{ owner_user }}";
-  var userID = "{{ user_id }}";      // This one won't change
+  var loggedInUser = "{{ user_id }}";      // This one won't change
 
   // Loop over pick_users and populate the users list
   // Question: Can't we just use pick_users directly?
@@ -28,19 +28,6 @@
   var baseImageHeight = "{{ img_obj.height }}";
   var pickstyle = "{{ img_obj.pickstyle }}";
  
-  // This deletes interpretations (admin only).
-  //function deleteInterpretation(){
-  //  var q = 'image_key=' + image_key + '&user_id=' + userID;
-  //  $.ajax('update_pick?' + q, {
-  //        type:'DELETE',
-  //        success: function(data){
-  //          if(data.success){
-  //            console.log("Successfully deleted!");
-  //            bootbox.alert('Interpretation has been deleted.');
-  //          }
-  //       };
-  //    });
-  //};
 </script>
 
 <script src="/static/js/lib/raphael-min.js"></script>
