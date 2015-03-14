@@ -61,7 +61,7 @@
       <!-- MY PICK - start with this only -->
       <div class="btn-group" role="group" style="margin-left:16px;">
         <button type="button" id="me-button"
-            class="btn btn-success btn-lrg active"
+            class="btn btn-success btn-lrg active" {% if not user_id %} disabled {% endif %}
             style="height:59px;" title="Toggle my interpretation">
           <span>My pick</span>
         </button>
@@ -78,7 +78,7 @@
       <div class="btn-group" role="group" style="margin-left:16px;">
         <button type="button" id="owner-button" class="btn btn-primary btn-lrg"
             style="height:59px;" title="Toggle the uploader's interpretation"
-            {% if user_id == img_obj.user_id %}disabled{% endif %}>
+            {% if not owner_user %}disabled{% endif %}>
           Uploader's pick{% if user_id == img_obj.user_id %}<br><span style="font-size:80%;">You are the uploader</span>{% endif %}
         </button>
         <div class="btn-group btn-group-vertical" role="group">
@@ -99,7 +99,7 @@
             <span class="glyphicon glyphicon-chevron-left">
         </button>
         <button type="button" id="everyone-button"
-            class="btn btn-danger btn-lrg"
+            class="btn btn-danger btn-lrg {% if not user_id and not owner_id %} active {% endif %}"
             style="height:59px;" title="Toggle everyone elses's interpretations">
           Everyone else<br />
   	<span id="interp-no">
@@ -130,9 +130,9 @@
 
     {% if admin %}
       <!-- div for big delete button -->
-      <div id="delete-confirm-div" class="col-md-offset-4 col-md-6 checkbox disabled" style="margin-top:24px;">
+      <div id="delete-confirm-div" class="col-md-offset-4 col-md-6 checkbox" style="margin-top:24px;">
         <label>
-          <input id="delete-confirm" type="checkbox" disabled>
+          <input id="delete-confirm" type="checkbox">
           Delete this interpretation by <span id="interp-user"></span>
         </label>
       </div>

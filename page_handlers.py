@@ -139,37 +139,30 @@ class ResultsHandler(PickThisPageRequest):
 
         user_id = users.get_current_user().user_id()
         image_key = self.request.get("image_key")
-        img_obj = ImageObject.get_by_id(int(image_key),
-                                        parent=db_parent)
-
-        picks = Picks.all().ancestor(img_obj).fetch(10000)
-        pick_users = [p.user_id for p in picks]
-
-        count = len(pick_users)
-
-        owner_user = img_obj.user_id
-
-        # Filter out the owner and current user
-        if user_id in pick_users:
-            pick_users.remove(user_id)
-        else:
-            # You shouldn't even be here!
-            self.redirect('/')
-        if owner_user in pick_users:
-            pick_users.remove(owner_user)
+        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
 
         # Get a list of comment strings, if any.
         cmts = Comment.all().ancestor(img_obj).order('datetime').fetch(10000)
+        params = self.get_base_params(img_obj=img_obj, comments=cmts)
+                                        
+        picks = Picks.all().ancestor(img_obj).fetch(10000)
+        pick_users = [p.user_id for p in picks]
+        owner_user = img_obj.user_id
+        # Filter out the owner and current user
+        if user_id in pick_users:
+            pick_users.remove(user_id)
+            params.update(user_id=user_id)
+        elif not users.is_current_user_admin():
+            self.redirect('/')
 
-        params = self.get_base_params(count=count,
-                                        img_obj=img_obj,
-                                        user_id=user_id,
-                                        owner_user=owner_user,
-                                        pick_users=pick_users,
-                                        comments=cmts)
+        if owner_user in pick_users:
+            pick_users.remove(owner_user)
+            params.update(owner_user=owner_user) 
+
+        count = len(pick_users)
+        params.update(pick_users=pick_users, count=count)
 
         cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-
         if not cached_heatmap:
             # only for degenerate cases until everything in the db has a heatmap
             data = Picks.all().ancestor(img_obj).fetch(10000)

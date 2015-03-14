@@ -14,7 +14,7 @@ $(function() {
 
     var server = pickrAPIService(image_key);
     var current = 0;  // An index for stepping over the list
-    var userOfDisplayedPick = loggedInUser;
+    var userOfDisplayedPick = loggedInUser || ownerUser || pickUsers[current];
     var overlay;
 
     pickDrawing.setup('image-div', 'rendering');
@@ -88,22 +88,15 @@ $(function() {
           } // end of inner if
         }
     };
-   
-    var loadPicks = function(user){
-      server.get_votes( user, updateVoteCount);
 
-      // This loads the picks for 'userOfDisplayedPick' who is not the 
-      // currently-logged-in user, but the one in the pick
-      // review cycle - the interpreter of the current pick.
-      server.get_picks( user, function (data) {
 
+    var redrawPicks = function (data) {
         var convertToPoints = function(d) {
             var points = [];
             for (var i = 0; i < d.length; i++)
                 points.push({x: d[i][0], y: d[i][1]});
             return points;
         };
-
         pickDrawing.clear();
         if (data.current) 
             pickDrawing.draw(convertToPoints(data.user_data), pickDrawing.colour.current);
@@ -111,45 +104,46 @@ $(function() {
             pickDrawing.draw(convertToPoints(data.owner_data), pickDrawing.colour.owner);
         else
             pickDrawing.draw(convertToPoints(data.data), pickDrawing.colour.default);
-      });
+      };
 
+   
+    var loadPicks = function(user){
+      server.get_votes( user, updateVoteCount);
+      server.get_picks( user, redrawPicks);
       // Set the text in the delete interp button, and uncheck
       $('#interp-user').text(user);
       $('#delete-confirm').prop('checked', false);
     };
 
-    $('#me-button').on('click', function(){
-        // Toggles the user's own interpretation
-        $(this).button('toggle');
-        if ($(this).hasClass('active')){
-          userOfDisplayedPick = loggedInUser;
-          loadPicks(loggedInUser);
-          $('#delete-confirm-div').addClass('disabled')
-          $('#delete-confirm').prop('disabled', true).prop('checked', false);
-          // $('#delete-interp').addClass('disabled');
-          $('#owner-up-vote-button').addClass('disabled');
-          $('#owner-down-vote-button').addClass('disabled');
-          $('#up-vote-button').addClass('disabled');
-          $('#down-vote-button').addClass('disabled');
-          $('#next-button').addClass('disabled');
-          $('#previous-button').addClass('disabled');
-        } else {
-          pickDrawing.clear(); // Bah, deletes everything!
-        }
-        if ($('#owner-button').hasClass('active')){
-          $('#owner-button').button('toggle');
-        }
-        if ($('#everyone-button').hasClass('active')){
-          $('#everyone-button').button('toggle');
+    $('#me-button').on('click', function() {
+        if (loggedInUser) {
+          // Toggles the user's own interpretation
+          $(this).button('toggle');
+          if ($(this).hasClass('active')){
+            userOfDisplayedPick = loggedInUser;
+            loadPicks(loggedInUser);
+            $('#owner-up-vote-button').addClass('disabled');
+            $('#owner-down-vote-button').addClass('disabled');
+            $('#up-vote-button').addClass('disabled');
+            $('#down-vote-button').addClass('disabled');
+            $('#next-button').addClass('disabled');
+            $('#previous-button').addClass('disabled');
+          } else {
+            pickDrawing.clear(); // Bah, deletes everything!
+          }
+          if ($('#owner-button').hasClass('active')){
+            $('#owner-button').button('toggle');
+          }
+          if ($('#everyone-button').hasClass('active')){
+            $('#everyone-button').button('toggle');
+          }
         }
     });
 
     $('#owner-button').on('click', function(){
+      if (ownerUser) {
         $(this).button('toggle');
         if ($(this).hasClass('active')){
-
-          $('#delete-confirm-div').addClass('disabled')
-          $('#delete-confirm').prop('disabled', true).prop('checked', false);
           $('#owner-up-vote-button').removeClass('disabled');
           $('#owner-down-vote-button').removeClass('disabled');
           $('#up-vote-button').addClass('disabled');
@@ -169,6 +163,7 @@ $(function() {
         if ($('#everyone-button').hasClass('active')){
           $('#everyone-button').button('toggle');
         }
+      }
     });
 
     $('#everyone-button').on('click', function(){
@@ -191,7 +186,7 @@ $(function() {
         if ($(this).hasClass('active')){
 
           // Turn everything on
-
+          userOfDisplayedPick = pickUsers[current];
           loadPicks(userOfDisplayedPick);
           $('#delete-confirm-div').removeClass('disabled');
           $('#delete-confirm').prop('disabled', false);
@@ -209,11 +204,8 @@ $(function() {
             $('#previous-button').removeClass('disabled');
           }
 
-        } else {
-
-          // Turn everything off
-          
-          pickDrawing.clear(); // Bah, deletes everything!
+        } else {          
+          pickDrawing.clear();
           $('#up-vote-button').addClass('disabled');
           $('#down-vote-button').addClass('disabled');
         }
@@ -266,7 +258,6 @@ $(function() {
     });
 
     $('#delete-confirm').on('change', function() {
-      console.log('on change')
       if($(this).is(':checked'))
         $('#delete-interp').removeClass('disabled')
       else 
