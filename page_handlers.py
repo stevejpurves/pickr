@@ -17,7 +17,7 @@ from google.appengine.ext import deferred
 # For image manipulation.
 from PIL import Image
 
-from pickthis import  statistics
+from pickthis import statistics
 from constants import env, db_parent
 from lib_db import ImageObject, Picks, User, Heatmap
 from lib_db import Comment
@@ -183,11 +183,14 @@ class ProfileHandler(PickThisPageRequest):
     @error_catch
     @authenticate
     def get(self, user_id):
-        #user = User.all().filter("user_id =", user_id).get()
+
         user = users.get_current_user()
 
         country = self.request.headers.get("X-AppEngine-Country")
         region = self.request.headers.get("X-AppEngine-Region")
+
+        # Not sure we need this level of detail, but lat/long maybe more
+        # usefiul than country/region for visualizations?
         # city = self.request.headers.get("X-AppEngine-City")
         # latlong = self.request.headers.get("X-AppEngine-CityLatLong")
 
@@ -200,13 +203,45 @@ class ProfileHandler(PickThisPageRequest):
         html = template.render(template_params)
         self.response.write(html)
 
+    @error_catch
+    @authenticate
+    def post(self, user_id):
+
+        user = User.all().filter("user_id =", user_id).get()
+
+        biography = cgi.escape(self.request.get("biography"))
+        linkedin = self.request.get("linkedin")
+        education = self.request.get("education")
+        experience = self.request.get("experience")
+        environment = self.request.get("environment")
+        profession = cgi.escape(self.request.get("profession"))
+
+        # Turn experience into an integer; cannot be empty.
+        if experience:
+            experience = int(experience)
+            user.experience = experience
+
+        # Could do some QC on the LinkedIn link (check for domain, get ID, &c.)
+        # NB LinkedIn link has not been CGI-escaped.
+        if linkedin:
+            user.linkedin = linkedin
+
+        # Could process other stuff here... just storing for now.
+        # These can all be empty.
+        user.biography = biography
+        user.education = education
+        user.environment = environment
+        user.profession = profession
+
+        user.put()
+
+        self.redirect('/profile')
+
 
 class LeagueHandler(PickThisPageRequest):
     @error_catch
     @authenticate
     def get(self, user_id):
-
-        #user_id = users.get_current_user()
 
         users = User.all().fetch(10000)
 
@@ -442,7 +477,7 @@ class AddImageHandler(PickThisPageRequest):
         img_obj.put()
 
         self.redirect('/')
-        
+
 
 class LogoutHandler(webapp2.RequestHandler):
 
