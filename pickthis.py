@@ -1,6 +1,7 @@
 
 import numpy as np
 import StringIO, json, base64
+import time
 
 from lib_db import Picks, ImageObject, User, Vote, Heatmap
 
@@ -155,16 +156,17 @@ def generate_heatmap(img_obj, data, opacity_scalar):
 
     output = StringIO.StringIO()
     im_out.save(output, 'png')
-    cached_heatmap = Heatmap(stale=False,
-                             png=output.getvalue(),
-                             parent=img_obj)
+
+    cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+    if not cached_heatmap:
+        cached_heatmap = Heatmap(stale=False,
+                                 png=output.getvalue(),
+                                 parent=img_obj)
+    else:
+        cached_heatmap.stale = False
+        cached_heatmap.png = output.getvalue()
+
     cached_heatmap.put()
-
-
-
-
-
-
 
 def statistics():
 

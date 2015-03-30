@@ -114,7 +114,7 @@
         <div class="form-group">
           <label for="title" class="col-sm-2 control-label">Title</label>
           <div class="col-sm-6">
-            <input class="form-control" type="text" id="title" 
+            <input class="form-control" type="text" id="title" maxlength="140"
 		               name="title" {% if img_obj.title %}value="{{ img_obj.title }}"{% endif %}
                    data-match-error="Please provide a title for the image." required />
           </div>
@@ -125,8 +125,8 @@
         <div class="form-group">
           <label for="shorturl" class="col-sm-2 control-label">Short URL</label>
           <div class="col-sm-10">
-          <input class="form-control" type="text" id="shorturl" 
-               name = "shorturl" placeholder="Enter a short URL; cannot be only digits. "
+          <input class="form-control" type="text" id="shorturl" maxlength="140" pattern="^([a-zA-Z]+[0-9]*|[0-9]+[a-zA-Z]+)[a-zA-Z0-9]*$"
+               name = "shorturl" placeholder="Enter a short URL; cannot be only digits, no special characters."
                {% if img_obj.shorturl %}
                  value="{{ img_obj.shorturl }}"
                  disabled
@@ -138,7 +138,7 @@
         <div class="form-group">
           <label for="description" class="col-sm-2 control-label">Description</label>
           <div class="col-sm-10">
-          <textarea class="form-control" rows="2" id="description" 
+          <textarea class="form-control" rows="2" id="description" maxlength="500"
         name = "description" placeholder="Enter a short description, including details of any license to use the image">{% if img_obj.description %}{{ img_obj.description }}{% endif %}</textarea>
           </div>
         </div>
@@ -147,8 +147,7 @@
           <label for="challenge" class="col-sm-2 control-label">Challenge</label>
           <div class="col-sm-10">
           <textarea class="form-control" rows="2" 
-		    name="challenge" id="challenge" 
-		    placeholder="Issue a short challenge">{% if img_obj.challenge %}{{ img_obj.challenge }}{% endif %}</textarea>
+		    name="challenge" id="challenge" maxlength="140" placeholder="Issue a short challenge (max 140 chars)">{% if img_obj.challenge %}{{ img_obj.challenge }}{% endif %}</textarea>
           </div>
         </div>
 

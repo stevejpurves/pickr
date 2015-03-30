@@ -45,32 +45,39 @@ def error_catch(func):
     return call_and_catch
 
 
+def startGeneratingNewHeatmap(img_obj):
+    cached_heatmap = Heatmap.all().ancestor(img_obj).get()
+    if (cached_heatmap):
+        cached_heatmap.stale = True
+        cached_heatmap.put()
+    data = Picks.all().ancestor(img_obj).fetch(10000)
+    deferred.defer(generate_heatmap,img_obj, data, None)
+
 
 class HeatmapHandler(webapp2.RequestHandler):
 
     @error_catch
     @authenticate
     def get(self, user_id):
-
         image_key = self.request.get("image_key")
-        
-        img_obj = ImageObject.get_by_id(int(image_key),
-                                        parent=db_parent)
-
+        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
         cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-
-        if cached_heatmap:
+        if cached_heatmap and not cached_heatmap.stale:
             image = base64.b64encode(cached_heatmap.png)
+            output = {"stale": cached_heatmap.stale, "image":image}
         else:
             image = None
-            
-        if not cached_heatmap or cached_heatmap.stale:
-            data = Picks.all().ancestor(img_obj).fetch(10000)
-            deferred.defer(generate_heatmap,img_obj, data, None)
+            output = {"stale": True}
+        self.response.headers["Content-Type"] = "application/json"
+        self.response.write(json.dumps(output))
 
-        self.response.write(image)
-            
-
+    @error_catch
+    @authenticate
+    def post(self, user_id):
+        image_key = self.request.get("image_key")
+        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
+        startGeneratingNewHeatmap(img_obj)
+        self.response.write("Ok")
 
 
 class CommentHandler(webapp2.RequestHandler):
@@ -275,7 +282,6 @@ class VoteHandler(webapp2.RequestHandler):
                 "user_choice": vote.value}
         
         self.response.write(json.dumps(data))
- 
 
 class PickHandler(webapp2.RequestHandler):
     
@@ -396,10 +402,7 @@ class PickHandler(webapp2.RequestHandler):
                         parent=img_obj)
         history.put()
         
-        cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-        if (cached_heatmap):
-            cached_heatmap.stale = True
-            cached_heatmap.put()
+        startGeneratingNewHeatmap(img_obj)
 
         img_obj.put()
 
@@ -424,6 +427,7 @@ class PickHandler(webapp2.RequestHandler):
         if users.is_current_user_admin():
             picks.delete()
             self.response.write(json.dumps({"success":True}))
+            startGeneratingNewHeatmap(img_obj)
         else:
             self.response.write(json.dumps({"success":False}))
                 

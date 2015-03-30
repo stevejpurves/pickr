@@ -4,6 +4,9 @@ runtime: python27
 api_version: 1
 threadsafe: true
 
+builtins:
+- deferred: on
+
 handlers:
 - url: /favicon\.ico
   static_files: favicon.ico
@@ -14,6 +17,10 @@ handlers:
 
 - url: /.*
   script: main.app
+
+- url: /_ah/queue/deferred
+  script: google.appengine.ext.deferred.deferred.application
+  login: admin
 
 libraries:
 - name: webapp2
@@ -30,6 +37,3 @@ libraries:
 
 inbound_services:
 - warmup
-
-builtins:
-- deferred: on

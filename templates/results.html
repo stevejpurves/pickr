@@ -12,7 +12,7 @@
   var userCount = {{ pick_users | length }} // Not including owner or self
   
   var ownerUser = "{{ owner_user }}";
-  var userID = "{{ user_id }}";      // This one won't change
+  var loggedInUser = "{{ user_id }}";      // This one won't change
 
   // Loop over pick_users and populate the users list
   // Question: Can't we just use pick_users directly?
@@ -28,19 +28,6 @@
   var baseImageHeight = "{{ img_obj.height }}";
   var pickstyle = "{{ img_obj.pickstyle }}";
  
-  // This deletes interpretations (admin only).
-  //function deleteInterpretation(){
-  //  var q = 'image_key=' + image_key + '&user_id=' + userID;
-  //  $.ajax('update_pick?' + q, {
-  //        type:'DELETE',
-  //        success: function(data){
-  //          if(data.success){
-  //            console.log("Successfully deleted!");
-  //            bootbox.alert('Interpretation has been deleted.');
-  //          }
-  //       };
-  //    });
-  //};
 </script>
 
 <script src="/static/js/lib/raphael-min.js"></script>
@@ -54,7 +41,11 @@
 <div class="container">
 
   <p class="lead">Compare your interpretation to the image uploader and everyone else... and vote on those that stand out.</p>
-
+  <div id="heatmap-notify" class="col-md-12 text-center" style="display:none">
+    <div class="progress">
+      <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%;">Generating latest heatmap</div>
+    </div>
+  </div>
   <!-- SEISMIC IMAGE -->
   <div id="image-div">
   </div>
@@ -70,7 +61,7 @@
       <!-- MY PICK - start with this only -->
       <div class="btn-group" role="group" style="margin-left:16px;">
         <button type="button" id="me-button"
-            class="btn btn-success btn-lrg active"
+            class="btn btn-success btn-lrg active" {% if not user_id %} disabled {% endif %}
             style="height:59px;" title="Toggle my interpretation">
           <span>My pick</span>
         </button>
@@ -87,7 +78,7 @@
       <div class="btn-group" role="group" style="margin-left:16px;">
         <button type="button" id="owner-button" class="btn btn-primary btn-lrg"
             style="height:59px;" title="Toggle the uploader's interpretation"
-            {% if user_id == img_obj.user_id %}disabled{% endif %}>
+            {% if not owner_user %}disabled{% endif %}>
           Uploader's pick{% if user_id == img_obj.user_id %}<br><span style="font-size:80%;">You are the uploader</span>{% endif %}
         </button>
         <div class="btn-group btn-group-vertical" role="group">
@@ -108,7 +99,7 @@
             <span class="glyphicon glyphicon-chevron-left">
         </button>
         <button type="button" id="everyone-button"
-            class="btn btn-danger btn-lrg"
+            class="btn btn-danger btn-lrg {% if not user_id and not owner_id %} active {% endif %}"
             style="height:59px;" title="Toggle everyone elses's interpretations">
           Everyone else<br />
   	<span id="interp-no">
@@ -139,19 +130,24 @@
 
     {% if admin %}
       <!-- div for big delete button -->
-      <div id="delete-confirm-div" class="col-md-offset-4 col-md-6 checkbox disabled" style="margin-top:24px;">
+      <div id="delete-confirm-div" class="col-md-offset-4 col-md-6 checkbox" style="margin-top:24px;">
         <label>
-          <input id="delete-confirm" type="checkbox" disabled>
+          <input id="delete-confirm" type="checkbox">
           Delete this interpretation by <span id="interp-user"></span>
         </label>
       </div>
-      <div class="col-md-offset-2 col-md-8 centered" style="margin-bottom:24px;">          
+      <div class="col-md-offset-2 col-md-8 centered" style="margin-bottom:4px;">          
           <button id="delete-interp" type="button" class="btn btn-danger btn-lg btn-block disabled">
             Delete
           </button>
       </div>
       <div id="delete-confirm-div" class="col-md-12 text-center" style="margin-bottom:24px;">
           <span id='delete-ack' style='display:none;'>Interpretation has been deleted, reloading...'</span>
+      </div>
+      <div class="col-md-offset-2 col-md-8 centered" style="margin-bottom:24px;">          
+          <button id="regenerate-heatmap" type="button" class="btn btn-danger btn-lg btn-block">
+            Regenerate heatmap
+          </button>
       </div>
     {% endif %}
 

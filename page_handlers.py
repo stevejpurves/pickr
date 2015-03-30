@@ -7,10 +7,12 @@ import re
 import os
 import Cookie
 import operator
+import base64
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
+from google.appengine.ext import deferred
 
 # For image manipulation.
 from PIL import Image
@@ -19,6 +21,7 @@ from pickthis import  statistics
 from constants import env, db_parent
 from lib_db import ImageObject, Picks, User, Heatmap
 from lib_db import Comment
+from pickthis import generate_heatmap
 
 # For image serving
 import cloudstorage as gcs
@@ -136,40 +139,40 @@ class ResultsHandler(PickThisPageRequest):
 
         user_id = users.get_current_user().user_id()
         image_key = self.request.get("image_key")
-        img_obj = ImageObject.get_by_id(int(image_key),
-                                        parent=db_parent)
-
-        picks = Picks.all().ancestor(img_obj).fetch(10000)
-        pick_users = [p.user_id for p in picks]
-
-        count = len(pick_users)
-
-        owner_user = img_obj.user_id
-
-        # Filter out the owner and current user
-        if user_id in pick_users:
-            pick_users.remove(user_id)
-        else:
-            # You shouldn't even be here!
-            self.redirect('/')
-        if owner_user in pick_users:
-            pick_users.remove(owner_user)
+        img_obj = ImageObject.get_by_id(int(image_key), parent=db_parent)
 
         # Get a list of comment strings, if any.
         cmts = Comment.all().ancestor(img_obj).order('datetime').fetch(10000)
+        params = self.get_base_params(img_obj=img_obj, comments=cmts)
+                                        
+        picks = Picks.all().ancestor(img_obj).fetch(10000)
+        pick_users = [p.user_id for p in picks]
+        owner_user = img_obj.user_id
+        # Filter out the owner and current user
+        if user_id in pick_users:
+            pick_users.remove(user_id)
+            params.update(user_id=user_id)
+        elif not users.is_current_user_admin():
+            self.redirect('/')
+
+        if owner_user in pick_users:
+            pick_users.remove(owner_user)
+            params.update(owner_user=owner_user) 
+
+        count = len(pick_users)
+        params.update(pick_users=pick_users, count=count)
 
         cached_heatmap = Heatmap.all().ancestor(img_obj).get()
-        # if not cached_heatmap or cached_heatmap.stale:
-            # kick off async process to compute the heatmap
-
-        params = self.get_base_params(count=count,
-                                      image=cached_heatmap,
-                                      img_obj=img_obj,
-                                      user_id=user_id,
-                                      owner_user=owner_user,
-                                      pick_users=pick_users,
-                                      comments=cmts)
-
+        if not cached_heatmap:
+            # only for degenerate cases until everything in the db has a heatmap
+            data = Picks.all().ancestor(img_obj).fetch(10000)
+            deferred.defer(generate_heatmap,img_obj, data, None)
+        else:
+            # if there is a heatmap render it to the template even if stale
+            # if not then leave that paramter as undefined and let the front end
+            # handle it
+            params.update(image=base64.b64encode(cached_heatmap.png))
+            
         template = env.get_template("results.html")
         html = template.render(params)
 
@@ -450,7 +453,7 @@ class LogoutHandler(webapp2.RequestHandler):
         # operating procedure. 
         target_url = self.request.referer or '/'
         if os.environ.get('SERVER_SOFTWARE', '').startswith('Development/'):
-            self.redirect(users.create_logout_url(target_url))
+            self.redirect(users.create_logout_url('/'))
             return
 
         # On the production instance, we just remove the session cookie, because
