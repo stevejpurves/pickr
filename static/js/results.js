@@ -13,13 +13,10 @@ $(function() {
     // var pickstyle = "{{ img_obj.pickstyle }}";
 
     var server = pickrAPIService(image_key);
-    // var current = 0;  // An index for stepping over the list
-    var userids = { currentPick: loggedInUser,
+    var userids = { currentPick: loggedInUser || ownerUser || pickUsers[0],
                   viewer: loggedInUser,
                   owner: ownerUser,
                   others: pickUsers };
-    // var userOfDisplayedPick = loggedInUser; // || ownerUser || pickUsers[current];
-    var overlay;
 
     pickDrawing.setup('image-div', 'rendering');
 
@@ -66,7 +63,7 @@ $(function() {
 
    
     var loadPicks = function(user){
-      server.get_votes( user, PickSelect.updateVoteCount);
+      server.get_votes( user, function(voteCount) { PickSelect.updateVoteCount(user, voteCount); } );
       server.get_picks( user, redrawPicks);
       // Set the text in the delete interp button, and uncheck
       $('#interp-user').text(user);
@@ -83,7 +80,7 @@ $(function() {
     })
     
     $('#delete-interp').on('click', function(){
-      server.delete_picks(Voting.getUserIdForCurrentPick(), function( data ) {
+      server.delete_picks(PickSelect.getUserIdForCurrentPick(), function( data ) {
           console.log(data)
           $('#delete-ack').show("fast");
           $('#delete-ack').delay(2000, function() {
