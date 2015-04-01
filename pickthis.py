@@ -75,9 +75,6 @@ def generate_heatmap(img_obj, data, opacity_scalar):
         if picks.size == 0:
             continue
 
-        if picks.size == 0:
-            continue
-
         if img_obj.pickstyle == 'polygons':
             picks = np.append(picks, picks[0]).reshape(picks.shape[0]+1, picks.shape[1])
 
