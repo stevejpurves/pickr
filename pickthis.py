@@ -71,6 +71,9 @@ def generate_heatmap(img_obj, data, opacity_scalar):
 
         # Get the points.
         picks = np.array(json.loads(user.picks))
+        
+        if picks.size == 0:
+            continue
 
         if picks.size == 0:
             continue

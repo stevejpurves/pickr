@@ -9,21 +9,199 @@
   <p style="float:right; color:lightgray;"><strong>User ID:</strong> {{ user.user_id }}</p>
 	<h2>{{ user.email }}</h2>
 
+    <!-- GRAVATAR -->
     <figure style="bottom:8px;">
       <a href="https://gravatar.com/" title="Gravatar.com" target="_blank">
         <img style="right:4px;" src="https://www.gravatar.com/avatar/{{ email_hash }}?s=64&d=identicon" />
       </a><a href="https://gravatar.com/" target="_blank">Change your avatar at Gravatar.com</a>
     </figure></p>
 
+    <!-- BASIC INFO -->
     <p><strong>Nickname:</strong> {{ user.nickname }}</p>
-
     <p><strong>Location:</strong> {{ region }}, {{ country }}</p>
-
     <p><strong>Reputation:</strong> {{ user.cred }}</p>
-
     <p><strong>Picks:</strong> {{ user.picks | length }}</p>
-
     <p><strong>Uploads:</strong> {{ user.uploads | length }}</p>
+    <p><strong>Profile complete:</strong> {{ user.complete }}%</p>
+
+    <hr />
+    <h3>Tell us more</h3>
+
+    <p>In order to help other picksters use Pick This for research into image interpretation,
+    it would be wonderful to know a little bit more about you. This is totally optional. We
+    will not share your details with anyone. Other users only ever see aggregated data, not
+    user-specific data. To find out more, please read <a href="/terms#privacy">our privacy
+    statement</a>.</p>
+
+
+    <div class="progress">
+      <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar"
+      aria-valuenow="{{ user.complete }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ user.complete }}%">
+        {{ user.complete }}% complete
+      </div>
+    </div>
+
+    <!-- FORM for adding or changing info -->
+    <form class="form-horizontal" role="form" action="/profile" method="POST">
+
+      <!-- BIO -->
+      <div class="form-group">
+        <label class="control-label col-sm-3" for="biography">Biography</label>
+        <div class="col-sm-9">
+          <textarea class="form-control" rows="4" name="biography"
+                    id="biography" maxlength="1000" placeholder="">{% if user.biography %}{{ user.biography }}{% endif%}</textarea>
+        </div>
+      </div>
+
+      <!-- LINKED IN PROFILE
+
+      for some reason this doesn't work
+
+      <div class="form-group">
+        <label class="control-label col-sm-3" for="linkedin">LinkedIn profile URL</label>
+        <div class="col-sm-9">
+          <input type="url" class="form-control" id="linkedin" placeholder="http://linkedin.com/..."
+            value="{{ user.linkedin }}">
+        </div>
+      </div>
+
+      -->
+
+      <!-- EDUCATION -->
+      <div class="form-group">
+        <label for="education" class="col-sm-3 control-label">Highest education</label>
+        <div class="radio col-sm-9">
+          <label>
+            <input type="radio" name="education" id="secondary" value="secondary"
+              {% if user.education == "secondary" %}checked{% endif%}>
+            Secondary (school)
+          </label>
+        </div>
+        <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="education" id="postsec" value="postsec"
+              {% if user.education == "postsec" %}checked{% endif%}>
+            Post-secondary (college)
+          </label>
+        </div>
+        <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="education" id="bachelor" value="bachleor"
+              {% if user.education == "bachelor" %}checked{% endif%}>
+            Bachelor's degree (university)
+          </label>
+        </div>
+        <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="education" id="master" value="master"
+              {% if user.education == "master" %}checked{% endif%}>
+            Master's degree
+          </label>
+        </div>
+         <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="education" id="medical" value="medical"
+              {% if user.education == "medical" %}checked{% endif%}>
+            Medical degree
+          </label>
+        </div>
+         <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="education" id="phd" value="phd"
+              {% if user.education == "phd" %}checked{% endif%}>
+            Doctorate degree
+          </label>
+        </div>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="form-group">
+        <label for="experience" class="col-sm-3 control-label">Years of experience</label>
+        <div class="radio col-sm-9">
+          <label>
+            <input type="radio" name="experience" id="exp1" value="1"
+              {% if user.experience == 1 %}checked{% endif%}>
+            Less than 1 year
+          </label>
+        </div>
+        <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="experience" id="exp5" value="5"
+              {% if user.experience == 5 %}checked{% endif%}>
+            Between 1 and 5 years
+          </label>
+        </div>
+        <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="experience" id="exp10" value="10"
+              {% if user.experience == 10 %}checked{% endif%}>
+            5 to 10 years
+          </label>
+        </div>
+        <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="experience" id="exp15" value="15"
+              {% if user.experience == 15 %}checked{% endif%}>
+            10 to 15 years
+          </label>
+        </div>
+         <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="experience" id="exp20" value="20"
+              {% if user.experience == 20 %}checked{% endif%}>
+            15 to 20 years
+          </label>
+        </div>
+         <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="experience" id="exp25" value="25"
+              {% if user.experience == 25 %}checked{% endif%}>
+            25 years or more
+          </label>
+        </div>
+      </div>
+
+      <!-- ENVIRONMEMT -->
+      <div class="form-group">
+        <label for="environment" class="col-sm-3 control-label">Environment</label>
+        <div class="radio col-sm-9">
+          <label>
+            <input type="radio" name="environment" id="academia" value="academia"
+              {% if user.environment == "academia" %}checked{% endif%}>
+            I mostly work or study in the academic realm.
+          </label>
+        </div>
+        <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="environment" id="industry" value="industry"
+              {% if user.environment == "industry" %}checked{% endif%}>
+            I mostly work in the industrial or private realm.
+          </label>
+        </div>
+        <div class="radio col-sm-offset-3 col-sm-9">
+          <label>
+            <input type="radio" name="environment" id="government" value="government"
+              {% if user.environment == "government" %}checked{% endif%}>
+            I mostly work in the government realm.
+          </label>
+        </div>
+      </div>
+
+      <!-- PROFESSION -->
+      <div class="form-group">
+        <label class="control-label col-sm-3" for="profession">Professional designation</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control" id="profession" name="profession" placeholder="e.g. CGeol, PGeoph, FRCR, etc."  value="{{ user.profession }}">
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="form-group"> 
+        <div class="col-sm-offset-3 col-sm-9">
+          <button type="submit" class="btn btn-default">Submit</button>
+        </div>
+      </div>
+    </form>
 
   </div>
 

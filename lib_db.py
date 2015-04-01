@@ -15,9 +15,24 @@ class User(db.Model):
     nickname = db.StringProperty()
     email = db.EmailProperty()
     linkedin = db.LinkProperty()
-    education = db.StringProperty()
+    education = db.StringProperty(default="")
+    environment = db.StringProperty(default="")
+    profession = db.StringProperty(default="")
+    biography = db.TextProperty(default="")
+    experience = db.IntegerProperty()
     location = db.GeoPtProperty()
-    
+
+    @property
+    def complete(self):
+        items = 0
+        if self.education: items += 1
+        if self.experience: items += 1
+        if self.linkedin: items += 1
+        if self.environment: items += 1
+        if self.profession: items += 1
+        if self.biography: items += 1
+        return 100*items/6.
+
     @property
     def picks(self):
         all_picks = Picks.all()
@@ -55,7 +70,7 @@ class Vote(db.Model):
 
     # +1 or -1
     value = db.IntegerProperty()
-    
+
 
 class ImageParent(db.Model):
     pass
@@ -86,6 +101,7 @@ class History(db.Model):
     date = db.DateTimeProperty(auto_now_add=True)
     picks = db.BlobProperty()
 
+
 class Comment(db.Model):
 
     # Parent should be ImageObject
@@ -100,18 +116,17 @@ class Comment(db.Model):
         user = User.all().filter("user_id =",
                                  self.user_id).get()
         return user.nickname
-    
+
+
 class Heatmap(db.Model):
     stale = db.BooleanProperty(default=False)
     png = db.BlobProperty()
 
+
 class ImageObject(db.Model):
-
     image = blobstore.BlobReferenceProperty()
-
     width = db.IntegerProperty()
     height = db.IntegerProperty()
-
     title = db.StringProperty(default="")
     shorturl = db.StringProperty()
     description = db.StringProperty(default="")
@@ -149,7 +164,7 @@ class ImageObject(db.Model):
         im = Image.open(reader, 'r')
         s = im.size
 
-        return s # width, height
+        return s  # width, height
 
     # I think this has to be a method, not property,
     # if we want to pass in arguments.
@@ -163,12 +178,10 @@ class ImageObject(db.Model):
 
     @property
     def id(self):
-
         return self.key().id()
-    
+
     @property
     def nickname(self):
-
         user = User.all().filter("user_id =",
                                  self.user_id).get()
         return user.nickname
