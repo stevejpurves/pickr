@@ -215,6 +215,10 @@ var EveryoneButton = function(useridList) {
       else
         $('#previous-button').addClass('disabled');
     }
+    else {
+      $('#next-button').addClass('disabled');
+      $('#previous-button').addClass('disabled');
+    }
   }
 
   function updateOthersCurrentPick() {
