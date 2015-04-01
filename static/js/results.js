@@ -63,14 +63,17 @@ $(function() {
 
    
     var loadPicks = function(user){
-      server.get_votes( user, function(voteCount) { PickSelect.updateVoteCount(user, voteCount); } );
       server.get_picks( user, redrawPicks);
       // Set the text in the delete interp button, and uncheck
       $('#interp-user').text(user);
       $('#delete-confirm').prop('checked', false);
     };
 
-    PickSelect.configure(userids, pickDrawing, loadPicks)
+    var getVotes = function(user, cb) {
+        server.get_votes( user, cb );
+    }
+
+    var pickSelect = new PickSelect(userids, pickDrawing, loadPicks, getVotes)    
 
     $('#delete-confirm').on('change', function() {
       if($(this).is(':checked'))
@@ -80,8 +83,7 @@ $(function() {
     })
     
     $('#delete-interp').on('click', function(){
-      server.delete_picks(PickSelect.getUserIdForCurrentPick(), function( data ) {
-          console.log(data)
+      server.delete_picks(pickSelect.getUserIdForCurrentPick(), function( data ) {
           $('#delete-ack').show("fast");
           $('#delete-ack').delay(2000, function() {
             location.reload();

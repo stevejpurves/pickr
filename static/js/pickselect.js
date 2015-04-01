@@ -1,61 +1,56 @@
-var PickSelect = PickSelect || {}
+var PickSelect = function(users, pickDrawing, loadPicks, getVotes) {
+  var buttons = { me: null, owner: null, everyone: null }
+  var userids = users;
+  userids.currentPick = userids.viewer;
 
-PickSelect.userOfDisplayedPick = loggedInUser;
-PickSelect.loadPicksCB = null;
-PickSelect.buttons = { me: null, owner: null, everyone: null }
+  var loadPicksCB = loadPicks;
+  var getVotesCB = getVotes;
 
-PickSelect.configure = function(userids, pickDrawing, loadPicks) {
-  console.log("userOfDisplayedPick", userids)
-
-  PickSelect.userids = userids;
-  PickSelect.loadPicksCB = loadPicks;
-
-  PickSelect.buttons.me = new MeButton(userids.viewer);
-  PickSelect.buttons.me.onToggleOn(function(id) {
-    PickSelect.userids.currentPick = id
-    PickSelect.loadPicksCB(id)
-    PickSelect.buttons.owner.deactivate()
-    PickSelect.buttons.everyone.deactivate()
+  buttons.me = new MeButton(userids.viewer);
+  buttons.me.onToggleOn(function(id) {
+    userids.currentPick = id
+    loadPicksCB(id)
+    getVotesCB(id, buttons.me.updateVoteCount )
+    buttons.owner.deactivate()
+    buttons.everyone.deactivate()
   })
-  PickSelect.buttons.me.onToggleOff(function() {
+  buttons.me.onToggleOff(function() {
     pickDrawing.clear()
   })
+  if (userids.viewer)
+    getVotesCB( userids.viewer, buttons.me.updateVoteCount )
 
-  PickSelect.buttons.owner = new OwnerButton(userids.owner)
-  PickSelect.buttons.owner.onToggleOn(function(id) {
-    PickSelect.userids.currentPick = id
-    PickSelect.loadPicksCB(id)
-    PickSelect.buttons.me.deactivate()
-    PickSelect.buttons.everyone.deactivate()
+  buttons.owner = new OwnerButton(userids.owner)
+  buttons.owner.onToggleOn(function(id) {
+    userids.currentPick = id
+    loadPicksCB(id)
+    getVotesCB( id, buttons.owner.updateVoteCount )
+    buttons.me.deactivate()
+    buttons.everyone.deactivate()
   })
-  PickSelect.buttons.owner.onToggleOff(function() {
+  buttons.owner.onToggleOff(function() {
     pickDrawing.clear()
   })
+  if (userids.owner)
+    getVotesCB( userids.owner, buttons.owner.updateVoteCount )
 
-  PickSelect.buttons.everyone = new EveryoneButton(userids.others)
-  PickSelect.buttons.everyone.onToggleOn(function(id) {
-      PickSelect.userids.currentPick = id
-      PickSelect.loadPicksCB(id)
-      PickSelect.buttons.me.deactivate()
-      PickSelect.buttons.owner.deactivate()
+  buttons.everyone = new EveryoneButton(userids.others)
+  buttons.everyone.onToggleOn(function(id) {
+      userids.currentPick = id
+      loadPicksCB(id)
+      getVotesCB( id, buttons.everyone.updateVoteCount )
+      buttons.me.deactivate()
+      buttons.owner.deactivate()
   })
-
-  PickSelect.buttons.everyone.onToggleOff(function(id) {
+  buttons.everyone.onToggleOff(function(id) {
       pickDrawing.clear()
   })
-}
+  if (userids.others.length > 0)
+    getVotesCB( userids.others[0], buttons.everyone.updateVoteCount )
 
-PickSelect.getUserIdForCurrentPick = function() {
-  return PickSelect.userids.currentPick;
-}
-
-PickSelect.updateVoteCount = function(userid, voteCount) {
-  if (userid == PickSelect.userids.viewer)
-    PickSelect.buttons.me.updateVoteCount(voteCount)
-  else if (userid == PickSelect.userids.owner)
-    PickSelect.buttons.owner.updateVoteCount(voteCount)
-  else
-    PickSelect.buttons.everyone.updateVoteCount(voteCount)
+  this.getUserIdForCurrentPick = function() {
+    return userids.currentPick;
+  }
 }
 
 var MeButton = function(userid) {
@@ -84,8 +79,10 @@ var MeButton = function(userid) {
       $(this).button('toggle')
       if ($(this).hasClass('active'))
         toggleOn()
-      else
+      else {
         toggleOff()
+        $(this).blur()
+      }
     }
   })
 }
@@ -135,6 +132,7 @@ var OwnerButton = function(userid) {
       } else {
         toggleOff()
         deactivate()
+        $(this).blur()
       }
     }
   })
@@ -142,11 +140,11 @@ var OwnerButton = function(userid) {
   var server = pickrAPIService(image_key);
 
   $('#owner-up-vote-button').on('click', function(){
-    server.vote(PickSelect.userids.owner, 1, updateVoteCount);
+    server.vote(ownerUserId, 1, updateVoteCount);
   });
 
   $('#owner-down-vote-button').on('click', function(){
-    server.vote(PickSelect.userids.owner, -1, updateVoteCount);
+    server.vote(ownerUserId, -1, updateVoteCount);
   });
 }
 
@@ -201,6 +199,7 @@ var EveryoneButton = function(useridList) {
       } else {          
         toggleOff()
         deactivate()
+        $(this).blur()
       }
     }
   })
@@ -237,10 +236,10 @@ var EveryoneButton = function(useridList) {
   var server = pickrAPIService(image_key);
 
   $('#up-vote-button').on('click', function(){
-    server.vote(PickSelect.userids.currentPick, 1, updateVoteCount);
+    server.vote(listOfUserIds[current], 1, updateVoteCount);
   });
 
   $('#down-vote-button').on('click', function(){
-    server.vote(PickSelect.userids.currentPick, -1, updateVoteCount);
+    server.vote(listOfUserIds[current], -1, updateVoteCount);
   });
 }
