@@ -14,6 +14,6 @@ env = Environment(loader=FileSystemLoader(join(dirname(__file__),
 
 # Data store set up.
 db_parent = ImageParent.all().get()
-if not db_parent:
-    db_parent = ImageParent()
-    db_parent.put()
+#if not db_parent:
+#    db_parent = ImageParent()
+#    db_parent.put()
