@@ -4,9 +4,6 @@ var pickrAPIService = function(image_key) {
     	get_picks: function(user, cb) {
             return $.get('/update_pick?', { user:user, image_key: image_key }, cb, 'json');
         },
-    	// update_pick: function(point, cb) {
-     //    	return $.post('/update_pick', { x: point.x, y:point.y, image_key:image_key }, cb);
-    	// },
     	send_picks: function(points, history, cb) {
     		return $.post('/update_pick', JSON.stringify({ points: points, image_key: image_key, history: history }), cb);
     	},

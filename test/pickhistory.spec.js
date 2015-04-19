@@ -1,5 +1,19 @@
 describe("Frontend", function() {
 
+	describe("Points", function() {
+		it("can be compared", function() {
+			var a = new Point(1,2,3)
+			var b = new Point(1,2,3)
+			expect(a.equals(b)).to.be.true
+
+			var c = new Point(2,3,3)
+			expect(a.equals(c)).to.be.false
+
+			var d = new Point(1,2,0)
+			expect(a.equals(d)).to.be.false
+		});
+	});
+
 	describe("Pick History", function() {
 		
 		var history;
@@ -59,6 +73,13 @@ describe("Frontend", function() {
 				expect(item.point.x).to.equal(7)
 				expect(item.point.y).to.equal(8)
 				expect(item.timestamp).to.equal(mock_time_now)	
+			})
+
+			it("closing a set of picks", function() {
+				var item = history.log_close_group(0)
+				expect(item.action).to.equal('close')
+				expect(item.group).to.equal(0)
+				expect(item.timestamp).to.equal(mock_time_now)
 			})
 		})
 
@@ -150,6 +171,45 @@ describe("Frontend", function() {
 
 				mock.verify()
 			})
+
+			it("can undo a close group", function() {
+				var mock = sinon.mock(interpretation)
+				mock.expects("set_active_group").once().withArgs(99)
+
+				history.log_close_group(99)
+				history.undo(interpretation)
+
+				mock.verify()
+			});
 		})
 	})
+
+	describe("Interpretation", function() {
+
+		it("adding a point annotates it with a group id", function() {
+			var interpretation = new Interpretation(new PickHistory())
+
+			var p = new Point(1,2,-1)
+			interpretation.add(p)
+
+			expect(p.group).to.equal(0)
+		})
+
+		it("adding after closing adds to a new group", function() {
+			var history = new PickHistory()
+			var mock = sinon.mock(history)
+			var interpretation = new Interpretation(history)
+
+			interpretation.add( new Point(1,2) )
+			interpretation.new_group()
+
+			var p = new Point(2,3,-1)
+			interpretation.add(p)
+
+			expect(p.group).to.equal(1)
+		})
+
+	});
+
+
 })

@@ -1,10 +1,12 @@
-var Point = function(X, Y) {
+var Point = function(X, Y, group) {
     this.x = X || 0;
     this.y = Y || 0;
+    this.group = group || 0;
     this.equals = function(r, tol) {
         if (!tol) tol = 0;
         return (Math.abs(this.x - r.x) <= tol)
-            && (Math.abs(this.y - r.y) <= tol);
+            && (Math.abs(this.y - r.y) <= tol)
+            && this.group === r.group;
     };
     return this;
 };
@@ -60,12 +62,22 @@ var PickHistory = function() {
         log_it({action:'remove', idx: idx, point: point}, {can_undo:false})
         return last()
     }
+
+    this.log_close_group = function(idx) {
+        log_it({action:'close', group:idx}, {can_undo:true})
+        return last()
+    }
+
     this.undo = function(interpretation) {
         var last = undo_stack.pop()
         if (last)
             if (last.action === 'move') {
                 interpretation.replace(last.to, last.from)
                 undo_stack.pop() // avoid circular move
+            }
+            else if (last.action === 'close') {
+                interpretation.set_active_group(last.group)
+                undo_stack.pop()
             }
             else {
                 interpretation.remove(last.idx)
@@ -86,12 +98,15 @@ var Interpretation = function(the_pick_history)
     var tol = 0;
     var points = [];
     var history = the_pick_history;
+    var num_groups = 1;
+    var group_idx = 0;
     
     this.get_points = function() {
         return points;
     };
 
     this.add = function(p) {
+        p.group = group_idx
         points.push(p);
         history.log_add(points.length-1, p);
     };
@@ -119,7 +134,16 @@ var Interpretation = function(the_pick_history)
     this.clear = function() { 
         points = []
         history.clear()
-    };
+    }
+
+    this.new_group = function() {
+        group_idx = num_groups
+        num_groups += 1
+    }
+
+    this.set_active_group = function(idx) {
+        group_idx = idx
+    }
 
     this.setTolerance = function(t) { tol = t; };
 
