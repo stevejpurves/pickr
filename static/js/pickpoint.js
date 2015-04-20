@@ -33,6 +33,10 @@ $(function() {
         pickDrawing.refresh(the_interpretation.get_points());
     })
 
+    $('#new-pick-button').click(function() {
+        the_interpretation.new_group()
+    })
+
     $('#clear-button').click(function() {
         pickDrawing.clear();
         the_interpretation.clear();

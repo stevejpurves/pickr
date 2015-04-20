@@ -52,7 +52,7 @@ pickDrawingSetup = function(){
         baseImage.click( function(e) {
             var p = getPointFromEvent(e);
             handler.pick(p);
-        } );
+        });
     };
 
     var onMove = function(cb) {
@@ -181,6 +181,7 @@ pickDrawingSetup = function(){
         var path = writeSegmentPath(p0, p1);
         var segment = paper.path(path);
         segment.attr(_.extend({'stroke': colour}, cfg.styles.segment));
+
         if (handler.insert) {
             segment.click(function(e) {
                 e.preventDefault();
@@ -193,21 +194,19 @@ pickDrawingSetup = function(){
         segments.push(segment);
         return segment;
     }
-    
-    var connectTheDots = function(points, colour) {
-        if (points.length > 0)
-        if (pickstyle === 'lines' || pickstyle === 'polygons'){
-            if (segments.length > 0) segments.remove();
-            for (var i = 0; i < points.length-1; i++)
-                addSegment(points[i], points[i+1], colour);
-            if (pickstyle === "polygons") {
-                var auto = addSegment(points[points.length-1], points[0], colour);
-                if (mode === "picking")
-                    auto.attr(cfg.styles.segment_dashed);
-            }
-        }
-    };
 
+    var drawSegments = function(points, colour) {
+        // if (segments.length > 0) segments.remove();
+        for (var i = 0; i < points.length-1; i++)
+            addSegment(points[i], points[i+1], colour);
+        if (pickstyle === "polygons") {
+            var auto = addSegment(points[points.length-1], points[0], colour);
+            if (mode === "picking")
+                auto.attr(cfg.styles.segment_dashed);
+        }
+        if (segments.length > 0) circles.insertAfter(segments)
+    }
+    
     var clear = function() {
         circles.remove();
         circles.clear();
@@ -216,15 +215,26 @@ pickDrawingSetup = function(){
     }
 
     var draw = function(points, colour) {
-        for (var i = 0; i < points.length; i++)   
-            addCircle(points[i], colour);
-        connectTheDots(points, colour);
-        if (segments.length > 0)
-            circles.insertAfter(segments);
-    };
+        var g_idx = 0
+        var groups = [[]]
+        for (var i = 0; i < points.length; i++) {
+            var p = points[i]
+            addCircle(p, colour)
+            if (p.group !== g_idx) {
+                groups.push([p])
+                g_idx++
+            }
+            else
+                groups[g_idx].push(p)
+        }
+        if (pickstyle === 'lines' || pickstyle === 'polygons')
+            for (var g = 0; g < groups.length; g++)
+                drawSegments(groups[g], colour)
+    }
 
     var refresh = function(points, colour) {
         clear();
+        if (points.length === 0) return
         draw(points, colour || cfg.colour.default);
     };
 
