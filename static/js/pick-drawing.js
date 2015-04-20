@@ -215,17 +215,16 @@ pickDrawingSetup = function(){
     }
 
     var draw = function(points, colour) {
-        var g_idx = 0
         var groups = [[]]
-        for (var i = 0; i < points.length; i++) {
+        for (var i = 0, g_idx = 0; i < points.length; i++) {
             var p = points[i]
             addCircle(p, colour)
-            if (p.group !== g_idx) {
-                groups.push([p])
-                g_idx++
-            }
-            else
+            if (!p.group || p.group === g_idx)
                 groups[g_idx].push(p)
+            else {
+                groups.push([p])
+                g_idx++                
+            }
         }
         if (pickstyle === 'lines' || pickstyle === 'polygons')
             for (var g = 0; g < groups.length; g++)
