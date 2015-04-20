@@ -198,12 +198,14 @@ pickDrawingSetup = function(){
     var drawSegments = function(groups, colour) {
         for (var g = 0; g < groups.length; g++) {
             var points = groups[g]
-            for (var i = 0; i < points.length-1; i++)
-                addSegment(points[i], points[i+1], colour)
-            if (pickstyle === "polygons") {
-                var auto = addSegment(points[points.length-1], points[0], colour)
-                if (mode === "picking" && g === groups.length-1)
-                    auto.attr(cfg.styles.segment_dashed)
+            if (points) {
+                for (var i = 0; i < points.length-1; i++)
+                    addSegment(points[i], points[i+1], colour)
+                if (pickstyle === "polygons") {
+                    var auto = addSegment(points[points.length-1], points[0], colour)
+                    if (mode === "picking" && g === groups.length-1)
+                        auto.attr(cfg.styles.segment_dashed)
+                }
             }
         }
         if (segments.length > 0) circles.insertAfter(segments)
@@ -224,8 +226,8 @@ pickDrawingSetup = function(){
             if (!p.group || p.group === g_idx)
                 groups[g_idx].push(p)
             else {
-                groups.push([p])
-                g_idx++                
+                g_idx = p.group
+                groups[g_idx] = [p]
             }
         }
         if (pickstyle === 'lines' || pickstyle === 'polygons')
