@@ -48,17 +48,28 @@ $(function() {
     var redrawPicks = function (data) {
         var convertToPoints = function(d) {
             var points = [];
-            for (var i = 0; i < d.length; i++)
-                points.push({x: d[i][0], y: d[i][1]});
+            for (var i = 0; i < d.length; i++) {
+                var p = new Point(d[i][0], d[i][1])
+                if (d[i].length === 3) p.group = d[i][2]
+                points.push( p )              
+            }
             return points;
         };
         pickDrawing.clear();
-        if (data.current) 
-            pickDrawing.draw(convertToPoints(data.user_data), pickDrawing.colour.current);
-        else if (data.owner)
-            pickDrawing.draw(convertToPoints(data.owner_data), pickDrawing.colour.owner);
-        else
-            pickDrawing.draw(convertToPoints(data.data), pickDrawing.colour.default);
+        var raw_points, colour;
+        if (data.current) {
+          raw_points = data.user_data
+          colour = pickDrawing.colour.current
+        } 
+        else if (data.owner) {
+          var raw_points = data.owner_data
+          colour = pickDrawing.colour.owner
+        }   
+        else {
+          var raw_points = data.data
+          colour = pickDrawing.colour.default
+        }
+        pickDrawing.draw(convertToPoints(raw_points), colour);
       };
 
    

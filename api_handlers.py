@@ -381,7 +381,7 @@ class PickHandler(webapp2.RequestHandler):
         points = request_body['points']
         simple_points = []
         for p in points:
-            simple_points.append((int(p['x']), int(p['y'])))
+            simple_points.append((int(p['x']), int(p['y']), int(p['group'])))
         picks = Picks.all().ancestor(img_obj)
         picks = picks.filter("user_id =", user_id).get()
         if picks:
