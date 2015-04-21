@@ -6,7 +6,7 @@ var Point = function(X, Y, group) {
         if (!tol) tol = 0;
         return (Math.abs(this.x - r.x) <= tol)
             && (Math.abs(this.y - r.y) <= tol)
-            && this.group === r.group;
+            // && this.group === r.group;
     };
     return this;
 };
@@ -111,14 +111,19 @@ var Interpretation = function(the_pick_history)
         history.log_add(points.length-1, p);
     };
 
-    this.insertAt = function(p, at) {
-        points.splice(at+1, 0, p);
-        history.log_add(at+1, p);
+    this.insertAt = function(p, after) {
+        for (var i = 0; i < points.length; i++)
+            if (points[i].equals(after, tol)) {
+                p.group = points[i].group
+                points.splice(i+1, 0, p);
+                history.log_add(i+1, p);                
+            }
     };
 
     this.replace = function(p_old, p_new) {
         for (var i = 0; i < points.length; i++)
             if (points[i].equals(p_old, tol)) {
+                p_new.group = points[i].group
                 history.log_move(i, p_new, points[i])
                 points[i] = p_new;
                 return true;

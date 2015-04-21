@@ -2,15 +2,15 @@ describe("Frontend", function() {
 
 	describe("Points", function() {
 		it("can be compared", function() {
-			var a = new Point(1,2,3)
-			var b = new Point(1,2,3)
+			var a = new Point(1,2)
+			var b = new Point(1,2)
 			expect(a.equals(b)).to.be.true
 
-			var c = new Point(2,3,3)
+			var c = new Point(2,3)
 			expect(a.equals(c)).to.be.false
 
-			var d = new Point(1,2,0)
-			expect(a.equals(d)).to.be.false
+			var d = new Point(1,2,1)
+			expect(a.equals(d)).to.be.true
 		});
 	});
 

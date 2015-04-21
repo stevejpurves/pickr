@@ -28,8 +28,8 @@ $(function() {
         pickDrawing.refresh(the_interpretation.get_points());
     });
 
-    pickDrawing.onInsert(function(p, at) {
-        the_interpretation.insertAt(p, at);
+    pickDrawing.onInsert(function(p, after) {
+        the_interpretation.insertAt(p, after);
         pickDrawing.refresh(the_interpretation.get_points());
     })
 

@@ -116,6 +116,13 @@ pickDrawingSetup = function(){
         return 0;
     }
 
+    var findCircleForPoint = function(p) {
+        for (var i = 0; i < circles.length; i++)
+            if (circles[i].point.equals(p))
+                return circles[i]
+        return null
+    }
+
     var addCircle = function(p, colour) {
         var circle = paper.circle(p.x, p.y, cfg.styles.circle_radius);
         circle.point = p;
@@ -123,40 +130,30 @@ pickDrawingSetup = function(){
 
         if (handler.move) {
             var p0, p0idx;
-            var left = { seg: null, circle: null};
-            var right = { seg: null, circle: null};
+            var left = null
+            var right = null
             circle.drag(function move(dx, dy, x, y, e) {
                 var p = getPointFromEvent(e);
                 this.attr({'cx':p.x, 'cy':p.y});
-                if (left.seg)
-                    left.seg.attr({ path: writeSegmentPath(left.circle.point, p) });
-                if (right.seg)
-                    right.seg.attr({path: writeSegmentPath(p, right.circle.point) });
+                if (left)
+                    left.attr({ path: writeSegmentPath(left.p0, p) });
+                if (right)
+                    right.attr({path: writeSegmentPath(p, right.p1) });
             }, function start(x, y, e) {
                 this.attr(cfg.styles.circle_startMove );
                 p0 = getPointFromEvent(e);
-
                 if (pickstyle === 'lines' || pickstyle === 'polygons') {
-                    p0idx = indexOfCircle(this);
-                    right.seg = segments[p0idx];
-                    right.circle = (p0idx < circles.length-1) ? circles[p0idx+1] : 
-                                    (pickstyle === 'polygons') ? circles[0] : null;
-                    if (p0idx < circles.length-1)
-                        right.circle = circles[p0idx+1]
-                    else if (pickstyle === 'polygons')
-                        right.circle = circles[0]
-                    if (p0idx > 0) {
-                        left.seg = segments[p0idx-1];
-                        left.circle = circles[p0idx-1];
-                    }
-                    else if (pickstyle === 'polygons') {
-                        left.seg = segments[segments.length-1];
-                        left.circle = circles[circles.length-1];
+                    for (var i = 0; i < segments.length; i++) {
+                        if (segments[i].p0.equals(p0, cfg.penSize))
+                            right = segments[i]
+                        else if (segments[i].p1.equals(p0, cfg.penSize))
+                            left = segments[i]
                     }
                 }
             }, function end(e) {
                 this.attr(_.extend({fill: colour}, cfg.styles.circle_endMove));
-                left.seg = left.circle = right.seg = right.circle = null;
+                left = null
+                right = null
                 var p1 = getPointFromEvent(e);
                 handler.move(p1, p0);
             }, circle, circle, circle)
@@ -180,17 +177,18 @@ pickDrawingSetup = function(){
     var addSegment = function(p0, p1, colour) {
         var path = writeSegmentPath(p0, p1);
         var segment = paper.path(path);
+        segment.p0 = p0
+        segment.p1 = p1
         segment.attr(_.extend({'stroke': colour}, cfg.styles.segment));
 
         if (handler.insert) {
             segment.click(function(e) {
                 e.preventDefault();
-                handler.insert(getPointFromEvent(e), segment.idx);
+                handler.insert(getPointFromEvent(e), p0);
             })
             segment.hover(hoverIn, hoverOut, segment, segment)                
         }
 
-        segment.idx = segments.length;
         segments.push(segment);
         return segment;
     }
