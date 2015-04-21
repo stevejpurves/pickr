@@ -33,6 +33,9 @@ $(function() {
         pickDrawing.refresh(the_interpretation.get_points());
     })
 
+    if (pickstyle === "points")
+        $('#new-pick-button').prop('disabled',true)
+
     $('#new-pick-button').click(function() {
         the_interpretation.new_group()
     })
