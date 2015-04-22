@@ -38,6 +38,7 @@ $(function() {
 
     $('#new-pick-button').click(function() {
         the_interpretation.new_group()
+        pickDrawing.refresh(the_interpretation.get_groups())
     })
 
     $('#clear-button').click(function() {

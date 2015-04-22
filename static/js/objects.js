@@ -107,7 +107,8 @@ var Interpretation = function(the_pick_history)
         for (var i = 0; i < raw.length; i++) {
             var p = new Point(raw[i][0], raw[i][1])
             if (raw[i].length === 3) p.group = raw[i][2]
-            points.push( p )              
+            points.push( p )
+            if (p.group+1 > num_groups) num_groups = p.group+1           
         }
     }
 
@@ -117,15 +118,12 @@ var Interpretation = function(the_pick_history)
 
     this.get_groups = function() {
         var groups = [[]]
-        for (var i = 0, g_idx = 0; i < points.length; i++) {
-            var p = points[i]
-            if (!p.group || p.group === g_idx)
-                groups[g_idx].push(p)
-            else {
-                g_idx = p.group
-                groups[g_idx] = [p]
-            }
-        }
+        // create a non-sparse group array
+        var groups = []
+        for (var g = 0; g < num_groups; g++)
+            groups[g] = []
+        for (var i = 0; i < points.length;i++)
+            groups[points[i].group].push(points[i])
         return groups
     };
 

@@ -21,7 +21,6 @@ pickDrawingSetup = function(){
     cfg.colour.owner   = "#0000FF"; // Image owner
     cfg.colour.current = "#00DD00"; // Current user
     cfg.colour.default = "#FF0000"; // Everyone else
-    cfg.colour.active = "#FFBB00"
 
     var circles;
     var segments;
@@ -88,6 +87,7 @@ pickDrawingSetup = function(){
         cfg.styles.circle_startMove = {fill: '#0f0', opacity: 0.9};
         cfg.styles.circle_endMove = {opacity: 0.5};
         cfg.styles.overlay = {opacity: 0.67};
+        cfg.styles.active = {stroke: '#000', 'stroke-width': 0.5*cfg.penSize, opacity: 1}
 
         baseImage.mousemove(function(e) {
             currentMousePosition = getPointFromEvent(e);
@@ -228,7 +228,8 @@ pickDrawingSetup = function(){
                 addCircle(p, colour)
             }
         }
-
+        if (mode === "picking" && groups[groups.length-1].length > 0)
+            circles[circles.length-1].attr(cfg.styles.active)
         if (pickstyle === 'lines' || pickstyle === 'polygons')
             drawSegments(groups, colour)
     }
