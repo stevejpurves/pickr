@@ -132,14 +132,8 @@ pickDrawingSetup = function(){
             var p0, p0idx;
             var left = null
             var right = null
-            circle.drag(function move(dx, dy, x, y, e) {
-                var p = getPointFromEvent(e);
-                this.attr({'cx':p.x, 'cy':p.y});
-                if (left)
-                    left.attr({ path: writeSegmentPath(left.p0, p) });
-                if (right)
-                    right.attr({path: writeSegmentPath(p, right.p1) });
-            }, function start(x, y, e) {
+
+            var start = function(x, y, e) {
                 this.attr(cfg.styles.circle_startMove );
                 p0 = getPointFromEvent(e);
                 if (pickstyle === 'lines' || pickstyle === 'polygons') {
@@ -150,14 +144,24 @@ pickDrawingSetup = function(){
                             left = segments[i]
                     }
                 }
-            }, function end(e) {
+            }
+            var move = function(dx, dy, x, y, e) {
+                var p = getPointFromEvent(e);
+                this.attr({'cx':p.x, 'cy':p.y});
+                if (left)
+                    left.attr({ path: writeSegmentPath(left.p0, p) });
+                if (right)
+                    right.attr({path: writeSegmentPath(p, right.p1) });
+            }
+            var end = function(e) {
                 this.attr(_.extend({fill: colour}, cfg.styles.circle_endMove));
                 left = null
                 right = null
                 var p1 = getPointFromEvent(e);
                 handler.move(p1, p0);
-            }, circle, circle, circle)
+            }
 
+            circle.drag(move, start, end, circle, circle, circle)
             circle.hover(hoverIn, hoverOut, circle, circle)
 
             if (circle.isPointInside(currentMousePosition.x, currentMousePosition.y))
