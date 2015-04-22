@@ -21,6 +21,7 @@ pickDrawingSetup = function(){
     cfg.colour.owner   = "#0000FF"; // Image owner
     cfg.colour.current = "#00DD00"; // Current user
     cfg.colour.default = "#FF0000"; // Everyone else
+    cfg.colour.active = "#FFBB00"
 
     var circles;
     var segments;
@@ -220,26 +221,22 @@ pickDrawingSetup = function(){
         segments.clear();
     }
 
-    var draw = function(points, colour) {
-        var groups = [[]]
-        for (var i = 0, g_idx = 0; i < points.length; i++) {
-            var p = points[i]
-            addCircle(p, colour)
-            if (!p.group || p.group === g_idx)
-                groups[g_idx].push(p)
-            else {
-                g_idx = p.group
-                groups[g_idx] = [p]
+    var draw = function(groups, colour) {
+        for (var g = 0; g < groups.length; g++) {
+            for (var i = 0; i < groups[g].length; i++) {
+                var p = groups[g][i]
+                addCircle(p, colour)
             }
         }
+
         if (pickstyle === 'lines' || pickstyle === 'polygons')
             drawSegments(groups, colour)
     }
 
-    var refresh = function(points, colour) {
+    var refresh = function(groups, colour) {
         clear();
-        if (points.length === 0) return
-        draw(points, colour || cfg.colour.default);
+        if (groups.length === 0) return
+        draw(groups, colour || cfg.colour.default);
     };
 
     return {

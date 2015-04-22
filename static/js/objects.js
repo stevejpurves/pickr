@@ -101,8 +101,32 @@ var Interpretation = function(the_pick_history)
     var num_groups = 1;
     var group_idx = 0;
     
+
+    this.load_raw = function(raw) {
+        points = []
+        for (var i = 0; i < raw.length; i++) {
+            var p = new Point(raw[i][0], raw[i][1])
+            if (raw[i].length === 3) p.group = raw[i][2]
+            points.push( p )              
+        }
+    }
+
     this.get_points = function() {
         return points;
+    };
+
+    this.get_groups = function() {
+        var groups = [[]]
+        for (var i = 0, g_idx = 0; i < points.length; i++) {
+            var p = points[i]
+            if (!p.group || p.group === g_idx)
+                groups[g_idx].push(p)
+            else {
+                g_idx = p.group
+                groups[g_idx] = [p]
+            }
+        }
+        return groups
     };
 
     this.add = function(p) {

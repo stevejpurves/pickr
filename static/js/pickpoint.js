@@ -19,18 +19,18 @@ $(function() {
 
     pickDrawing.onPick(function(p) {
         the_interpretation.add(p);
-        pickDrawing.refresh(the_interpretation.get_points());
+        pickDrawing.refresh(the_interpretation.get_groups());
         allowSubmitIfValidInterpretation(the_interpretation);
     });
 
     pickDrawing.onMove(function(end, start) {
         the_interpretation.replace(start, end);
-        pickDrawing.refresh(the_interpretation.get_points());
+        pickDrawing.refresh(the_interpretation.get_groups());
     });
 
     pickDrawing.onInsert(function(p, after) {
         the_interpretation.insertAt(p, after);
-        pickDrawing.refresh(the_interpretation.get_points());
+        pickDrawing.refresh(the_interpretation.get_groups());
     })
 
     if (pickstyle === "points")
@@ -47,7 +47,7 @@ $(function() {
 
     $('#undo-button').click(function() {
         history.undo(the_interpretation)
-        pickDrawing.refresh(the_interpretation.get_points());
+        pickDrawing.refresh(the_interpretation.get_groups());
     });
 
     $('#submit-button').click(function() {

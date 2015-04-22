@@ -46,15 +46,6 @@ $(function() {
     pollHeatmap();
 
     var redrawPicks = function (data) {
-        var convertToPoints = function(d) {
-            var points = [];
-            for (var i = 0; i < d.length; i++) {
-                var p = new Point(d[i][0], d[i][1])
-                if (d[i].length === 3) p.group = d[i][2]
-                points.push( p )              
-            }
-            return points;
-        };
         pickDrawing.clear();
         var raw_points, colour;
         if (data.current) {
@@ -69,7 +60,10 @@ $(function() {
           var raw_points = data.data
           colour = pickDrawing.colour.default
         }
-        pickDrawing.draw(convertToPoints(raw_points), colour);
+
+        var I = new Interpretation(null)
+        I.load_raw(raw_points)
+        pickDrawing.draw(I.get_groups(), colour);
       };
 
    
